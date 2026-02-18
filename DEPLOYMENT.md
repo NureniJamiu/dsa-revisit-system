@@ -49,7 +49,14 @@ This guide outlines the steps to deploy the DSA Revisit System using free-tier s
 
 ---
 
-### Why this stack?
-- **Vercel**: Best-in-class for Vite/React applications.
-- **Render**: Allows running our Go backend with its built-in cron ticker as a single persistent process on the free tier.
-- **Supabase**: Provides a reliable, dedicated Postgres instance with plenty of storage for this use case.
+## Troubleshooting
+
+### ❌ Error: `network is unreachable` (IPv6 Issue)
+If you see logs like `dial tcp [2a05:...]:5432: connect: network is unreachable`, it means Render is trying to connect via IPv6 which is not supported in all regions/tiers.
+
+**Fix**:
+1. Go to Supabase **Settings > Database**.
+2. Find the **Connection Pooler** section.
+3. Select **Mode: Session** (or Transaction).
+4. Copy the **URI** (it will look like `...pooler.supabase.com...`).
+5. Use this new URI in your Render environment variables.

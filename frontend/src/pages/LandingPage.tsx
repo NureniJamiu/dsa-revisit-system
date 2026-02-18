@@ -8,11 +8,13 @@ import {
     Target,
     BarChart3,
     Zap,
+    CheckCircle2,
+    Menu,
+    X,
     Shield,
     Search,
     Clock,
     HelpCircle,
-    CheckCircle2,
 } from 'lucide-react';
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 
@@ -82,18 +84,19 @@ function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>;
 
 /* ─── Landing Page ─── */
 export default function LandingPage() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     return (
         <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-warm)' }}>
 
             {/* ═══ Glass Navbar ═══ */}
             <nav className="sticky top-0 z-50 glass border-b border-white/20">
                 <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-4 md:gap-8">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-                                <Sparkles className="w-4 h-4 text-green-400" />
+                            <div className="w-7 h-7 md:w-8 md:h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-400" />
                             </div>
-                            <span className="text-lg font-black text-gray-900 tracking-tighter">DSA Revisit</span>
+                            <span className="text-base md:text-lg font-black text-gray-900 tracking-tighter whitespace-nowrap">DSA Revisit</span>
                         </div>
 
                         <div className="hidden md:flex items-center gap-8 text-[13px] font-bold text-gray-400">
@@ -103,7 +106,8 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    {/* Desktop Auth */}
+                    <div className="hidden md:flex items-center gap-4">
                         <SignInButton mode="modal">
                             <button className="text-[13px] font-black text-gray-400 hover:text-gray-900 transition-colors px-3 py-2">
                                 Sign In
@@ -114,6 +118,59 @@ export default function LandingPage() {
                                 Get Started
                             </button>
                         </SignUpButton>
+                    </div>
+
+                    {/* Mobile Toggle */}
+                    <button
+                        className="md:hidden p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label="Toggle Menu"
+                    >
+                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                </div>
+
+                {/* Mobile Overlay */}
+                <div className={`
+                    absolute top-full left-0 w-full glass-dark border-b border-white/10 overflow-hidden transition-all duration-300 md:hidden
+                    ${isMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}
+                `}>
+                    <div className="p-6 space-y-6">
+                        <div className="flex flex-col gap-4">
+                            <a
+                                href="#features"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-lg font-bold text-white/70 hover:text-white transition-colors"
+                            >
+                                Features
+                            </a>
+                            <a
+                                href="#how-it-works"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-lg font-bold text-white/70 hover:text-white transition-colors"
+                            >
+                                Methodology
+                            </a>
+                            <a
+                                href="#faq"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-lg font-bold text-white/70 hover:text-white transition-colors"
+                            >
+                                FAQ
+                            </a>
+                        </div>
+                        <div className="pt-6 border-t border-white/10 flex flex-col gap-4">
+                            <SignInButton mode="modal">
+                                <button className="w-full py-4 text-white font-black uppercase tracking-widest text-sm border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                                    Sign In
+                                </button>
+                            </SignInButton>
+                            <SignUpButton mode="modal">
+                                <button className="w-full py-4 bg-green-500 text-white font-black uppercase tracking-widest text-sm rounded-xl hover:bg-green-600 transition-all">
+                                    Get Started
+                                </button>
+                            </SignUpButton>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -285,28 +342,28 @@ export default function LandingPage() {
             <section id="features" className="py-32 px-6 bg-white/50 relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-50/20 to-transparent pointer-events-none" />
                 <div className="max-w-6xl mx-auto relative z-10">
-                    <div className="text-center mb-24">
+                    <div className="text-center mb-16 md:mb-24 px-4">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-widest mb-6">
                             Capabilities
                         </div>
-                        <h2 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tighter mb-6">Precision Memory Engineering.</h2>
-                        <p className="text-xl font-medium text-gray-400 max-w-2xl mx-auto">One system to unify your preparation, tracking, and long-term mastery.</p>
+                        <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-gray-900 tracking-tighter mb-6 leading-[1.1] md:leading-none">Precision Memory Engineering.</h2>
+                        <p className="text-base md:text-xl font-medium text-gray-400 max-w-2xl mx-auto">One system to unify your preparation, tracking, and long-term mastery.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 auto-rows-[280px]">
                         {/* Big Card — Spaced Repetition */}
-                        <div className="md:col-span-8 md:row-span-2 bg-gray-900 rounded-[48px] p-12 overflow-hidden relative group shadow-2xl shadow-gray-900/10">
+                        <div className="md:col-span-8 md:row-span-2 bg-gray-900 rounded-[32px] md:rounded-[48px] p-8 md:p-12 overflow-hidden relative group shadow-2xl shadow-gray-900/10">
                             <div className="relative z-10 h-full flex flex-col justify-between">
                                 <div>
-                                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 transition-transform">
-                                        <Brain className="w-7 h-7 text-green-400" />
+                                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-6 md:mb-8 border border-white/10 group-hover:scale-110 transition-transform">
+                                        <Brain className="w-6 h-6 md:w-7 md:h-7 text-green-400" />
                                     </div>
-                                    <h3 className="text-4xl font-black text-white tracking-tight mb-6 text-balance leading-[0.9]">The P-Level Decay<br />Algorithm.</h3>
-                                    <p className="text-gray-400 text-lg max-w-md leading-relaxed">We calculate the exact mathematical failure point for every problem based on your revisit velocity, not just simple intervals.</p>
+                                    <h3 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-4 md:mb-6 text-balance leading-[0.9]">The P-Level Decay<br />Algorithm.</h3>
+                                    <p className="text-gray-400 text-sm md:text-lg max-w-md leading-relaxed">We calculate the exact mathematical failure point for every problem based on your revisit velocity, not just simple intervals.</p>
                                 </div>
-                                <div className="flex gap-4">
-                                    <span className="px-4 py-1.5 bg-green-500/10 text-green-400 text-[11px] font-black uppercase tracking-widest rounded-full border border-green-500/20">Spaced Repetition</span>
-                                    <span className="px-4 py-1.5 bg-white/5 text-gray-400 text-[11px] font-black uppercase tracking-widest rounded-full border border-white/5 whitespace-nowrap">Mathematical Model</span>
+                                <div className="flex flex-wrap gap-2 md:gap-4 mt-6">
+                                    <span className="px-3 md:px-4 py-1.5 bg-green-500/10 text-green-400 text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-full border border-green-500/20">Spaced Repetition</span>
+                                    <span className="px-3 md:px-4 py-1.5 bg-white/5 text-gray-400 text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-full border border-white/5 whitespace-nowrap">Mathematical Model</span>
                                 </div>
                             </div>
                             {/* Decorative Background */}
@@ -317,15 +374,15 @@ export default function LandingPage() {
                         </div>
 
                         {/* Med Card — Daily Digest */}
-                        <div className="md:col-span-4 md:row-span-2 bg-white rounded-[48px] border border-gray-200/80 p-10 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex flex-col justify-between group">
+                        <div className="md:col-span-4 md:row-span-2 bg-white rounded-[32px] md:rounded-[48px] border border-gray-200/80 p-8 md:p-10 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex flex-col justify-between group">
                             <div>
-                                <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mb-8 border border-green-100 group-hover:rotate-6 transition-transform">
-                                    <Mail className="w-7 h-7 text-green-600" />
+                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-green-50 flex items-center justify-center mb-6 md:mb-8 border border-green-100 group-hover:rotate-6 transition-transform">
+                                    <Mail className="w-6 h-6 md:w-7 md:h-7 text-green-600" />
                                 </div>
-                                <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-6 leading-tight">Zero Friction Daily Digest.</h3>
-                                <p className="text-gray-500 text-base leading-relaxed">Wake up to a 5-minute plan. No decision fatigue. We send your prioritized set at your preferred time, every single morning.</p>
+                                <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-4 md:mb-6 leading-tight">Zero Friction Daily Digest.</h3>
+                                <p className="text-gray-500 text-sm md:text-base leading-relaxed">Wake up to a 5-minute plan. No decision fatigue. We send your prioritized set at your preferred time, every single morning.</p>
                             </div>
-                            <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100 mt-8">
+                            <div className="bg-gray-50 rounded-2xl md:rounded-3xl p-5 md:p-6 border border-gray-100 mt-6 md:mt-8">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
                                     <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Incoming 08:30 AM</span>
@@ -338,35 +395,35 @@ export default function LandingPage() {
                         </div>
 
                         {/* Wide Card — Universal Integration */}
-                        <div className="md:col-span-6 md:row-span-1 bg-white rounded-[48px] border border-gray-200/80 p-10 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex items-center gap-10 group">
-                            <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-gray-900 group-hover:border-gray-900 transition-all">
-                                <Search className="w-10 h-10 text-gray-400 group-hover:text-green-400 transition-colors" />
+                        <div className="md:col-span-6 md:row-span-1 bg-white rounded-[32px] md:rounded-[48px] border border-gray-200/80 p-8 md:p-10 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-6 md:gap-10 group">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-gray-900 group-hover:border-gray-900 transition-all flex-shrink-0">
+                                <Search className="w-8 h-8 md:w-10 md:h-10 text-gray-400 group-hover:text-green-400 transition-colors" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Universal Source.</h3>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight mb-2">Universal Source.</h3>
                                 <p className="text-gray-400 text-sm font-medium leading-relaxed">LeetCode, NeetCode, or custom URIs. If it has a link, we can track the decay curve and keep it top-of-mind.</p>
                             </div>
                         </div>
 
                         {/* Small Card — AI */}
-                        <div className="md:col-span-3 md:row-span-1 bg-[#D4DDD2] rounded-[48px] border border-[#C5CDC2] p-10 flex flex-col justify-between group overflow-hidden relative shadow-sm hover:shadow-xl hover:shadow-[#D4DDD2]/50 transition-all">
+                        <div className="md:col-span-3 md:row-span-1 bg-[#D4DDD2] rounded-[32px] md:rounded-[48px] border border-[#C5CDC2] p-8 md:p-10 flex flex-col justify-between group overflow-hidden relative shadow-sm hover:shadow-xl hover:shadow-[#D4DDD2]/50 transition-all">
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <h3 className="text-xl font-black text-gray-900">AI Pulse</h3>
+                                    <h3 className="text-lg md:text-xl font-black text-gray-900">AI Pulse</h3>
                                     <span className="px-2 py-0.5 bg-white text-green-700 text-[9px] font-black rounded uppercase tracking-widest border border-green-100">Beta</span>
                                 </div>
-                                <p className="text-gray-600 text-[13px] font-medium leading-relaxed max-w-[140px]">Nudges that adapt to your historical struggle points.</p>
+                                <p className="text-gray-600 text-xs md:text-[13px] font-medium leading-relaxed max-w-[140px] md:max-w-none">Nudges that adapt to your historical struggle points.</p>
                             </div>
-                            <Sparkles className="absolute -right-6 -bottom-6 w-32 h-32 text-white/50 rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-transform" />
+                            <Sparkles className="absolute -right-4 -bottom-4 md:-right-6 md:-bottom-6 w-24 h-24 md:w-32 md:h-32 text-white/50 rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-transform" />
                         </div>
 
                         {/* Small Card — Archive */}
-                        <div className="md:col-span-3 md:row-span-1 bg-white rounded-[48px] border border-gray-200/80 p-10 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex flex-col justify-between group">
+                        <div className="md:col-span-3 md:row-span-1 bg-white rounded-[32px] md:rounded-[48px] border border-gray-200/80 p-8 md:p-10 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex flex-col justify-between group">
                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-xl font-black text-gray-900">The Vault.</h3>
-                                <Shield className="w-6 h-6 text-gray-300 group-hover:text-gray-900 transition-colors" />
+                                <h3 className="text-lg md:text-xl font-black text-gray-900">The Vault.</h3>
+                                <Shield className="w-5 h-5 md:w-6 md:h-6 text-gray-300 group-hover:text-gray-900 transition-colors" />
                             </div>
-                            <p className="text-gray-400 text-[13px] font-medium leading-relaxed">Permanent retirement for mastered problems. Keep your active library clean and high-intent.</p>
+                            <p className="text-gray-400 text-xs md:text-[13px] font-medium leading-relaxed">Permanent retirement for mastered problems. Keep your active library clean and high-intent.</p>
                         </div>
                     </div>
                 </div>
