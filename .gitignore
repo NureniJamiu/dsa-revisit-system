@@ -1,0 +1,18 @@
+# Environment secrets
+.env
+
+# OS files
+.DS_Store
+
+# Go
+/backend/dsa-revisit-system
+/backend/tmp/
+
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+
+# IDE
+.idea/
+.vscode/
+*.sw?
