@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, PlusCircle, Settings as SettingsIcon, LayoutDashboard, Archive } from 'lucide-react';
+import { PlusCircle, Settings as SettingsIcon, LayoutDashboard, Archive } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import AddProblemModal from './AddProblemModal';
+import Logo from './Logo';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -28,11 +29,8 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
             <aside className="w-64 border-r border-gray-800 hidden md:flex md:flex-col" style={{ backgroundColor: '#111111' }}>
                 {/* Logo & Tagline */}
                 <div className="p-6">
-                    <div className="flex items-center gap-2 mb-1">
-                        <BookOpen className="w-6 h-6 text-green-500" />
-                        <h1 className="text-lg font-bold text-white tracking-tight">DSA Revisit</h1>
-                    </div>
-                    <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold">Mastery Engine</p>
+                    <Logo textSize="text-xl" className="text-white mb-1" showText={true} variant="light" />
+                    <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold ml-10">Mastery Engine</p>
                 </div>
 
                 {/* Main Navigation */}
@@ -95,10 +93,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
                 <header className="border-b border-gray-200 md:hidden p-4 flex items-center justify-between" style={{ backgroundColor: '#111111' }}>
-                    <div className="flex items-center gap-2">
-                        <BookOpen className="w-6 h-6 text-green-500" />
-                        <h1 className="text-lg font-bold text-white tracking-tight">DSA Revisit</h1>
-                    </div>
+                    <Logo textSize="text-lg" className="text-white" showText={true} variant="light" />
                     <UserButton />
                 </header>
                 <div className="p-6 md:p-10 max-w-6xl mx-auto">
