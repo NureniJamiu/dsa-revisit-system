@@ -55,6 +55,13 @@ func runMigrations() {
 	if err != nil {
 		log.Printf("Migration warning (clerk_id index): %v", err)
 	}
+
+	_, err = db.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_email_sent_at TIMESTAMP WITH TIME ZONE`)
+	if err != nil {
+		log.Printf("Migration warning (last_email_sent_at column): %v", err)
+	} else {
+		log.Println("Migration: last_email_sent_at column ensured")
+	}
 }
 
 // FindOrCreateUserByClerkID looks up a user by their Clerk ID.

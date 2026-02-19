@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"sort"
 	"time"
@@ -276,6 +277,88 @@ func ArchiveProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, map[string]string{"status": "retired"})
+}
+
+// UpdateProblem updates problem details
+func UpdateProblem(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserIDFromContext(r)
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var p Problem
+	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := db.Exec(`
+		UPDATE problems 
+		SET title = $1, link = $2, difficulty = $3, source = $4
+		WHERE id = $5 AND user_id = $6`,
+		p.Title, p.Link, p.Difficulty, p.Source, id, userID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Problem not found", http.StatusNotFound)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{"status": "updated"})
+}
+
+// DeleteProblem permanently removes a problem and its history
+func DeleteProblem(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserIDFromContext(r)
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	// Start a transaction to delete history and problem
+	tx, err := db.Begin()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer tx.Rollback()
+
+	// 1. Delete history
+	_, err = tx.Exec(`DELETE FROM revisit_history WHERE problem_id = $1`, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// 2. Delete problem (with ownership check)
+	result, err := tx.Exec(`DELETE FROM problems WHERE id = $1 AND user_id = $2`, id, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Problem not found", http.StatusNotFound)
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
 
 // GetProblemWeight returns the scheduling weight for a single problem
@@ -593,4 +676,17 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, response)
+}
+
+// RunCronAllUsers manually triggers the daily cron job for ALL users.
+// This skips the EmailTime check logic? No, current RunDailyJob has EmailTime check inside.
+// To make it truly manual trigger, we should probably have a way to force it.
+// For now, it just calls RunDailyJob() and returns a summary.
+func RunCronAllUsers(w http.ResponseWriter, r *http.Request) {
+	log.Println("[Admin] Manually triggering daily job for all users...")
+	RunDailyJob()
+	respondJSON(w, http.StatusOK, map[string]string{
+		"status":  "ok",
+		"message": "Daily job triggered. Check server logs for detailed progress.",
+	})
 }

@@ -56,6 +56,8 @@ func main() {
 			r.Get("/problems/{id}", GetProblemByID)
 			r.Get("/problems/{id}/weight", GetProblemWeight)
 			r.Post("/problems", CreateProblem)
+			r.Put("/problems/{id}", UpdateProblem)
+			r.Delete("/problems/{id}", DeleteProblem)
 			r.Post("/problems/{id}/revisit", MarkRevisited)
 			r.Post("/problems/{id}/archive", ArchiveProblem)
 			// Settings
@@ -63,6 +65,7 @@ func main() {
 			r.Put("/settings", UpdateSettings)
 			// Testing / Debugging
 			r.Post("/test-email", TestEmail)
+			r.Post("/admin/run-cron", RunCronAllUsers)
 		})
 	})
 
