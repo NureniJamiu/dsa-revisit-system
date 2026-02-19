@@ -350,7 +350,25 @@ export default function LandingPage() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+                    <div className="relative space-y-24 md:space-y-48">
+                        {/* SVG Path Connectors (Desktop Only) */}
+                        <svg className="hidden md:block absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-visible" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor="#22C55E" stopOpacity="0" />
+                                    <stop offset="20%" stopColor="#22C55E" stopOpacity="0.2" />
+                                    <stop offset="80%" stopColor="#22C55E" stopOpacity="0.2" />
+                                    <stop offset="100%" stopColor="#22C55E" stopOpacity="0" />
+                                </linearGradient>
+                            </defs>
+                            {/* Path 1 -> 2 */}
+                            <path d="M 75% 150 Q 75% 250, 50% 250 T 25% 350" fill="none" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="8 8" className="animate-pulse-soft" />
+                            {/* Path 2 -> 3 */}
+                            <path d="M 25% 650 Q 25% 750, 50% 750 T 75% 850" fill="none" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="8 8" className="animate-pulse-soft" />
+                            {/* Path 3 -> 4 */}
+                            <path d="M 75% 1150 Q 75% 1250, 50% 1250 T 25% 1350" fill="none" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="8 8" className="animate-pulse-soft" />
+                        </svg>
+
                         {[
                             {
                                 step: '01',
@@ -358,7 +376,7 @@ export default function LandingPage() {
                                 desc: 'Sign in securely with Clerk. We keep your data private and scoped to you, so your mastery journey is yours alone.',
                                 icon: Shield,
                                 mockup: (
-                                    <div className="relative w-full aspect-video bg-gray-800 rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-white/10 group-hover:scale-[1.02] transition-transform duration-500">
+                                    <div className="relative w-full aspect-video bg-gray-800 rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-white/10 group-hover:scale-[1.02] transition-transform duration-500 shadow-2xl">
                                         <div className="glass p-8 rounded-2xl w-full max-w-xs text-center border-white/5">
                                             <div className="w-12 h-12 bg-green-500 rounded-xl mx-auto mb-6 flex items-center justify-center">
                                                 <Target className="w-6 h-6 text-white" />
@@ -378,7 +396,7 @@ export default function LandingPage() {
                                 desc: 'Paste a link from LeetCode, NeetCode, or any site. We index the problem title and difficulty instantly.',
                                 icon: Search,
                                 mockup: (
-                                    <div className="relative w-full aspect-video bg-[#F5F0EB] rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-gray-200 group-hover:scale-[1.02] transition-transform duration-500">
+                                    <div className="relative w-full aspect-video bg-[#F5F0EB] rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-gray-200 group-hover:scale-[1.02] transition-transform duration-500 shadow-2xl">
                                         <div className="w-full max-w-sm space-y-4">
                                             <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xl shadow-gray-200/50">
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Paste URL</p>
@@ -414,8 +432,8 @@ export default function LandingPage() {
                                 icon: Mail,
                                 highlight: true,
                                 mockup: (
-                                    <div className="relative w-full aspect-video bg-[#EEF2ED] rounded-[32px] overflow-hidden p-6 flex flex-col items-center group-hover:scale-[1.02] transition-transform duration-500">
-                                        <div className="w-full max-w-[240px] bg-white rounded-3xl shadow-2xl shadow-green-900/5 overflow-hidden border border-gray-100">
+                                    <div className="relative w-full aspect-video bg-[#EEF2ED] rounded-[32px] overflow-hidden p-6 flex flex-col items-center group-hover:scale-[1.02] transition-transform duration-500 shadow-2xl">
+                                        <div className="w-full max-w-[240px] bg-white rounded-3xl shadow-2xl shadow-green-900/5 overflow-hidden border border-gray-100 mt-4">
                                             <div className="bg-green-600 p-4 text-center">
                                                 <Logo variant="light" iconSize="w-5 h-5" textSize="text-xs" showText={false} />
                                             </div>
@@ -454,7 +472,7 @@ export default function LandingPage() {
                                 desc: 'Mark problems as revisited and watch your mastery curve grow. Our system knows exactly when to nudge you next.',
                                 icon: Zap,
                                 mockup: (
-                                    <div className="relative w-full aspect-video bg-white rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-gray-100 group-hover:scale-[1.02] transition-transform duration-500">
+                                    <div className="relative w-full aspect-video bg-white rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-gray-100 group-hover:scale-[1.02] transition-transform duration-500 shadow-2xl">
                                         <div className="w-full max-w-sm">
                                             <div className="flex items-center justify-between mb-8">
                                                 <div className="space-y-1">
@@ -480,24 +498,36 @@ export default function LandingPage() {
                                 )
                             }
                         ].map((item, i) => (
-                            <div key={i} className={`group flex flex-col gap-10 animate-slideUp p-2`} style={{ animationDelay: `${(i + 1) * 100}ms` }}>
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-5xl font-black text-gray-100 tracking-tighter transition-colors group-hover:text-green-100">
+                            <div key={i} className={`group relative grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center z-10`}>
+                                <div className={`space-y-8 ${i % 2 !== 0 ? 'md:order-2' : ''}`}>
+                                    <div className="inline-flex items-center gap-4">
+                                        <span className="text-8xl font-black text-gray-900/5 tracking-tighter transition-colors group-hover:text-green-500/10 leading-none">
                                             {item.step}
-                                        </div>
-                                        <div className={`h-px flex-1 ${item.highlight ? 'bg-green-500' : 'bg-gray-200'}`} />
+                                        </span>
+                                        <div className={`h-1 w-12 rounded-full ${item.highlight ? 'bg-green-500' : 'bg-gray-200'}`} />
                                     </div>
-                                    <div className="space-y-4">
-                                        <h3 className="text-3xl font-black text-gray-900 tracking-tight leading-none group-hover:text-green-600 transition-colors">
+                                    <div className="space-y-6">
+                                        <h3 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight leading-[1.1] group-hover:text-green-600 transition-colors">
                                             {item.title}
                                         </h3>
-                                        <p className="text-base font-medium text-gray-500 leading-relaxed">
+                                        <p className="text-lg font-medium text-gray-500 leading-relaxed max-w-md">
                                             {item.desc}
                                         </p>
+                                        {i % 2 === 0 ? (
+                                            <div className="flex items-center gap-2 text-green-600 font-bold text-sm tracking-wide">
+                                                <span>Step {item.step} Complete</span>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </div>
-                                {item.mockup}
+                                <div className={`${i % 2 !== 0 ? 'md:order-1' : ''} relative`}>
+                                    {/* Mobile Connector */}
+                                    {i < 3 && (
+                                        <div className="md:hidden absolute top-full left-1/2 -translate-x-1/2 h-24 w-px border-l-2 border-dashed border-gray-200 mt-4" />
+                                    )}
+                                    {item.mockup}
+                                </div>
                             </div>
                         ))}
                     </div>
