@@ -77,7 +77,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-fadeIn"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-fadeIn"
             onClick={handleBackdropClick}
         >
             <div

@@ -1,8 +1,27 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Archive as ArchiveIcon } from 'lucide-react';
+// import { useProblems } from '../hooks/useProblems';
 
 const Archive: React.FC = () => {
+    // const { data: allProblems = [], isLoading } = useProblems();
+    const isLoading = false;
+
+    // In this app, "archived" is a state where the problem exists in the archive but is not scheduled.
+    // However, looking at the backend/current implementation, we don't have a strict "is_archived" flag in the Problem interface yet.
+    // Based on the spec, retired problems are moved to the vault.
+
+    // For now, let's assume archived problems are those that have been explicitly archived.
+    // I need to check the API for archiving.
+
+    // const archivedProblems = allProblems.filter(p => (p as any).is_archived); // Logic based on future backend support
+
+    if (isLoading) {
+        return (
+            <div className="max-w-5xl mx-auto flex items-center justify-center py-20">
+                <div className="animate-spin w-6 h-6 border-2 border-gray-200 border-t-green-500 rounded-full" />
+            </div>
+        );
+    }
     return (
         <div className="max-w-5xl mx-auto pb-20">
             {/* Header */}

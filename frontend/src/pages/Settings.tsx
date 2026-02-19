@@ -1,20 +1,75 @@
 import React, { useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
+import { apiFetch } from '../lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+export type UserSettings = {
+    daily_problems: number;
+    skip_weekends: boolean;
+    email_time: string;
+    ai_encouragement: boolean;
+}
 
 const Settings: React.FC = () => {
+    const { getToken } = useAuth();
+    const queryClient = useQueryClient();
+
+    // Queries
+    const { data: settings, isLoading } = useQuery({
+        queryKey: ['settings'],
+        queryFn: async () => {
+            const res = await apiFetch('/api/settings', {}, getToken);
+            if (!res.ok) {
+                // Return defaults if not found or error
+                return {
+                    daily_problems: 3,
+                    skip_weekends: true,
+                    email_time: '09:00 AM',
+                    ai_encouragement: false
+                } as UserSettings;
+            }
+            return (await res.json()) as UserSettings;
+        }
+    });
+
+    // Mutations
+    const updateSettingsMutation = useMutation({
+        mutationFn: async (newSettings: UserSettings) => {
+            const res = await apiFetch('/api/settings', {
+                method: 'PUT',
+                body: JSON.stringify(newSettings)
+            }, getToken);
+            if (!res.ok) throw new Error('Failed to update settings');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['settings'] });
+            alert('Settings saved successfully!');
+        }
+    });
+
     const [dailyProblems, setDailyProblems] = useState(3);
     const [skipWeekends, setSkipWeekends] = useState(true);
     const [emailTime, setEmailTime] = useState('09:00 AM');
     const [aiEncouragement, setAiEncouragement] = useState(false);
 
+    // Sync state with loaded data
+    React.useEffect(() => {
+        if (settings) {
+            setDailyProblems(settings.daily_problems);
+            setSkipWeekends(settings.skip_weekends);
+            setEmailTime(settings.email_time);
+            setAiEncouragement(settings.ai_encouragement);
+        }
+    }, [settings]);
+
     const handleSave = () => {
-        // TODO: Save settings to backend
-        console.log('Saving settings:', {
-            dailyProblems,
-            skipWeekends,
-            emailTime,
-            aiEncouragement
+        updateSettingsMutation.mutate({
+            daily_problems: dailyProblems,
+            skip_weekends: skipWeekends,
+            email_time: emailTime,
+            ai_encouragement: aiEncouragement
         });
-        alert('Settings saved successfully!');
     };
 
     const handleReset = () => {
@@ -23,6 +78,14 @@ const Settings: React.FC = () => {
         setEmailTime('09:00 AM');
         setAiEncouragement(false);
     };
+
+    if (isLoading) {
+        return (
+            <div className="max-w-2xl mx-auto flex items-center justify-center py-20">
+                <div className="animate-spin w-6 h-6 border-2 border-gray-200 border-t-green-500 rounded-full" />
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-2xl mx-auto pb-20">

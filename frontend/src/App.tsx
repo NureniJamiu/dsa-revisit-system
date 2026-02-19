@@ -1,5 +1,3 @@
-
-import { useState, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import Layout from './components/Layout';
@@ -9,19 +7,15 @@ import ProblemDetail from './pages/ProblemDetail';
 import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
 
+import { Providers } from './providers/Providers';
+
 function App() {
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleProblemAdded = useCallback(() => {
-    setRefreshKey((k) => k + 1);
-  }, []);
-
   return (
-    <>
+    <Providers>
       <SignedIn>
-        <Layout onProblemAdded={handleProblemAdded}>
+        <Layout>
           <Routes>
-            <Route path="/" element={<Dashboard refreshKey={refreshKey} />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/archive" element={<Archive />} />
             <Route path="/problem/:id" element={<ProblemDetail />} />
             <Route path="/settings" element={<Settings />} />
@@ -33,7 +27,7 @@ function App() {
       <SignedOut>
         <LandingPage />
       </SignedOut>
-    </>
+    </Providers>
   );
 }
 

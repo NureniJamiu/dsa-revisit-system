@@ -1,120 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ExternalLink, CheckSquare, CheckCircle, Archive } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
-import { apiFetch } from '../lib/api';
+import { useProblem, useRevisitProblemMutation, useArchiveProblemMutation } from '../hooks/useProblems';
 import ConfirmDialog from '../components/ConfirmDialog';
-
-interface RevisitEntry {
-    id: string;
-    revisited_at: string;
-    notes?: string;
-}
-
-interface WeightInfo {
-    problem_id: string;
-    weight: number;
-    days_since_added: number;
-    days_since_last_revisit: number;
-    times_revisited: number;
-    revisit_decay: number;
-    is_eligible: boolean;
-    priority: 'high' | 'medium' | 'low';
-}
-
-interface Problem {
-    id: string;
-    title: string;
-    link: string;
-    times_revisited: number;
-    last_revisited_at: string | null;
-    tags?: string[];
-    difficulty?: string;
-    source?: string;
-    revisited_today?: boolean;
-    revisit_history?: RevisitEntry[];
-    weight_info?: WeightInfo;
-}
 
 const ProblemDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { getToken } = useAuth();
-    const [problem, setProblem] = useState<Problem | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { data: problem, isLoading: loading, isError } = useProblem(id);
+    const revisitMutation = useRevisitProblemMutation();
+    const archiveMutation = useArchiveProblemMutation();
+
     const [note, setNote] = useState('');
     const [showRevisitConfirm, setShowRevisitConfirm] = useState(false);
     const [showRetireConfirm, setShowRetireConfirm] = useState(false);
-    const [isRevisiting, setIsRevisiting] = useState(false);
-    const [isRetiring, setIsRetiring] = useState(false);
-
-    useEffect(() => {
-        fetchProblemDetail();
-    }, [id]);
-
-    const fetchProblemDetail = async () => {
-        try {
-            const res = await apiFetch(`/problems/${id}`, {}, getToken);
-            if (res.ok) {
-                const data = await res.json();
-                setProblem(data);
-
-                // [DSA] Debug: log weight info for this problem
-                if (data.weight_info) {
-                    console.group(`[DSA] Problem Detail — ${data.title}`);
-                    console.table({
-                        weight: data.weight_info.weight,
-                        priority: data.weight_info.priority,
-                        daysSinceAdded: data.weight_info.days_since_added,
-                        daysSinceLastRevisit: data.weight_info.days_since_last_revisit,
-                        timesRevisited: data.weight_info.times_revisited,
-                        revisitDecay: data.weight_info.revisit_decay,
-                        isEligible: data.weight_info.is_eligible,
-                    });
-                    console.groupEnd();
-                }
-            }
-        } catch (error) {
-            console.error('[DSA] Failed to fetch problem details', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleMarkRevisited = async () => {
-        setIsRevisiting(true);
         try {
-            const res = await apiFetch(`/problems/${id}/revisit`, {
-                method: 'POST',
-                body: JSON.stringify({ notes: note })
-            }, getToken);
-            if (res.ok) {
-                setNote('');
-                fetchProblemDetail();
-            } else if (res.status === 409) {
-                fetchProblemDetail();
-            }
+            if (!id) return;
+            await revisitMutation.mutateAsync({ id, notes: note });
+            setNote('');
         } catch (error) {
             console.error('Failed to mark revisited', error);
         } finally {
-            setIsRevisiting(false);
             setShowRevisitConfirm(false);
         }
     };
 
     const handleRetire = async () => {
-        setIsRetiring(true);
         try {
-            const res = await apiFetch(`/problems/${id}/archive`, {
-                method: 'POST'
-            }, getToken);
-            if (res.ok) {
-                navigate('/');
-            }
+            if (!id) return;
+            await archiveMutation.mutateAsync(id);
+            navigate('/');
         } catch (error) {
             console.error('Failed to retire problem', error);
         } finally {
-            setIsRetiring(false);
             setShowRetireConfirm(false);
         }
     };
@@ -149,17 +69,17 @@ const ProblemDetail: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center py-20 text-gray-500">Loading problem details...</div>
+            <div className="max-w-4xl mx-auto flex items-center justify-center py-20">
+                <div className="animate-spin w-6 h-6 border-2 border-gray-200 border-t-green-500 rounded-full" />
             </div>
         );
     }
 
-    if (!problem) {
+    if (isError || !problem) {
         return (
             <div className="max-w-4xl mx-auto">
                 <div className="text-center py-20">
-                    <p className="text-gray-500 mb-4">Problem not found</p>
+                    <p className="text-red-500 mb-4">{isError ? 'Failed to load problem' : 'Problem not found'}</p>
                     <Link to="/" className="text-emerald-600 hover:text-emerald-700">
                         Back to Dashboard
                     </Link>
@@ -252,10 +172,15 @@ const ProblemDetail: React.FC = () => {
 
                                 <button
                                     onClick={() => setShowRevisitConfirm(true)}
-                                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200"
+                                    disabled={revisitMutation.isPending}
+                                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
                                 >
-                                    <CheckSquare className="w-5 h-5 text-green-400" />
-                                    Complete Revisit Session
+                                    {revisitMutation.isPending ? (
+                                        <div className="animate-spin w-5 h-5 border-2 border-white/20 border-t-white rounded-full" />
+                                    ) : (
+                                        <CheckSquare className="w-5 h-5 text-green-400" />
+                                    )}
+                                    {revisitMutation.isPending ? 'Processing session...' : 'Complete Revisit Session'}
                                 </button>
                             </div>
                         </>
@@ -282,7 +207,7 @@ const ProblemDetail: React.FC = () => {
 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Recall Decay</span>
+                                        <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Retention Decay</span>
                                         <span className="text-[13px] font-black text-gray-900">{Math.round(problem.weight_info.revisit_decay * 100)}%</span>
                                     </div>
                                     <div className="w-full bg-[#C5CDC2] rounded-full h-2 overflow-hidden">
@@ -364,10 +289,10 @@ const ProblemDetail: React.FC = () => {
                 onConfirm={handleMarkRevisited}
                 title="Confirm Revisit Session"
                 description={`You're marking "${problem.title}" as revisited. This will update your mastery data.`}
-                confirmLabel="Confirm Session"
+                confirmLabel={revisitMutation.isPending ? "Confirming..." : "Confirm Session"}
                 cancelLabel="Cancel"
                 variant="info"
-                loading={isRevisiting}
+                loading={revisitMutation.isPending}
             />
 
             <ConfirmDialog
@@ -376,10 +301,10 @@ const ProblemDetail: React.FC = () => {
                 onConfirm={handleRetire}
                 title="Retire Problem?"
                 description={`Are you sure you want to retire "${problem.title}"? It will be moved to your archive and removed from daily reminders.`}
-                confirmLabel="Retire Problem"
+                confirmLabel={archiveMutation.isPending ? "Retiring..." : "Retire Problem"}
                 cancelLabel="Keep Active"
                 variant="danger"
-                loading={isRetiring}
+                loading={archiveMutation.isPending}
             />
         </div>
     );

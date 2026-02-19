@@ -17,6 +17,7 @@ import {
     HelpCircle,
 } from 'lucide-react';
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
+import Logo from '../components/Logo';
 
 /* ─── Data ─── */
 const platforms = [
@@ -92,12 +93,7 @@ export default function LandingPage() {
             <nav className="sticky top-0 z-50 glass border-b border-white/20">
                 <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4 md:gap-8">
-                        <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 md:w-8 md:h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-400" />
-                            </div>
-                            <span className="text-base md:text-lg font-black text-gray-900 tracking-tighter whitespace-nowrap">DSA Revisit</span>
-                        </div>
+                        <Logo textSize="text-lg" />
 
                         <div className="hidden md:flex items-center gap-8 text-[13px] font-bold text-gray-400">
                             <a href="#features" className="hover:text-gray-900 transition-colors">Features</a>
@@ -226,7 +222,7 @@ export default function LandingPage() {
                                 </div>
                                 <div className="bg-white border border-gray-100 px-4 py-1.5 rounded-lg text-[11px] font-bold text-gray-300 flex items-center gap-2">
                                     <Shield className="w-3 h-3" />
-                                    dsa-revisit.engineering/dashboard
+                                    restack.engineering/dashboard
                                 </div>
                                 <div className="w-16" />
                             </div>
@@ -294,7 +290,7 @@ export default function LandingPage() {
                         {/* Floating Decoration Cards */}
                         <div className="absolute -top-10 -right-12 hidden lg:block animate-floating">
                             <div className="glass p-5 rounded-2xl shadow-xl w-48">
-                                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-2">Recall Alert</p>
+                                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-2">Mastery Alert</p>
                                 <p className="text-sm font-bold text-gray-900 leading-tight">LRU Cache is decaying. Revisit encouraged.</p>
                             </div>
                         </div>
@@ -457,7 +453,7 @@ export default function LandingPage() {
                                 Everything you need to know about the system and methodology.
                             </p>
                             <div className="mt-8">
-                                <a href="mailto:support@recall.engineering" className="text-xs font-black text-gray-900 uppercase tracking-widest hover:text-green-600 transition-colors">
+                                <a href="mailto:support@restack.engineering" className="text-xs font-black text-gray-900 uppercase tracking-widest hover:text-green-600 transition-colors">
                                     Contact Support →
                                 </a>
                             </div>
@@ -526,12 +522,7 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
                         {/* Brand */}
                         <div className="col-span-1 md:col-span-1">
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-                                    <Sparkles className="w-4 h-4 text-green-400" />
-                                </div>
-                                <span className="text-lg font-black text-gray-900 tracking-tighter">DSA Revisit</span>
-                            </div>
+                            <Logo className="mb-6" iconSize="w-7 h-7" textSize="text-lg" />
                             <p className="text-sm font-medium text-gray-400 leading-relaxed max-w-xs">
                                 The highly-opinionated spaced repetition system for high-stakes interview preparation.
                             </p>
@@ -541,7 +532,7 @@ export default function LandingPage() {
                         <div>
                             <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest mb-6">Product</h4>
                             <ul className="space-y-4">
-                                <li><a href="#features" className="text-sm font-bold text-gray-400 hover:text-gray-900 transition-colors">Recall Engine</a></li>
+                                <li><a href="#features" className="text-sm font-bold text-gray-400 hover:text-gray-900 transition-colors">Mastery Engine</a></li>
                                 <li><a href="#how-it-works" className="text-sm font-bold text-gray-400 hover:text-gray-900 transition-colors">Methodology</a></li>
                                 <li><a href="#faq" className="text-sm font-bold text-gray-400 hover:text-gray-900 transition-colors">Engineering FAQ</a></li>
                             </ul>
@@ -568,7 +559,7 @@ export default function LandingPage() {
 
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-12 border-t border-gray-50">
                         <p className="text-[11px] font-black text-gray-300 uppercase tracking-widest">
-                            © {new Date().getFullYear()} DSA REVISIT SYSTEMS. ALL RIGHTS RESERVED.
+                            © {new Date().getFullYear()} RESTACK SYSTEMS. ALL RIGHTS RESERVED.
                         </p>
                         <div className="flex gap-8">
                             <span className="text-[10px] font-black text-gray-200">v1.2.0-STABLE</span>
