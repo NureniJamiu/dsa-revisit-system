@@ -196,7 +196,7 @@ const Settings: React.FC = () => {
             <div className="mt-10 space-y-4">
                 <button
                     onClick={handleSave}
-                    className="w-full px-6 py-4 bg-gray-900 text-white text-sm font-black rounded-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 uppercase tracking-widest"
+                    className="w-full px-6 py-4 bg-gray-800 text-white text-sm font-black rounded-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 uppercase tracking-widest"
                 >
                     Deploy Changes
                 </button>

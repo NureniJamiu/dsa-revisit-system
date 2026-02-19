@@ -173,7 +173,7 @@ const ProblemDetail: React.FC = () => {
                                 <button
                                     onClick={() => setShowRevisitConfirm(true)}
                                     disabled={revisitMutation.isPending}
-                                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
+                                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
                                 >
                                     {revisitMutation.isPending ? (
                                         <div className="animate-spin w-5 h-5 border-2 border-white/20 border-t-white rounded-full" />
@@ -212,7 +212,7 @@ const ProblemDetail: React.FC = () => {
                                     </div>
                                     <div className="w-full bg-[#C5CDC2] rounded-full h-2 overflow-hidden">
                                         <div
-                                            className="bg-gray-900 h-2 rounded-full transition-all duration-1000"
+                                            className="bg-gray-800 h-2 rounded-full transition-all duration-1000"
                                             style={{ width: `${Math.round(problem.weight_info.revisit_decay * 100)}%` }}
                                         />
                                     </div>

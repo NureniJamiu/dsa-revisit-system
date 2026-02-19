@@ -44,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                                 to={item.path}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${isActive
                                     ? 'bg-gray-800 text-white'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-900'
+                                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
                                     }`}
                             >
                                 <Icon className="w-4 h-4" />
@@ -56,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                     {/* Add Problem Button */}
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors text-gray-400 hover:text-white hover:bg-gray-900 w-full text-left"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors text-gray-400 hover:text-white hover:bg-gray-800 w-full text-left"
                     >
                         <PlusCircle className="w-4 h-4" />
                         Add Problem
@@ -69,7 +69,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                         to="/settings"
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${location.pathname === '/settings'
                             ? 'bg-gray-800 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-900'
+                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
                             }`}
                     >
                         <SettingsIcon className="w-4 h-4" />

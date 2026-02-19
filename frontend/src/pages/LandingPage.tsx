@@ -111,7 +111,7 @@ export default function LandingPage() {
                             </button>
                         </SignInButton>
                         <SignUpButton mode="modal">
-                            <button className="text-[13px] font-black bg-gray-900 text-white px-5 py-2.5 rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 uppercase tracking-widest">
+                            <button className="text-[13px] font-black bg-gray-800 text-white px-5 py-2.5 rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 uppercase tracking-widest">
                                 Get Started
                             </button>
                         </SignUpButton>
@@ -200,7 +200,7 @@ export default function LandingPage() {
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slideUp delay-200">
                             <SignUpButton mode="modal">
-                                <button className="w-full sm:w-auto px-10 py-5 bg-gray-900 text-white text-sm font-black rounded-2xl hover:bg-gray-800 transition-all shadow-2xl shadow-gray-300 uppercase tracking-widest flex items-center justify-center gap-3">
+                                <button className="w-full sm:w-auto px-10 py-5 bg-gray-800 text-white text-sm font-black rounded-2xl hover:bg-gray-800 transition-all shadow-2xl shadow-gray-300 uppercase tracking-widest flex items-center justify-center gap-3">
                                     <Sparkles className="w-4 h-4 text-green-400" />
                                     Begin Free Trial
                                 </button>
@@ -260,7 +260,7 @@ export default function LandingPage() {
                                                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{p.weight} Weight</span>
                                                 </div>
                                                 <h4 className="text-lg font-black text-gray-900 mb-6 truncate">{p.title}</h4>
-                                                <button className={`w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${i === 0 ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-400'}`}>
+                                                <button className={`w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${i === 0 ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-400'}`}>
                                                     {i === 0 ? 'Revisit Now' : 'Pending'}
                                                 </button>
                                             </div>
@@ -358,7 +358,7 @@ export default function LandingPage() {
                                 desc: 'Sign in securely with Clerk. We keep your data private and scoped to you, so your mastery journey is yours alone.',
                                 icon: Shield,
                                 mockup: (
-                                    <div className="relative w-full aspect-video bg-gray-900 rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-white/10 group-hover:scale-[1.02] transition-transform duration-500">
+                                    <div className="relative w-full aspect-video bg-gray-800 rounded-[32px] overflow-hidden p-6 flex items-center justify-center border border-white/10 group-hover:scale-[1.02] transition-transform duration-500">
                                         <div className="glass p-8 rounded-2xl w-full max-w-xs text-center border-white/5">
                                             <div className="w-12 h-12 bg-green-500 rounded-xl mx-auto mb-6 flex items-center justify-center">
                                                 <Target className="w-6 h-6 text-white" />
@@ -386,7 +386,7 @@ export default function LandingPage() {
                                                     <div className="h-10 flex-1 bg-gray-50 rounded-xl border border-gray-100 px-4 flex items-center">
                                                         <span className="text-[11px] font-medium text-gray-300">leetcode.com/problems/lru-cache</span>
                                                     </div>
-                                                    <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center">
+                                                    <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
                                                         <Plus className="w-4 h-4 text-green-400" />
                                                     </div>
                                                 </div>
@@ -518,7 +518,7 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 auto-rows-[280px]">
                         {/* Big Card — Spaced Repetition */}
-                        <div className="md:col-span-8 md:row-span-2 bg-gray-900 rounded-[32px] md:rounded-[48px] p-8 md:p-12 overflow-hidden relative group shadow-2xl shadow-gray-900/10">
+                        <div className="md:col-span-8 md:row-span-2 bg-gray-800 rounded-[32px] md:rounded-[48px] p-8 md:p-12 overflow-hidden relative group shadow-2xl shadow-gray-900/10">
                             <div className="relative z-10 h-full flex flex-col justify-between">
                                 <div>
                                     <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-6 md:mb-8 border border-white/10 group-hover:scale-110 transition-transform">
@@ -559,7 +559,7 @@ export default function LandingPage() {
 
                         {/* Wide Card — Universal Integration */}
                         <div className="md:col-span-6 md:row-span-1 bg-white rounded-[32px] md:rounded-[48px] border border-gray-200/80 p-8 md:p-10 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-6 md:gap-10 group">
-                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-gray-900 group-hover:border-gray-900 transition-all flex-shrink-0">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-gray-800 group-hover:border-gray-900 transition-all flex-shrink-0">
                                 <Search className="w-8 h-8 md:w-10 md:h-10 text-gray-400 group-hover:text-green-400 transition-colors" />
                             </div>
                             <div>
@@ -639,7 +639,7 @@ export default function LandingPage() {
 
             {/* ═══ Call to Action ═══ */}
             <section className="relative py-32 px-6 overflow-hidden">
-                <div className="absolute inset-0 bg-gray-900 pointer-events-none">
+                <div className="absolute inset-0 bg-gray-800 pointer-events-none">
                     <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-[120px] animate-pulse-soft" />
                 </div>
 

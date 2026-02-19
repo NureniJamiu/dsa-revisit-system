@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
             {/* Greeting Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-gray-700 tracking-tight mb-2 break-words">
+                    <h1 className="text-3xl md:text-4xl font-black text-gray-800 tracking-tight mb-2 break-words">
                         {getGreeting()}{user?.firstName ? `, ${user.firstName}.` : ' '}
                     </h1>
                     <p className="text-[15px] font-medium text-gray-400">Your mastery curve is looking strong today.</p>
@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
                             setEditingProblem(null);
                             setIsAddModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-[13px] font-black rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 uppercase tracking-widest"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-gray-800 text-white text-[13px] font-black rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 uppercase tracking-widest"
                     >
                         <Plus className="w-4 h-4 text-green-400" />
                         Add Problem
@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
                                                 <button
                                                     onClick={() => handleRevisit(item.problem.id)}
                                                     disabled={revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id}
-                                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white text-[13px] font-bold rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50"
+                                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 text-white text-[13px] font-bold rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50"
                                                 >
                                                     {revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id ? (
                                                         <div className="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full" />

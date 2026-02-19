@@ -26,14 +26,14 @@ const variantStyles: Record<ConfirmDialogVariant, {
     info: {
         iconBg: 'bg-green-50',
         iconColor: 'text-green-600',
-        buttonBg: 'bg-gray-900',
+        buttonBg: 'bg-gray-800',
         buttonHover: 'hover:bg-gray-800',
         DefaultIcon: Info,
     },
     success: {
         iconBg: 'bg-green-50',
         iconColor: 'text-green-600',
-        buttonBg: 'bg-gray-900',
+        buttonBg: 'bg-gray-800',
         buttonHover: 'hover:bg-gray-800',
         DefaultIcon: CheckCircle,
     },

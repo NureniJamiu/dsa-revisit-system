@@ -178,7 +178,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full flex justify-center items-center gap-2 bg-gray-900 text-white py-4.5 rounded-2xl hover:bg-gray-800 text-sm font-black transition-all shadow-xl shadow-gray-200 uppercase tracking-widest disabled:opacity-50"
+                            className="w-full flex justify-center items-center gap-2 bg-gray-800 text-white py-4.5 rounded-2xl hover:bg-gray-800 text-sm font-black transition-all shadow-xl shadow-gray-200 uppercase tracking-widest disabled:opacity-50"
                         >
                             {isSubmitting ? (
                                 <span className="flex items-center gap-2">Saving...</span>
