@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
             {/* Greeting Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-2 break-words">
+                    <h1 className="text-3xl md:text-4xl font-black text-gray-700 tracking-tight mb-2 break-words">
                         {getGreeting()}{user?.firstName ? `, ${user.firstName}.` : ' '}
                     </h1>
                     <p className="text-[15px] font-medium text-gray-400">Your mastery curve is looking strong today.</p>
@@ -227,10 +227,10 @@ const Dashboard: React.FC = () => {
             {/* All Problems Table */}
             <div>
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Full Archive</h2>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">All Problems</h2>
                     <button className="flex items-center gap-2 text-[13px] font-bold text-gray-400 hover:text-gray-900 transition-colors bg-white px-3 py-1.5 rounded-lg border border-gray-200/80 shadow-sm">
                         <Filter className="w-4 h-4" />
-                        Refine list
+                        Filter list
                     </button>
                 </div>
 

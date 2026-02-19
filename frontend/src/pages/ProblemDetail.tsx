@@ -124,7 +124,7 @@ const ProblemDetail: React.FC = () => {
                         className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-[13px] font-bold text-gray-900 rounded-xl hover:bg-gray-50 transition-all shadow-sm"
                     >
                         <ExternalLink className="w-4 h-4" />
-                        Solve on Source
+                        View problem source
                     </a>
                 </div>
             </div>
@@ -180,7 +180,7 @@ const ProblemDetail: React.FC = () => {
                                     ) : (
                                         <CheckSquare className="w-5 h-5 text-green-400" />
                                     )}
-                                    {revisitMutation.isPending ? 'Processing session...' : 'Complete Revisit Session'}
+                                    {revisitMutation.isPending ? 'Processing...' : 'Mark as revisited'}
                                 </button>
                             </div>
                         </>
