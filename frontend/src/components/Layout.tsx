@@ -24,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
     };
 
     return (
-        <div className="min-h-screen flex" style={{ backgroundColor: '#F5F0EB' }}>
+        <div className="min-h-screen flex overflow-x-hidden" style={{ backgroundColor: '#F5F0EB' }}>
             {/* Sidebar */}
             <aside className="w-64 border-r border-gray-800 hidden md:flex md:flex-col" style={{ backgroundColor: '#111111' }}>
                 {/* Logo & Tagline */}
@@ -91,7 +91,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1 overflow-auto min-w-0">
                 <header className="border-b border-gray-200 md:hidden p-4 flex items-center justify-between" style={{ backgroundColor: '#111111' }}>
                     <Logo textSize="text-lg" className="text-white" showText={true} variant="light" />
                     <UserButton />

@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
             {/* Greeting Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-2">
+                    <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-2 break-words">
                         {getGreeting()}{user?.firstName ? `, ${user.firstName}.` : ' '}
                     </h1>
                     <p className="text-[15px] font-medium text-gray-400">Your mastery curve is looking strong today.</p>
@@ -234,8 +234,8 @@ const Dashboard: React.FC = () => {
                     </button>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
+                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full">
+                    <div className="overflow-x-auto min-w-0">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50/50">

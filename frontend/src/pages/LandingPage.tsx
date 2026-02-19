@@ -334,6 +334,65 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* ═══ How It Works ═══ */}
+            <section id="how-it-works" className="py-32 px-6 relative overflow-hidden">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-20 animate-slideUp">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-widest mb-6">
+                            The Methodology
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter mb-6 leading-[1.1]">
+                            A Ritual for Retention.
+                        </h2>
+                        <p className="text-lg font-medium text-gray-400 max-w-2xl mx-auto">
+                            We've stripped away the complexity of traditional spaced repetition to create a high-velocity system designed for engineering mastery.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative animate-slideUp delay-200">
+                        {/* Connecting Line (Desktop) */}
+                        <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent -translate-y-1/2 z-0" />
+
+                        {[
+                            {
+                                step: '01',
+                                title: 'Index Problems',
+                                desc: 'Paste links from LeetCode, NeetCode, or any technical resource. We index the source and start the decay calculation immediately.',
+                                icon: Search,
+                                color: 'bg-blue-500'
+                            },
+                            {
+                                step: '02',
+                                title: 'Mastery Engine',
+                                desc: 'Our algorithm prioritizes problems based on your recall capacity and historical struggle points. No more guessing what to solve.',
+                                icon: Brain,
+                                color: 'bg-green-500'
+                            },
+                            {
+                                step: '03',
+                                title: 'Daily Ritual',
+                                desc: 'Solve 3-5 high-intent problems every morning. Build an unbreakable consistency that guarantees long-term retention.',
+                                icon: Zap,
+                                color: 'bg-yellow-500'
+                            }
+                        ].map((item, i) => (
+                            <div key={i} className="relative z-10 flex flex-col items-center text-center group">
+                                <div className="w-20 h-20 rounded-[28px] bg-white border border-gray-100 shadow-xl shadow-gray-200/50 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
+                                    <item.icon className="w-8 h-8 text-gray-900" />
+                                    <div className={`absolute -top-2 -right-2 w-8 h-8 ${item.color} rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-lg`}>
+                                        {item.step}
+                                    </div>
+                                </div>
+                                <h3 className="text-xl font-black text-gray-900 mb-4 uppercase tracking-tight">{item.title}</h3>
+                                <p className="text-sm font-medium text-gray-500 leading-relaxed px-4">
+                                    {item.desc}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* ═══ The Bento Grid ═══ */}
             <section id="features" className="py-32 px-6 bg-white/50 relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-50/20 to-transparent pointer-events-none" />
