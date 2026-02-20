@@ -14,6 +14,7 @@ interface ConfirmDialogProps {
     variant?: ConfirmDialogVariant;
     loading?: boolean;
     icon?: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 const variantStyles: Record<ConfirmDialogVariant, {
@@ -57,6 +58,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     variant = 'info',
     loading = false,
     icon,
+    children,
 }) => {
     if (!isOpen) return null;
 
@@ -99,6 +101,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                     {/* Description */}
                     {description && (
                         <p className="text-sm font-medium text-gray-400 mb-8 leading-relaxed px-2">{description}</p>
+                    )}
+
+                    {/* Children for custom content e.g. inputs */}
+                    {children && (
+                        <div className="mb-8 text-left">
+                            {children}
+                        </div>
                     )}
 
                     {/* Actions */}

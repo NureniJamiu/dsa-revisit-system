@@ -53,7 +53,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                     onClose();
                 },
                 onError: () => {
-                    alert('Failed to update problem');
+                    // Handled by mutation hook
                 }
             });
         } else {
@@ -67,7 +67,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                     onClose();
                 },
                 onError: () => {
-                    alert('Failed to add problem');
+                    // Handled by mutation hook
                 }
             });
         }

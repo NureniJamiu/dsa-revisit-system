@@ -6,6 +6,8 @@ import Archive from './pages/Archive';
 import ProblemDetail from './pages/ProblemDetail';
 import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { Providers } from './providers/Providers';
 
@@ -27,6 +29,18 @@ function App() {
       <SignedOut>
         <LandingPage />
       </SignedOut>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </Providers>
   );
 }

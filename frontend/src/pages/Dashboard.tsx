@@ -18,10 +18,17 @@ const Dashboard: React.FC = () => {
     const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
     const [deletingProblemId, setDeletingProblemId] = useState<string | null>(null);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [revisitProblemId, setRevisitProblemId] = useState<string | null>(null);
+    const [revisitNote, setRevisitNote] = useState('');
+    const [isRevisitConfirmOpen, setIsRevisitConfirmOpen] = useState(false);
 
-    const handleRevisit = async (id: string) => {
+    const handleRevisit = async () => {
         try {
-            await revisitMutation.mutateAsync({ id });
+            if (!revisitProblemId) return;
+            await revisitMutation.mutateAsync({ id: revisitProblemId, notes: revisitNote });
+            setRevisitNote('');
+            setIsRevisitConfirmOpen(false);
+            setRevisitProblemId(null);
         } catch (error) {
             console.error('Failed to mark revisited', error);
         }
@@ -204,7 +211,10 @@ const Dashboard: React.FC = () => {
                                                 </div>
                                             ) : (
                                                 <button
-                                                    onClick={() => handleRevisit(item.problem.id)}
+                                                    onClick={() => {
+                                                        setRevisitProblemId(item.problem.id);
+                                                        setIsRevisitConfirmOpen(true);
+                                                    }}
                                                     disabled={revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id}
                                                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 text-white text-[13px] font-bold rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50"
                                                 >
@@ -213,7 +223,7 @@ const Dashboard: React.FC = () => {
                                                     ) : (
                                                         <Zap className="w-4 h-4 text-green-400" />
                                                     )}
-                                                    {revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id ? 'Starting...' : 'Start Revisit'}
+                                                    {revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id ? 'Processing...' : 'Mark as Revisited'}
                                                 </button>
                                             )}
                                         </div>
@@ -349,6 +359,29 @@ const Dashboard: React.FC = () => {
                     variant="danger"
                     loading={deleteMutation.isPending}
                 />
+
+                <ConfirmDialog
+                    isOpen={isRevisitConfirmOpen}
+                    onClose={() => {
+                        setIsRevisitConfirmOpen(false);
+                        setRevisitProblemId(null);
+                        setRevisitNote('');
+                    }}
+                    onConfirm={handleRevisit}
+                    title="Mark as Revisited"
+                    description="Record your revisit session. You can optionally add notes about what you learned."
+                    confirmLabel={revisitNote.trim() ? "Submit" : "Proceed without note"}
+                    variant="info"
+                    loading={revisitMutation.isPending}
+                >
+                    <textarea
+                        value={revisitNote}
+                        onChange={(e) => setRevisitNote(e.target.value)}
+                        placeholder="What did you learn? Any pitfalls to remember next time?"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all resize-none"
+                        rows={3}
+                    />
+                </ConfirmDialog>
             </div>
         </div>
     );

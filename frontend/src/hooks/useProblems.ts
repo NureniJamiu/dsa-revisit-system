@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { apiFetch } from '../lib/api';
+import { toast } from 'react-toastify';
 
 export interface Problem {
     id: string;
@@ -116,7 +117,11 @@ export function useAddProblemMutation() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: problemKeys.all });
+            toast.success('Problem added successfully!');
         },
+        onError: (error: Error) => {
+            toast.error(`Failed to add problem: ${error.message}`);
+        }
     });
 }
 
@@ -136,7 +141,11 @@ export function useUpdateProblemMutation() {
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: problemKeys.all });
             queryClient.invalidateQueries({ queryKey: problemKeys.detail(variables.id) });
+            toast.success('Problem updated successfully!');
         },
+        onError: (error: Error) => {
+            toast.error(`Failed to update problem: ${error.message}`);
+        }
     });
 }
 
@@ -154,7 +163,11 @@ export function useDeleteProblemMutation() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: problemKeys.all });
+            toast.success('Problem deleted successfully!');
         },
+        onError: (error: Error) => {
+            toast.error(`Failed to delete problem: ${error.message}`);
+        }
     });
 }
 
@@ -175,10 +188,18 @@ export function useRevisitProblemMutation() {
 
             return { id, alreadyRevisited: res.status === 409 };
         },
-        onSuccess: (_, variables) => {
+        onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: problemKeys.all });
             queryClient.invalidateQueries({ queryKey: problemKeys.detail(variables.id) });
+            if (data.alreadyRevisited) {
+                toast.info('Problem already revisited today');
+            } else {
+                toast.success('Revisit recorded!');
+            }
         },
+        onError: (error: Error) => {
+            toast.error(`Failed to record revisit: ${error.message}`);
+        }
     });
 }
 
@@ -197,6 +218,10 @@ export function useArchiveProblemMutation() {
         onSuccess: (id) => {
             queryClient.invalidateQueries({ queryKey: problemKeys.all });
             queryClient.invalidateQueries({ queryKey: problemKeys.detail(id) });
+            toast.success('Problem archived!');
         },
+        onError: (error: Error) => {
+            toast.error(`Failed to archive problem: ${error.message}`);
+        }
     });
 }

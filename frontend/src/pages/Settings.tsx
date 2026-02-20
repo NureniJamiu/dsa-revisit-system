@@ -3,6 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { apiFetch } from '../lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CustomLoader from '../components/CustomLoader';
+import { toast } from 'react-toastify';
 
 export type UserSettings = {
     daily_problems: number;
@@ -45,7 +46,10 @@ const Settings: React.FC = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['settings'] });
-            alert('Settings saved successfully!');
+            toast.success('Settings saved successfully!');
+        },
+        onError: (error: Error) => {
+            toast.error(`Failed to save settings: ${error.message}`);
         }
     });
 
