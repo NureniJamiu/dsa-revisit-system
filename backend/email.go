@@ -1,14 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
-	"net/smtp"
+	"net/http"
 	"os"
 	"strings"
 )
 
-// SendEmail sends the daily reminder
+// SendEmail sends the daily reminder using Resend API
 func SendEmail(to string, problems []Problem) error {
 	subject := "DSA Reminder: Problem(s) for today"
 
@@ -21,38 +23,54 @@ func SendEmail(to string, problems []Problem) error {
 
 	bodyBuilder.WriteString("\nKeep going!\n")
 
-	// AI Encouragement Placeholder
-	// if aiEncouragement { ... }
+	apiKey := os.Getenv("RESEND_API_KEY")
+	fromEmail := os.Getenv("EMAIL_FROM")
 
-	// Check environment for SMTP config
-	smtpHost := os.Getenv("SMTP_HOST")
-	smtpPort := os.Getenv("SMTP_PORT")
-	smtpUser := os.Getenv("SMTP_USER")
-	smtpPass := os.Getenv("SMTP_PASS")
-
-	if smtpHost == "" {
+	if apiKey == "" {
 		// Development mode: Log email
 		log.Println("=== EMAIL SIMULATION ===")
 		log.Printf("To: %s\n", to)
+		log.Printf("From: %s\n", fromEmail)
 		log.Printf("Subject: %s\n", subject)
 		log.Println(bodyBuilder.String())
 		log.Println("========================")
 		return nil
 	}
 
-	// Build RFC 2822 compliant message with proper headers
-	msg := []byte("From: " + smtpUser + "\r\n" +
-		"To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"MIME-Version: 1.0\r\n" +
-		"Content-Type: text/plain; charset=\"utf-8\"\r\n" +
-		"\r\n" +
-		bodyBuilder.String())
+	if fromEmail == "" {
+		fromEmail = "onboarding@resend.dev"
+	}
 
-	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, smtpUser, []string{to}, msg)
+	// Resend API Request Structure
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"from":    fromEmail,
+		"to":      []string{to},
+		"subject": subject,
+		"text":    bodyBuilder.String(),
+	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal email request: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		var errData map[string]interface{}
+		json.NewDecoder(resp.Body).Decode(&errData)
+		return fmt.Errorf("resend api error (status %d): %v", resp.StatusCode, errData)
 	}
 
 	return nil
