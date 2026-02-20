@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ExternalLink, CheckSquare, CheckCircle, Archive } from 'lucide-react';
 import { useProblem, useRevisitProblemMutation, useArchiveProblemMutation } from '../hooks/useProblems';
 import ConfirmDialog from '../components/ConfirmDialog';
+import CustomLoader from '../components/CustomLoader';
 
 const ProblemDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -69,8 +70,8 @@ const ProblemDetail: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="max-w-4xl mx-auto flex items-center justify-center py-20">
-                <div className="animate-spin w-6 h-6 border-2 border-gray-200 border-t-green-500 rounded-full" />
+            <div className="max-w-4xl mx-auto flex flex-col items-center justify-center py-32">
+                <CustomLoader text="Fetching problem details..." size="w-20 h-20" />
             </div>
         );
     }

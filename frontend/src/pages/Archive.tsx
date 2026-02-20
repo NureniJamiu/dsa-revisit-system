@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Archive as ArchiveIcon } from 'lucide-react';
+import CustomLoader from '../components/CustomLoader';
 // import { useProblems } from '../hooks/useProblems';
 
 const Archive: React.FC = () => {
@@ -17,8 +18,8 @@ const Archive: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="max-w-5xl mx-auto flex items-center justify-center py-20">
-                <div className="animate-spin w-6 h-6 border-2 border-gray-200 border-t-green-500 rounded-full" />
+            <div className="max-w-5xl mx-auto flex flex-col items-center justify-center py-32">
+                <CustomLoader text="Opening the vault..." />
             </div>
         );
     }

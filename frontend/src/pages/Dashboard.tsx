@@ -5,6 +5,7 @@ import { useUser } from '@clerk/clerk-react';
 import { useProblems, useTodaysFocus, useRevisitProblemMutation, useDeleteProblemMutation, type Problem } from '../hooks/useProblems';
 import AddProblemModal from '../components/AddProblemModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import CustomLoader from '../components/CustomLoader';
 
 const Dashboard: React.FC = () => {
     const { data: problems = [], isLoading: loading, isError: problemsError } = useProblems();
@@ -127,8 +128,8 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 {focusLoading ? (
-                    <div className="flex items-center justify-center py-20">
-                        <div className="animate-spin w-6 h-6 border-2 border-gray-300 border-t-green-500 rounded-full" />
+                    <div className="py-20">
+                        <CustomLoader text="Curating your focus..." />
                     </div>
                 ) : focusError ? (
                     <div className="text-center py-16 bg-red-50 rounded-2xl border border-red-100 shadow-sm">
@@ -256,11 +257,8 @@ const Dashboard: React.FC = () => {
                             <tbody className="divide-y divide-gray-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} className="px-8 py-12 text-center">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <div className="animate-spin w-5 h-5 border-2 border-gray-200 border-t-green-500 rounded-full" />
-                                                <span className="text-sm font-medium text-gray-400">Loading mastery data...</span>
-                                            </div>
+                                        <td colSpan={4} className="px-8 py-16 text-center">
+                                            <CustomLoader text="Loading mastery archive..." />
                                         </td>
                                     </tr>
                                 ) : problemsError ? (
