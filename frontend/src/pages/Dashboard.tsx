@@ -235,21 +235,24 @@ const Dashboard: React.FC = () => {
                     </button>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full">
-                    <div className="overflow-x-auto min-w-0">
+                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full relative group">
+                    {/* Horizontal Scroll indicator (Fades on desktop/appears on mobile) */}
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 opacity-0 md:group-hover:opacity-100 transition-opacity" />
+
+                    <div className="overflow-x-auto min-w-0 custom-scrollbar scroll-shadow-right">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50/50">
-                                    <th className="text-left px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                                    <th className="text-left px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">
                                         Problem
                                     </th>
-                                    <th className="text-left px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                                    <th className="text-left px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">
                                         Last Touch
                                     </th>
-                                    <th className="text-left px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                                    <th className="hidden md:table-cell text-left px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">
                                         Attempts
                                     </th>
-                                    <th className="text-right px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest min-w-[120px]">
+                                    <th className="text-right px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest min-w-[120px] whitespace-nowrap">
                                         Actions
                                     </th>
                                 </tr>
@@ -276,21 +279,21 @@ const Dashboard: React.FC = () => {
                                 ) : (
                                     problems.map((problem) => (
                                         <tr key={problem.id} className="group hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-8 py-4">
-                                                <Link to={`/problem/${problem.id}`} className="text-sm font-black text-gray-900 group-hover:text-green-600 transition-colors">
+                                            <td className="px-6 md:px-8 py-4 min-w-[200px]">
+                                                <Link to={`/problem/${problem.id}`} className="text-sm font-black text-gray-900 group-hover:text-green-600 transition-colors block truncate max-w-[200px] md:max-w-none">
                                                     {problem.title}
                                                 </Link>
                                                 <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5 tracking-tight">{problem.source || 'Unknown'}</p>
                                             </td>
-                                            <td className="px-8 py-4 text-sm font-bold text-gray-500">
+                                            <td className="px-6 md:px-8 py-4 text-sm font-bold text-gray-500 whitespace-nowrap">
                                                 {getTimeAgo(problem.last_revisited_at)}
                                             </td>
-                                            <td className="px-8 py-4">
-                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-100 text-[11px] font-black text-gray-600">
+                                            <td className="hidden md:table-cell px-6 md:px-8 py-4">
+                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-100 text-[11px] font-black text-gray-600 whitespace-nowrap">
                                                     {problem.times_revisited} Focus points
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-4 text-right">
+                                            <td className="px-6 md:px-8 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <button
                                                         onClick={() => {

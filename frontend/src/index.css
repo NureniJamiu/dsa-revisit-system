@@ -206,3 +206,31 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
 }
+
+/* ─── Custom Scrollbar Utility ─── */
+.custom-scrollbar::-webkit-scrollbar {
+    height: 5px;
+    width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #E5E7EB;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #D1D5DB;
+}
+
+/* ─── Scroll Shadow Utilities ─── */
+.scroll-shadow-right {
+    background: linear-gradient(to right, white 70%, rgba(255, 255, 255, 0)),
+        linear-gradient(to right, rgba(255, 255, 255, 0), white 30%) 100% 0;
+    background-size: 40px 100%, 40px 100%;
+    background-repeat: no-repeat;
+    background-attachment: local, scroll;
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -11,10 +12,26 @@ import (
 )
 
 func main() {
+	// CLI Flags
+	jobFlag := flag.String("job", "", "Run a specific background job (e.g. 'daily') and exit")
+	flag.Parse()
+
 	// Initialize Database
 	InitDB()
 
-	// Start Cron Job
+	// If job flag is set, run the job and exit
+	if *jobFlag != "" {
+		if *jobFlag == "daily" {
+			log.Println("[Main] Running scheduled job: daily")
+			RunDailyJob()
+			log.Println("[Main] Job completed. Exiting.")
+			os.Exit(0)
+		} else {
+			log.Fatalf("[Main] Unknown job: %s", *jobFlag)
+		}
+	}
+
+	// Start Cron Job (Background ticker)
 	StartCron()
 
 	// Initialize Router
