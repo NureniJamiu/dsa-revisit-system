@@ -27,13 +27,24 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 // GetProblems returns list of problems for the authenticated user
 func GetProblems(w http.ResponseWriter, r *http.Request) {
 	userID := GetUserIDFromContext(r)
+	status := r.URL.Query().Get("status")
 
-	rows, err := db.Query(`
+	query := `
 		SELECT id, user_id, title, link, date_added, last_revisited_at, 
 		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode')
 		FROM problems
-		WHERE user_id = $1
-		ORDER BY date_added DESC`, userID)
+		WHERE user_id = $1`
+
+	args := []interface{}{userID}
+
+	if status != "" {
+		query += " AND status = $2"
+		args = append(args, status)
+	}
+
+	query += " ORDER BY date_added DESC"
+
+	rows, err := db.Query(query, args...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

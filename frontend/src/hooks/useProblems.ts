@@ -12,6 +12,7 @@ export interface Problem {
     difficulty?: string;
     source?: string;
     tags?: string[];
+    status?: string;
 }
 
 export interface WeightInfo {
@@ -54,7 +55,7 @@ export interface ProblemDetailResponse extends Problem {
 // Keys for Query Caching
 export const problemKeys = {
     all: ['problems'] as const,
-    lists: () => [...problemKeys.all, 'list'] as const,
+    lists: (status?: string) => [...problemKeys.all, 'list', { status }] as const,
     today: () => [...problemKeys.all, 'today'] as const,
     details: () => [...problemKeys.all, 'detail'] as const,
     detail: (id: string) => [...problemKeys.details(), id] as const,
@@ -62,12 +63,13 @@ export const problemKeys = {
 
 // --- Queries ---
 
-export function useProblems() {
+export function useProblems(status?: string) {
     const { getToken } = useAuth();
     return useQuery({
-        queryKey: problemKeys.lists(),
+        queryKey: problemKeys.lists(status),
         queryFn: async () => {
-            const res = await apiFetch('/problems', {}, getToken);
+            const url = status ? `/problems?status=${status}` : '/problems';
+            const res = await apiFetch(url, {}, getToken);
             if (!res.ok) throw new Error('Failed to fetch problems');
             return (await res.json()) as Problem[];
         },

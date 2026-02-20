@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Filter, CheckCircle, Zap, Plus, Edit2, Trash2 } from 'lucide-react';
+import { ExternalLink, Filter, CheckCircle, Zap, Plus, Edit2, Trash2, Search, X } from 'lucide-react';
 import { useUser } from '@clerk/clerk-react';
 import { useProblems, useTodaysFocus, useRevisitProblemMutation, useDeleteProblemMutation, type Problem } from '../hooks/useProblems';
 import AddProblemModal from '../components/AddProblemModal';
@@ -8,7 +8,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import CustomLoader from '../components/CustomLoader';
 
 const Dashboard: React.FC = () => {
-    const { data: problems = [], isLoading: loading, isError: problemsError } = useProblems();
+    const { data: problems = [], isLoading: loading, isError: problemsError } = useProblems('active');
     const { data: todaysFocus, isLoading: focusLoading, isError: focusError } = useTodaysFocus();
     const { user } = useUser();
     const revisitMutation = useRevisitProblemMutation();
@@ -21,6 +21,11 @@ const Dashboard: React.FC = () => {
     const [revisitProblemId, setRevisitProblemId] = useState<string | null>(null);
     const [revisitNote, setRevisitNote] = useState('');
     const [isRevisitConfirmOpen, setIsRevisitConfirmOpen] = useState(false);
+
+    // Search & Filter State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
 
     const handleRevisit = async () => {
         try {
@@ -80,8 +85,15 @@ const Dashboard: React.FC = () => {
         ? Math.round((summary.completed / summary.total_focus) * 100)
         : 0;
 
+    const filteredProblems = problems.filter(p => {
+        const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.source?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+        const matchesDifficulty = !difficultyFilter || p.difficulty?.toLowerCase() === difficultyFilter.toLowerCase();
+        return matchesSearch && matchesDifficulty;
+    });
+
     return (
-        <div className="space-y-12">
+        <div className="space-y-12 pb-24 md:pb-12">
             {/* Greeting Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
@@ -237,12 +249,72 @@ const Dashboard: React.FC = () => {
 
             {/* All Problems Table */}
             <div>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">All Problems</h2>
-                    <button className="flex items-center gap-2 text-[13px] font-bold text-gray-400 hover:text-gray-900 transition-colors bg-white px-3 py-1.5 rounded-lg border border-gray-200/80 shadow-sm">
-                        <Filter className="w-4 h-4" />
-                        Filter list
-                    </button>
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        {/* Search Input */}
+                        <div className="relative group flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Search problems..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full sm:w-64 pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X className="w-3 h-3 text-gray-400" />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Filter Button & Dropdown */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className={`flex items-center justify-center gap-2 px-4 py-2 text-[13px] font-bold rounded-xl border transition-all shadow-sm ${difficultyFilter || showFilters
+                                        ? 'bg-gray-800 text-white border-gray-800'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'
+                                    }`}
+                            >
+                                <Filter className={`w-4 h-4 ${difficultyFilter ? 'text-green-400' : ''}`} />
+                                {difficultyFilter ? difficultyFilter.charAt(0).toUpperCase() + difficultyFilter.slice(1) : 'Filter'}
+                            </button>
+
+                            {showFilters && (
+                                <>
+                                    <div className="fixed inset-0 z-10" onClick={() => setShowFilters(false)} />
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl border border-gray-200 shadow-xl z-20 overflow-hidden">
+                                        <div className="p-2 border-b border-gray-50 bg-gray-50/50">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2 py-1">Difficulty</p>
+                                        </div>
+                                        <div className="p-1">
+                                            {['all', 'easy', 'medium', 'hard'].map((level) => (
+                                                <button
+                                                    key={level}
+                                                    onClick={() => {
+                                                        setDifficultyFilter(level === 'all' ? null : level);
+                                                        setShowFilters(false);
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
+                                                            ? 'bg-green-50 text-green-700'
+                                                            : 'text-gray-600 hover:bg-gray-50'
+                                                        }`}
+                                                >
+                                                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full relative group">
@@ -280,14 +352,16 @@ const Dashboard: React.FC = () => {
                                             <p className="text-sm font-medium text-red-400">Failed to load archive data. Try refreshing.</p>
                                         </td>
                                     </tr>
-                                ) : problems.length === 0 ? (
+                                ) : filteredProblems.length === 0 ? (
                                     <tr>
                                         <td colSpan={4} className="px-8 py-12 text-center">
-                                            <p className="text-sm font-medium text-gray-400">No problems tracked in your archive yet.</p>
+                                            <p className="text-sm font-medium text-gray-400">
+                                                {searchQuery || difficultyFilter ? 'No problems match your filters.' : 'No problems tracked in your archive yet.'}
+                                            </p>
                                         </td>
                                     </tr>
                                 ) : (
-                                    problems.map((problem) => (
+                                    filteredProblems.map((problem) => (
                                         <tr key={problem.id} className="group hover:bg-gray-50/50 transition-colors">
                                             <td className="px-6 md:px-8 py-4 min-w-[200px]">
                                                 <Link to={`/problem/${problem.id}`} className="text-sm font-black text-gray-900 group-hover:text-green-600 transition-colors block truncate max-w-[200px] md:max-w-none">
