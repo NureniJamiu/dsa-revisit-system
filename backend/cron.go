@@ -12,14 +12,15 @@ func StartCron() {
 
 	go func() {
 		for range ticker.C {
-			RunDailyJob()
+			RunDailyJob(false)
 		}
 	}()
 }
 
-// RunDailyJob is the main logic for the cron
-func RunDailyJob() {
-	log.Println("[Cron] Starting daily job check...")
+// RunDailyJob is the main logic for the cron.
+// If force is true, it skips the check for last_email_sent_at.
+func RunDailyJob(force bool) {
+	log.Printf("[Cron] Starting daily job check (force=%v)...", force)
 
 	// 1. Fetch all users
 	rows, err := db.Query("SELECT id, email, preferences, last_email_sent_at FROM users")
@@ -40,8 +41,8 @@ func RunDailyJob() {
 			continue
 		}
 
-		// 1.5. Skip if already sent today
-		if lastSent.Valid && lastSent.Time.Format("2006-01-02") == today {
+		// 1.5. Skip if already sent today (unless forced)
+		if !force && lastSent.Valid && lastSent.Time.Format("2006-01-02") == today {
 			// Already sent today, skip
 			continue
 		}

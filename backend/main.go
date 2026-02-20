@@ -14,6 +14,7 @@ import (
 func main() {
 	// CLI Flags
 	jobFlag := flag.String("job", "", "Run a specific background job (e.g. 'daily') and exit")
+	forceFlag := flag.Bool("force", false, "Force the daily job even if already sent today")
 	flag.Parse()
 
 	// Initialize Database
@@ -22,8 +23,8 @@ func main() {
 	// If job flag is set, run the job and exit
 	if *jobFlag != "" {
 		if *jobFlag == "daily" {
-			log.Println("[Main] Running scheduled job: daily")
-			RunDailyJob()
+			log.Printf("[Main] Running scheduled job: daily (force=%v)", *forceFlag)
+			RunDailyJob(*forceFlag)
 			log.Println("[Main] Job completed. Exiting.")
 			os.Exit(0)
 		} else {

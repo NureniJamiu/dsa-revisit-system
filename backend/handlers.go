@@ -684,7 +684,7 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 // For now, it just calls RunDailyJob() and returns a summary.
 func RunCronAllUsers(w http.ResponseWriter, r *http.Request) {
 	log.Println("[Admin] Manually triggering daily job for all users...")
-	RunDailyJob()
+	RunDailyJob(true)
 	respondJSON(w, http.StatusOK, map[string]string{
 		"status":  "ok",
 		"message": "Daily job triggered. Check server logs for detailed progress.",
