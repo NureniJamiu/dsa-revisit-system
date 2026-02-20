@@ -261,7 +261,7 @@ const Dashboard: React.FC = () => {
                                 placeholder="Search problems..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full sm:w-64 pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                className="w-full sm:w-64 pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                             />
                             {searchQuery && (
                                 <button
@@ -278,8 +278,8 @@ const Dashboard: React.FC = () => {
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
                                 className={`flex items-center justify-center gap-2 px-4 py-2 text-[13px] font-bold rounded-xl border transition-all shadow-sm ${difficultyFilter || showFilters
-                                        ? 'bg-gray-800 text-white border-gray-800'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'
+                                    ? 'bg-gray-800 text-white border-gray-800'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'
                                     }`}
                             >
                                 <Filter className={`w-4 h-4 ${difficultyFilter ? 'text-green-400' : ''}`} />
@@ -302,8 +302,8 @@ const Dashboard: React.FC = () => {
                                                         setShowFilters(false);
                                                     }}
                                                     className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
-                                                            ? 'bg-green-50 text-green-700'
-                                                            : 'text-gray-600 hover:bg-gray-50'
+                                                        ? 'bg-green-50 text-green-700'
+                                                        : 'text-gray-600 hover:bg-gray-50'
                                                         }`}
                                                 >
                                                     {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -452,7 +452,7 @@ const Dashboard: React.FC = () => {
                         value={revisitNote}
                         onChange={(e) => setRevisitNote(e.target.value)}
                         placeholder="What did you learn? Any pitfalls to remember next time?"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all resize-none"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all resize-none"
                         rows={3}
                     />
                 </ConfirmDialog>

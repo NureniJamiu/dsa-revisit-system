@@ -234,3 +234,14 @@ body {
     background-repeat: no-repeat;
     background-attachment: local, scroll;
 }
+
+/* ─── Mobile UX Fixes ─── */
+@media screen and (max-width: 768px) {
+
+    /* Prevent auto-zoom on click/focus on iOS */
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}

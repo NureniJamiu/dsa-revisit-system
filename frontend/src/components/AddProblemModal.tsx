@@ -119,7 +119,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                                 type="text"
                                 id="title"
                                 required
-                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[15px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
+                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
                                 placeholder="e.g. Invert Binary Tree"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
@@ -134,7 +134,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                                 type="url"
                                 id="link"
                                 required
-                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[15px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
+                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
                                 placeholder="https://leetcode.com/problems/..."
                                 value={link}
                                 onChange={(e) => setLink(e.target.value)}
@@ -148,7 +148,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                                 </label>
                                 <select
                                     id="difficulty"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[15px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all"
+                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all"
                                     value={difficulty}
                                     onChange={(e) => setDifficulty(e.target.value)}
                                 >
@@ -164,7 +164,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                                 <input
                                     type="text"
                                     id="source"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[15px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
+                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
                                     placeholder="e.g. LeetCode"
                                     value={source}
                                     onChange={(e) => setSource(e.target.value)}
