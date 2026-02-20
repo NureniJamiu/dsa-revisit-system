@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,6 +18,19 @@ func InitDB() {
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
 		log.Fatal("DATABASE_URL environment variable is not set")
+	}
+
+	// Supabase Pooler (Transaction Mode) Fix:
+	// If using the pooler (port 6543), we must disable prepared statement caching.
+	if strings.Contains(connStr, "pooler.supabase.com") || strings.Contains(connStr, ":6543") {
+		if !strings.Contains(connStr, "default_query_exec_mode") {
+			if strings.Contains(connStr, "?") {
+				connStr += "&default_query_exec_mode=simple_protocol"
+			} else {
+				connStr += "?default_query_exec_mode=simple_protocol"
+			}
+			log.Println("Database: Detected Supabase Pooler, enabling simple_protocol mode")
+		}
 	}
 
 	db, err = sql.Open("pgx", connStr)
