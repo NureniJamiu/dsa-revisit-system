@@ -317,9 +317,9 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full relative group">
+                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full relative group/table">
                     {/* Horizontal Scroll indicator (Fades on desktop/appears on mobile) */}
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 opacity-0 md:group-hover/table:opacity-100 transition-opacity" />
 
                     <div className="overflow-x-auto min-w-0 custom-scrollbar scroll-shadow-right">
                         <table className="w-full">

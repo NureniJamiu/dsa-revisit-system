@@ -53,7 +53,7 @@ const Archive: React.FC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full relative group">
+                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full relative">
                     <div className="overflow-x-auto min-w-0 custom-scrollbar">
                         <table className="w-full">
                             <thead>
