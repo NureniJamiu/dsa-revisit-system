@@ -43,13 +43,13 @@ func RunDailyJob(force bool) {
 
 		// 1.5. Skip if already sent today (unless forced)
 		if !force && lastSent.Valid && lastSent.Time.Format("2006-01-02") == today {
-			// Already sent today, skip
+			log.Printf("[Cron] Skipping user %s: Already sent today", u.Email)
 			continue
 		}
 
 		// 2. Check if it's time to send (e.g. "05:00")
-		// If EmailTime is empty, we default to sending as soon as we can once a day
-		if u.Preferences.EmailTime != "" {
+		// If force is true, we bypass this check (useful for Heroku Scheduler / manual trigger)
+		if !force && u.Preferences.EmailTime != "" {
 			preferredTime, err := time.Parse("15:04", u.Preferences.EmailTime)
 			if err != nil {
 				log.Printf("[Cron] Invalid EmailTime for user %s: %s", u.Email, u.Preferences.EmailTime)
@@ -64,7 +64,7 @@ func RunDailyJob(force bool) {
 
 			// Only send if current time is at or after preferred time
 			if currentHour < prefHour || (currentHour == prefHour && currentMinute < prefMin) {
-				// Too early for this user
+				log.Printf("[Cron] Skipping user %s: Too early for preferred time %s", u.Email, u.Preferences.EmailTime)
 				continue
 			}
 		}
