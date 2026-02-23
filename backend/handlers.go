@@ -451,8 +451,18 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 // Uses DaySeed() so tomorrow picks different ones.
 func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	userID := GetUserIDFromContext(r)
-	const defaultMinRevisitDays = 2
-	const defaultProblemsPerDay = 3
+
+	// 0. Fetch user preferences
+	var user User
+	err := db.QueryRow("SELECT preferences FROM users WHERE id = $1", userID).Scan(&user.Preferences)
+	if err != nil {
+		log.Printf("[API] Error fetching preferences for user %s: %v", userID, err)
+		// Fallback to defaults if pref not found (though should exist)
+		user.Preferences = UserPreferences{
+			MinRevisitDays: 2,
+			ProblemsPerDay: 3,
+		}
+	}
 
 	// 1. Fetch all active problems for this user
 	rows, err := db.Query(`
@@ -485,13 +495,13 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 		if p.LastRevisitedAt.Valid {
 			daysSinceLast = time.Since(p.LastRevisitedAt.Time).Hours() / 24
 		}
-		if daysSinceLast >= float64(defaultMinRevisitDays) {
+		if daysSinceLast >= float64(user.Preferences.MinRevisitDays) {
 			eligible = append(eligible, p)
 		}
 	}
 
 	// 3. Select today's focus using day-deterministic seed
-	focusCount := defaultProblemsPerDay
+	focusCount := user.Preferences.ProblemsPerDay
 	if len(eligible) < focusCount {
 		focusCount = len(eligible)
 	}
@@ -508,7 +518,7 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	completedCount := 0
 
 	for _, p := range selected {
-		weight := CalculateProblemWeight(p, defaultMinRevisitDays)
+		weight := CalculateProblemWeight(p, user.Preferences.MinRevisitDays)
 
 		// Check if revisited today
 		var todayCount int

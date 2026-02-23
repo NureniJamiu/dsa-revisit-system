@@ -75,7 +75,8 @@ func RunDailyJob(force bool) {
 		probRows, err := db.Query(`
 			SELECT id, user_id, title, link, date_added, last_revisited_at, times_revisited, status 
 			FROM problems 
-			WHERE user_id = $1 AND status = 'active'`, u.ID)
+			WHERE user_id = $1 AND status = 'active'
+			ORDER BY date_added ASC`, u.ID)
 		if err != nil {
 			log.Printf("[Cron] Error fetching problems for user %s: %v", u.ID, err)
 			continue
@@ -99,15 +100,11 @@ func RunDailyJob(force bool) {
 
 		if len(eligibleProblems) == 0 {
 			log.Printf("[Cron] No eligible problems for user %s", u.Email)
-			// Still mark as "checked/sent" for today so we don't spam them with checks
-			// if they have no problems? No, if they add a problem later today,
-			// they might want the email. But usually emails are daily.
-			// For now, let's only mark SENT if we actually send something.
 			continue
 		}
 
-		// 4. Select problems
-		toSend := SelectProblems(eligibleProblems, u.Preferences.ProblemsPerDay)
+		// 4. Select problems (Deterministic per day)
+		toSend := SelectProblemsSeeded(eligibleProblems, u.Preferences.ProblemsPerDay, DaySeed())
 
 		// 5. Send Email
 		if len(toSend) > 0 {
