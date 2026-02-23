@@ -9,9 +9,15 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables from .env file (local development)
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Println("No .env file found or unable to load")
+	}
+
 	// CLI Flags
 	jobFlag := flag.String("job", "", "Run a specific background job (e.g. 'daily') and exit")
 	forceFlag := flag.Bool("force", false, "Force the daily job even if already sent today")
