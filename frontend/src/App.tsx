@@ -8,6 +8,7 @@ import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import InstallHint from './components/InstallHint';
 
 import { Providers } from './providers/Providers';
 
@@ -41,6 +42,7 @@ function App() {
         pauseOnHover
         theme="light"
       />
+      <InstallHint />
     </Providers>
   );
 }
