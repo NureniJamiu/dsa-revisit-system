@@ -195,14 +195,14 @@ export default function LandingPage() {
                         </h1>
 
                         <p className="text-lg md:text-xl font-medium text-gray-500 mb-10 animate-slideUp delay-100 max-w-2xl mx-auto leading-relaxed">
-                            A highly-opinionated spaced repetition system for elite engineers preparing for technical interviews.
+                            The simple way to track your DSA journey and master every problem through smart daily reviews.
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slideUp delay-200">
                             <SignUpButton mode="modal">
                                 <button className="w-full sm:w-auto px-10 py-5 bg-gray-800 text-white text-sm font-black rounded-2xl hover:bg-gray-800 transition-all shadow-2xl shadow-gray-300 uppercase tracking-widest flex items-center justify-center gap-3">
                                     <Sparkles className="w-4 h-4 text-green-400" />
-                                    Begin Free Trial
+                                    Get Started for Free
                                 </button>
                             </SignUpButton>
                             <a href="#how-it-works" className="w-full sm:w-auto px-10 py-5 glass text-gray-900 text-sm font-black rounded-2xl hover:bg-gray-50 transition-all uppercase tracking-widest text-center border-gray-200">
@@ -680,12 +680,12 @@ export default function LandingPage() {
                     </div>
 
                     <h2 className="text-4xl md:text-6xl font-black text-white leading-[0.9] tracking-tighter mb-8 text-balance">
-                        Ready to automate your<br />
-                        <span className="text-green-400">interviews?</span>
+                        Ready to build your<br />
+                        <span className="text-green-400">mastery ritual?</span>
                     </h2>
 
                     <p className="text-lg md:text-xl font-medium text-gray-400 mb-12 max-w-xl mx-auto leading-relaxed">
-                        Join engineers who've stopped guessing and started mastering. No spreadsheets, just success.
+                        Stop guessing what to solve next. Join engineers who've automated their retention and started mastering. No spreadsheets, just success.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
