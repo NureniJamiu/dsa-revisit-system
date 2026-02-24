@@ -7,7 +7,7 @@ interface AddProblemModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
-    problem?: { id: string; title: string; link: string; difficulty?: string; source?: string } | null;
+    problem?: { id: string; title: string; link: string; difficulty?: string; source?: string; notes?: string } | null;
 }
 
 const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSuccess, problem }) => {
@@ -15,6 +15,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
     const [link, setLink] = React.useState('');
     const [difficulty, setDifficulty] = React.useState('Medium');
     const [source, setSource] = React.useState('LeetCode');
+    const [notes, setNotes] = React.useState('');
 
     const addMutation = useAddProblemMutation();
     const updateMutation = useUpdateProblemMutation();
@@ -28,11 +29,13 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
             setLink(problem.link);
             setDifficulty(problem.difficulty || 'Medium');
             setSource(problem.source || 'LeetCode');
+            setNotes(problem.notes || '');
         } else {
             setTitle('');
             setLink('');
             setDifficulty('Medium');
             setSource('LeetCode');
+            setNotes('');
         }
     }, [problem, isOpen]);
 
@@ -44,6 +47,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
             link,
             difficulty,
             source,
+            notes,
         };
 
         if (problem) {
@@ -63,6 +67,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                     setLink('');
                     setDifficulty('Medium');
                     setSource('LeetCode');
+                    setNotes('');
                     onSuccess?.();
                     onClose();
                 },
@@ -170,6 +175,20 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                                     onChange={(e) => setSource(e.target.value)}
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="notes" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                                Notes (Optional)
+                            </label>
+                            <textarea
+                                id="notes"
+                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300 resize-none"
+                                placeholder="Any context or thoughts on this problem..."
+                                rows={3}
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                            />
                         </div>
                     </div>
 

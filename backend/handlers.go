@@ -31,7 +31,7 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 
 	query := `
 		SELECT id, user_id, title, link, date_added, last_revisited_at, 
-		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode')
+		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode'), COALESCE(notes, '')
 		FROM problems
 		WHERE user_id = $1`
 
@@ -56,7 +56,7 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 		var p Problem
 		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
 			&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
-			&p.Topic, &p.Difficulty, &p.Source); err != nil {
+			&p.Topic, &p.Difficulty, &p.Source, &p.Notes); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -79,12 +79,12 @@ func GetProblemByID(w http.ResponseWriter, r *http.Request) {
 	var p ProblemDetail
 	err = db.QueryRow(`
 		SELECT id, user_id, title, link, date_added, last_revisited_at, 
-		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode')
+		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode'), COALESCE(notes, '')
 		FROM problems 
 		WHERE id = $1 AND user_id = $2`, id, userID).Scan(
 		&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
 		&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
-		&p.Topic, &p.Difficulty, &p.Source)
+		&p.Topic, &p.Difficulty, &p.Source, &p.Notes)
 
 	if err != nil {
 		http.Error(w, "Problem not found", http.StatusNotFound)
@@ -164,11 +164,11 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sqlStatement := `
-		INSERT INTO problems (user_id, title, link, status, times_revisited, date_added, difficulty, source)
-		VALUES ($1, $2, $3, 'active', 0, NOW(), $4, $5)
+		INSERT INTO problems (user_id, title, link, status, times_revisited, date_added, difficulty, source, notes)
+		VALUES ($1, $2, $3, 'active', 0, NOW(), $4, $5, $6)
 		RETURNING id, date_added, status`
 
-	err := db.QueryRow(sqlStatement, p.UserID, p.Title, p.Link, p.Difficulty, p.Source).Scan(&p.ID, &p.DateAdded, &p.Status)
+	err := db.QueryRow(sqlStatement, p.UserID, p.Title, p.Link, p.Difficulty, p.Source, p.Notes).Scan(&p.ID, &p.DateAdded, &p.Status)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -308,9 +308,9 @@ func UpdateProblem(w http.ResponseWriter, r *http.Request) {
 
 	result, err := db.Exec(`
 		UPDATE problems 
-		SET title = $1, link = $2, difficulty = $3, source = $4
-		WHERE id = $5 AND user_id = $6`,
-		p.Title, p.Link, p.Difficulty, p.Source, id, userID)
+		SET title = $1, link = $2, difficulty = $3, source = $4, notes = $5
+		WHERE id = $6 AND user_id = $7`,
+		p.Title, p.Link, p.Difficulty, p.Source, p.Notes, id, userID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -385,12 +385,12 @@ func GetProblemWeight(w http.ResponseWriter, r *http.Request) {
 	var p Problem
 	err = db.QueryRow(`
 		SELECT id, user_id, title, link, date_added, last_revisited_at, 
-		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode')
+		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode'), COALESCE(notes, '')
 		FROM problems 
 		WHERE id = $1 AND user_id = $2`, id, userID).Scan(
 		&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
 		&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
-		&p.Topic, &p.Difficulty, &p.Source)
+		&p.Topic, &p.Difficulty, &p.Source, &p.Notes)
 
 	if err != nil {
 		http.Error(w, "Problem not found", http.StatusNotFound)
@@ -407,7 +407,7 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Query(`
 		SELECT id, user_id, title, link, date_added, last_revisited_at, 
-		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode')
+		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode'), COALESCE(notes, '')
 		FROM problems
 		WHERE status = 'active' AND user_id = $1
 		ORDER BY date_added DESC`, userID)
@@ -427,7 +427,7 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 		var p Problem
 		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
 			&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
-			&p.Topic, &p.Difficulty, &p.Source); err != nil {
+			&p.Topic, &p.Difficulty, &p.Source, &p.Notes); err != nil {
 			continue
 		}
 		weight := CalculateProblemWeight(p, 2)
@@ -467,7 +467,7 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	// 1. Fetch all active problems for this user
 	rows, err := db.Query(`
 		SELECT id, user_id, title, link, date_added, last_revisited_at, 
-		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode')
+		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode'), COALESCE(notes, '')
 		FROM problems
 		WHERE status = 'active' AND user_id = $1
 		ORDER BY date_added ASC`, userID)
@@ -482,7 +482,7 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 		var p Problem
 		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
 			&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
-			&p.Topic, &p.Difficulty, &p.Source); err != nil {
+			&p.Topic, &p.Difficulty, &p.Source, &p.Notes); err != nil {
 			continue
 		}
 		allProblems = append(allProblems, p)
@@ -593,7 +593,7 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 	// 2. Fetch all active problems
 	rows, err := db.Query(`
 		SELECT id, user_id, title, link, date_added, last_revisited_at,
-		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode')
+		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode'), COALESCE(notes, '')
 		FROM problems
 		WHERE user_id = $1 AND status = 'active'`, userID)
 	if err != nil {
@@ -617,7 +617,7 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 		var p Problem
 		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
 			&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
-			&p.Topic, &p.Difficulty, &p.Source); err != nil {
+			&p.Topic, &p.Difficulty, &p.Source, &p.Notes); err != nil {
 			continue
 		}
 		allProblems = append(allProblems, p)

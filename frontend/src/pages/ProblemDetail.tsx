@@ -244,6 +244,16 @@ const ProblemDetail: React.FC = () => {
                 </div>
             </div>
 
+            {/* Problem Notes/Context */}
+            {problem.notes && (
+                <div className="mb-12">
+                    <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Problem Context</h2>
+                    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8">
+                        <p className="text-gray-600 font-medium leading-relaxed whitespace-pre-wrap">{problem.notes}</p>
+                    </div>
+                </div>
+            )}
+
             {/* Revisit History */}
             <div>
                 <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-8">Progress Timeline</h2>

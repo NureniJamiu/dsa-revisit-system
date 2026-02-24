@@ -76,6 +76,13 @@ func runMigrations() {
 	} else {
 		log.Println("Migration: last_email_sent_at column ensured")
 	}
+
+	_, err = db.Exec(`ALTER TABLE problems ADD COLUMN IF NOT EXISTS notes TEXT`)
+	if err != nil {
+		log.Printf("Migration warning (notes column): %v", err)
+	} else {
+		log.Println("Migration: notes column ensured")
+	}
 }
 
 // FindOrCreateUserByClerkID looks up a user by their Clerk ID.

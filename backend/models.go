@@ -90,6 +90,7 @@ type Problem struct {
 	Topic           string    `json:"topic,omitempty"`
 	Difficulty      string    `json:"difficulty,omitempty"`
 	Source          string    `json:"source,omitempty"`
+	Notes           string    `json:"notes,omitempty"`
 }
 
 // ProblemDetail is the response for the problem detail endpoint, includes revisit history
@@ -105,8 +106,8 @@ type ProblemDetail struct {
 	Topic           string         `json:"topic,omitempty"`
 	Difficulty      string         `json:"difficulty,omitempty"`
 	Source          string         `json:"source,omitempty"`
+	Notes           string         `json:"notes,omitempty"`
 	RevisitedToday  bool           `json:"revisited_today"`
 	RevisitHistory  []RevisitEntry `json:"revisit_history"`
 	WeightInfo      ProblemWeight  `json:"weight_info"`
 }
-

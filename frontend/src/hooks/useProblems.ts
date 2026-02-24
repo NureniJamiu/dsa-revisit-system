@@ -11,6 +11,7 @@ export interface Problem {
     last_revisited_at: string | null;
     difficulty?: string;
     source?: string;
+    notes?: string;
     tags?: string[];
     status?: string;
 }
