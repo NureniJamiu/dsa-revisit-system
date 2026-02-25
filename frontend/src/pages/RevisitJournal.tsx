@@ -63,17 +63,17 @@ const RevisitJournal: React.FC = () => {
                             placeholder="Search milestones..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2 md:py-3 bg-white border border-gray-200 rounded-xl text-sm md:text-base font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all shadow-sm"
                         />
                     </div>
 
                     <div className="relative">
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`flex items - center gap - 2 px - 3 py - 2 rounded - xl font - bold transition - all shadow - sm border ${difficultyFilter || topicFilter || showFilters
+                            className={`flex items-center gap-2 px-3 py-2 md:py-3 rounded-xl font-bold transition-all shadow-sm border ${difficultyFilter || topicFilter || showFilters
                                 ? 'bg-gray-900 text-white border-gray-900'
                                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'
-                                } `}
+                                }`}
                         >
                             <Filter className="w-4 h-4" />
                             <span className="hidden md:inline text-xs">Filters</span>
@@ -110,10 +110,10 @@ const RevisitJournal: React.FC = () => {
                                                     <button
                                                         key={level}
                                                         onClick={() => setDifficultyFilter(level === 'all' ? null : level)}
-                                                        className={`px - 2 py - 1 rounded - lg text - [10px] font - bold transition - all ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
+                                                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
                                                             ? 'bg-gray-900 text-white'
                                                             : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                                                            } `}
+                                                            }`}
                                                     >
                                                         {level.charAt(0).toUpperCase() + level.slice(1)}
                                                     </button>
@@ -125,8 +125,8 @@ const RevisitJournal: React.FC = () => {
                                             <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar">
                                                 <button
                                                     onClick={() => setTopicFilter(null)}
-                                                    className={`w - full text - left px - 2 py - 1.5 rounded - lg text - [10px] font - bold transition - all ${!topicFilter ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 hover:bg-gray-50'
-                                                        } `}
+                                                    className={`w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all ${!topicFilter ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 hover:bg-gray-50'
+                                                        }`}
                                                 >
                                                     All Topics
                                                 </button>
@@ -134,8 +134,8 @@ const RevisitJournal: React.FC = () => {
                                                     <button
                                                         key={t}
                                                         onClick={() => setTopicFilter(t)}
-                                                        className={`w - full text - left px - 2 py - 1.5 rounded - lg text - [10px] font - bold transition - all truncate ${topicFilter === t ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 hover:bg-gray-50'
-                                                            } `}
+                                                        className={`w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all truncate ${topicFilter === t ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 hover:bg-gray-50'
+                                                            }`}
                                                     >
                                                         {t}
                                                     </button>
