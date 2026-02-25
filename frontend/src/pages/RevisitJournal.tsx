@@ -175,7 +175,7 @@ const RevisitJournal: React.FC = () => {
                     <p className="text-gray-300 text-sm mt-1">Try a different search or start revisiting problems!</p>
                 </div>
             ) : (
-                <div className="relative pb-12 mt-8 overflow-hidden">
+                <div className="relative pb-12 mt-12 overflow-hidden">
                     <div className="space-y-6">
                         {Object.entries(groupedHistory).map(([date, entries], index, array) => {
                             const isExpanded = expandedDates[date];
@@ -186,20 +186,20 @@ const RevisitJournal: React.FC = () => {
                                 <div key={date} className="relative z-10 group/item">
                                     {/* Timeline Line Fragment */}
                                     {!isFirst && (
-                                        <div className="absolute left-[16px] top-0 h-4 w-px bg-gray-200 z-0" />
+                                        <div className="absolute left-[10px] top-0 h-4 w-px bg-gray-200 z-0" />
                                     )}
                                     {!isLast && (
-                                        <div className="absolute left-[16px] top-4 bottom-0 w-px bg-gray-200 z-0" />
+                                        <div className="absolute left-[10px] top-4 bottom-0 w-px bg-gray-200 z-0" />
                                     )}
 
                                     {/* Date Header Row (Clickable) */}
                                     <button
                                         onClick={() => toggleDate(date)}
-                                        className="w-full flex items-center gap-3 group/header hover:bg-emerald-500/5 transition-colors rounded-xl py-2 -ml-2 pl-2 relative z-10"
+                                        className="w-full flex items-center gap-3 group/header hover:bg-emerald-500/5 transition-colors rounded-xl py-2 -ml-1 pl-1 relative z-10"
                                     >
                                         {/* Left: Indicator Dot */}
                                         <div className="w-8 shrink-0 flex justify-center">
-                                            <div className={`w-2 h-2 rounded-full border-2 transition-all duration-300 z-10 ${isExpanded ? 'bg-emerald-500 border-emerald-500 scale-125' : 'bg-[#F5F0EB] border-gray-300'}`} />
+                                            <div className={`size-3 rounded-full border-2 transition-all duration-300 z-10 ${isExpanded ? 'bg-emerald-500 border-emerald-500 scale-125' : 'bg-[#F5F0EB] border-gray-300'}`} />
                                         </div>
 
                                         {/* Right: Date Text & Chevron */}
