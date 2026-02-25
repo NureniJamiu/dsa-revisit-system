@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Clock, ExternalLink, Calendar } from 'lucide-react';
+import { Search, Filter, Clock, ExternalLink, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { useHistory, type RevisitHistoryItem } from '../hooks/useProblems';
 import CustomLoader from '../components/CustomLoader';
 import { Link } from 'react-router-dom';
@@ -9,6 +9,7 @@ const RevisitJournal: React.FC = () => {
     const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
     const [topicFilter, setTopicFilter] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
+    const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
 
     const { data: history = [], isLoading, isError } = useHistory(searchQuery);
 
@@ -42,6 +43,12 @@ const RevisitJournal: React.FC = () => {
         return groups;
     }, [filteredHistory]);
 
+    const toggleDate = (date: string) => {
+        setExpandedDates(prev => ({
+            ...prev,
+            [date]: !prev[date]
+        }));
+    };
 
     return (
         <div className="max-w-5xl mx-auto pb-20 px-4">
@@ -172,69 +179,86 @@ const RevisitJournal: React.FC = () => {
                     {/* Continuous Timeline Line (Aligned to left) */}
                     <div className="absolute left-[12px] md:left-[16px] top-0 bottom-0 w-px bg-gray-200 z-0" />
 
-                    <div className="space-y-10">
-                        {Object.entries(groupedHistory).map(([date, entries]) => (
-                            <div key={date} className="relative z-10">
-                                {/* Date Header Row */}
-                                <div className="flex items-center gap-3 mb-4">
-                                    {/* Left: Indicator Dot */}
-                                    <div className="w-[25px] md:w-[32px] shrink-0 flex justify-center">
-                                        <div className="w-2 h-2 rounded-full bg-white border-2 border-emerald-500 shrink-0 z-10 flex items-center justify-center">
-                                            <div className="w-0.5 h-0.5 rounded-full bg-emerald-500" />
+                    <div className="space-y-6">
+                        {Object.entries(groupedHistory).map(([date, entries]) => {
+                            const isExpanded = expandedDates[date];
+                            return (
+                                <div key={date} className="relative z-10">
+                                    {/* Date Header Row (Clickable) */}
+                                    <button
+                                        onClick={() => toggleDate(date)}
+                                        className="w-full flex items-center gap-3 group/header hover:bg-emerald-500/5 transition-colors rounded-xl py-2 -ml-2 pl-2"
+                                    >
+                                        {/* Left: Indicator Dot */}
+                                        <div className="w-[24px] md:w-[32px] shrink-0 flex justify-center translate-x-1 md:translate-x-0">
+                                            <div className={`w-2 h-2 rounded-full border-2 transition-all duration-300 ${isExpanded ? 'bg-emerald-500 border-emerald-500 scale-125' : 'bg-white border-gray-300'}`} />
+                                        </div>
+
+                                        {/* Right: Date Text & Chevron */}
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <h2 className={`text-[10px] md:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-colors ${isExpanded ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                                {date}
+                                            </h2>
+                                            <div className="h-px bg-gray-100 flex-1" />
+                                            {isExpanded ? (
+                                                <ChevronUp className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                            ) : (
+                                                <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                            )}
+                                        </div>
+                                    </button>
+
+                                    {/* Collapsible Content */}
+                                    <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'}`}>
+                                        <div className="overflow-hidden">
+                                            <div className="grid gap-2 pl-[28px] md:pl-[36px] pb-4">
+                                                {entries.map((item) => (
+                                                    <Link
+                                                        to={`/problem/${item.problem_id}`}
+                                                        key={item.id}
+                                                        className="bg-white border border-gray-100/60 rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+                                                    >
+                                                        {/* Accent Gradient */}
+                                                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-3 mb-1">
+                                                                    <h3 className="text-sm md:text-base font-black text-gray-900 group-hover:text-emerald-600 transition-colors block leading-tight tracking-tight truncate">
+                                                                        {item.problem_title}
+                                                                    </h3>
+                                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 bg-gray-50/80 px-2 py-0.5 rounded-full shrink-0">
+                                                                        <Clock className="w-3 h-3 text-emerald-500/50" />
+                                                                        {new Date(item.revisited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </span>
+                                                                </div>
+
+                                                                {item.notes && (
+                                                                    <div className="hidden md:block mt-2 relative max-w-2xl px-3 py-1 bg-gray-50/50 rounded-lg border border-gray-100">
+                                                                        <p className="text-[10px] font-medium leading-relaxed text-gray-500 italic">
+                                                                            "{item.notes}"
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="hidden md:flex items-center gap-2 shrink-0">
+                                                                <div
+                                                                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-[9px] font-black text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all rounded-lg uppercase tracking-wider border border-transparent hover:border-emerald-100"
+                                                                >
+                                                                    View Source
+                                                                    <ExternalLink className="w-3 h-3" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
-
-                                    {/* Right: Date Text (Responsive font size) */}
-                                    <h2 className="text-[10px] md:text-xs font-black text-gray-900 uppercase tracking-[0.1em] md:tracking-[0.2em] whitespace-nowrap bg-[#F5F0EB] py-1 pr-4">
-                                        {date}
-                                    </h2>
                                 </div>
-
-                                <div className="grid gap-3 pl-[25px] md:pl-[32px]">
-                                    {entries.map((item) => (
-                                        <Link
-                                            to={`/problem/${item.problem_id}`}
-                                            key={item.id}
-                                            className="bg-white border border-gray-100/60 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
-                                        >
-                                            {/* Accent Gradient */}
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        <h3 className="text-sm md:text-lg font-black text-gray-900 group-hover:text-emerald-600 transition-colors block leading-tight tracking-tight truncate">
-                                                            {item.problem_title}
-                                                        </h3>
-                                                        <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 bg-gray-50/80 px-2 py-0.5 rounded-full shrink-0">
-                                                            <Clock className="w-3 h-3 text-emerald-500/50" />
-                                                            {new Date(item.revisited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                    </div>
-
-                                                    {item.notes && (
-                                                        <div className="hidden md:block mt-3 relative max-w-2xl px-3 py-1.5 bg-gray-50/50 rounded-lg border border-gray-100">
-                                                            <p className="text-[11px] font-medium leading-relaxed text-gray-500 italic">
-                                                                "{item.notes}"
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div className="hidden md:flex items-center gap-2 shrink-0">
-                                                    <div
-                                                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-[9px] font-black text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all rounded-lg uppercase tracking-wider border border-transparent hover:border-emerald-100"
-                                                    >
-                                                        View Source
-                                                        <ExternalLink className="w-3 h-3" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}
