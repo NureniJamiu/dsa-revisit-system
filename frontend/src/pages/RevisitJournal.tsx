@@ -56,8 +56,8 @@ const RevisitJournal: React.FC = () => {
             <div className="mb-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-1">Journey</h1>
-                        <p className="text-gray-500 font-medium text-sm">A chronicle of your path to technical mastery.</p>
+                        <h1 className="text-3xl md:text-4xl font-black text-gray-800 tracking-tight mb-2">Journey</h1>
+                        <p className="text-[15px] font-medium text-gray-400">A chronicle of your path to technical mastery.</p>
                     </div>
                 </div>
 
@@ -70,7 +70,7 @@ const RevisitJournal: React.FC = () => {
                             placeholder="Search milestones..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 md:py-3 bg-white border border-gray-200 rounded-xl text-sm md:text-base font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-base font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all shadow-sm"
                         />
                     </div>
 
@@ -204,7 +204,7 @@ const RevisitJournal: React.FC = () => {
 
                                         {/* Right: Date Text & Chevron */}
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <h2 className={`text-[10px] md:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-colors ${isExpanded ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                            <h2 className={`text-[11px] md:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-colors ${isExpanded ? 'text-emerald-600' : 'text-gray-900'}`}>
                                                 {date}
                                             </h2>
                                             <div className="h-px bg-gray-100 flex-1" />
@@ -224,18 +224,18 @@ const RevisitJournal: React.FC = () => {
                                                     <Link
                                                         to={`/problem/${item.problem_id}`}
                                                         key={item.id}
-                                                        className="bg-white border border-gray-100/60 rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+                                                        className="bg-white border border-gray-100/60 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
                                                     >
                                                         {/* Accent Gradient */}
                                                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
 
                                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                                             <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-3 mb-1">
-                                                                    <h3 className="text-sm md:text-base font-black text-gray-900 group-hover:text-emerald-600 transition-colors block leading-tight tracking-tight truncate">
+                                                                <div className="flex items-center gap-3 mb-1.5">
+                                                                    <h3 className="text-sm md:text-[17px] font-black text-gray-900 group-hover:text-emerald-600 transition-colors block leading-snug tracking-tight truncate">
                                                                         {item.problem_title}
                                                                     </h3>
-                                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 bg-gray-50/80 px-2 py-0.5 rounded-full shrink-0">
+                                                                    <span className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 bg-gray-50/80 px-2 py-0.5 rounded-full shrink-0">
                                                                         <Clock className="w-3 h-3 text-emerald-500/50" />
                                                                         {new Date(item.revisited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                     </span>
