@@ -4,6 +4,7 @@ import { PlusCircle, Settings as SettingsIcon, LayoutDashboard, Archive, History
 import { UserButton } from '@clerk/clerk-react';
 import AddProblemModal from './AddProblemModal';
 import Logo from './Logo';
+import PullToRefresh from './PullToRefresh';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -102,14 +103,16 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto min-w-0">
+            <main className="flex-1 min-w-0">
                 <header className="border-b border-gray-200 md:hidden p-4 flex items-center justify-between" style={{ backgroundColor: '#111111' }}>
                     <Logo textSize="text-lg" className="text-white" showText={true} variant="light" />
                     <UserButton />
                 </header>
-                <div className="p-6 md:p-10 max-w-6xl mx-auto">
-                    {children}
-                </div>
+                <PullToRefresh>
+                    <div className="p-6 md:p-10 max-w-6xl mx-auto pb-24 md:pb-10">
+                        {children}
+                    </div>
+                </PullToRefresh>
 
                 {/* Mobile Bottom Nav */}
                 <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-800 flex justify-around p-2 z-50" style={{ backgroundColor: '#111111' }}>
