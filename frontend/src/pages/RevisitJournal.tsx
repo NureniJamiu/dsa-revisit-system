@@ -176,22 +176,30 @@ const RevisitJournal: React.FC = () => {
                 </div>
             ) : (
                 <div className="relative pb-12 mt-8 overflow-hidden">
-                    {/* Continuous Timeline Line (Aligned to left) */}
-                    <div className="absolute left-[12px] md:left-[16px] top-0 bottom-0 w-px bg-gray-200 z-0" />
-
                     <div className="space-y-6">
-                        {Object.entries(groupedHistory).map(([date, entries]) => {
+                        {Object.entries(groupedHistory).map(([date, entries], index, array) => {
                             const isExpanded = expandedDates[date];
+                            const isFirst = index === 0;
+                            const isLast = index === array.length - 1;
+
                             return (
-                                <div key={date} className="relative z-10">
+                                <div key={date} className="relative z-10 group/item">
+                                    {/* Timeline Line Fragment */}
+                                    {!isFirst && (
+                                        <div className="absolute left-[16px] top-0 h-4 w-px bg-gray-200 z-0" />
+                                    )}
+                                    {!isLast && (
+                                        <div className="absolute left-[16px] top-4 bottom-0 w-px bg-gray-200 z-0" />
+                                    )}
+
                                     {/* Date Header Row (Clickable) */}
                                     <button
                                         onClick={() => toggleDate(date)}
-                                        className="w-full flex items-center gap-3 group/header hover:bg-emerald-500/5 transition-colors rounded-xl py-2 -ml-2 pl-2"
+                                        className="w-full flex items-center gap-3 group/header hover:bg-emerald-500/5 transition-colors rounded-xl py-2 -ml-2 pl-2 relative z-10"
                                     >
                                         {/* Left: Indicator Dot */}
-                                        <div className="w-[24px] md:w-[32px] shrink-0 flex justify-center translate-x-1 md:translate-x-0">
-                                            <div className={`w-2 h-2 rounded-full border-2 transition-all duration-300 ${isExpanded ? 'bg-emerald-500 border-emerald-500 scale-125' : 'bg-white border-gray-300'}`} />
+                                        <div className="w-8 shrink-0 flex justify-center">
+                                            <div className={`w-2 h-2 rounded-full border-2 transition-all duration-300 z-10 ${isExpanded ? 'bg-emerald-500 border-emerald-500 scale-125' : 'bg-[#F5F0EB] border-gray-300'}`} />
                                         </div>
 
                                         {/* Right: Date Text & Chevron */}
@@ -211,7 +219,7 @@ const RevisitJournal: React.FC = () => {
                                     {/* Collapsible Content */}
                                     <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'}`}>
                                         <div className="overflow-hidden">
-                                            <div className="grid gap-2 pl-[28px] md:pl-[36px] pb-4">
+                                            <div className="grid gap-2 pl-[36px] pb-4">
                                                 {entries.map((item) => (
                                                     <Link
                                                         to={`/problem/${item.problem_id}`}
