@@ -204,7 +204,7 @@ const RevisitJournal: React.FC = () => {
 
                                         {/* Right: Date Text & Chevron */}
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <h2 className={`text-[11px] md:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-colors ${isExpanded ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                            <h2 className={`text-xs font-black uppercase tracking-widest whitespace-nowrap transition-colors ${isExpanded ? 'text-emerald-600' : 'text-gray-900'}`}>
                                                 {date}
                                             </h2>
                                             <div className="h-px bg-gray-100 flex-1" />
@@ -224,7 +224,7 @@ const RevisitJournal: React.FC = () => {
                                                     <Link
                                                         to={`/problem/${item.problem_id}`}
                                                         key={item.id}
-                                                        className="bg-white border border-gray-100/60 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+                                                        className="bg-white border border-gray-100/60 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
                                                     >
                                                         {/* Accent Gradient */}
                                                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -232,10 +232,10 @@ const RevisitJournal: React.FC = () => {
                                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center gap-3 mb-1.5">
-                                                                    <h3 className="text-sm md:text-[17px] font-black text-gray-900 group-hover:text-emerald-600 transition-colors block leading-snug tracking-tight truncate">
+                                                                    <h3 className="text-[17px] font-black text-gray-900 group-hover:text-emerald-600 transition-colors block leading-snug tracking-tight truncate">
                                                                         {item.problem_title}
                                                                     </h3>
-                                                                    <span className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 bg-gray-50/80 px-2 py-0.5 rounded-full shrink-0">
+                                                                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 bg-gray-50/80 px-2 py-0.5 rounded-full shrink-0">
                                                                         <Clock className="w-3 h-3 text-emerald-500/50" />
                                                                         {new Date(item.revisited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                     </span>
