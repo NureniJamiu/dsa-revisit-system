@@ -47,10 +47,10 @@ const RevisitJournal: React.FC = () => {
         <div className="max-w-5xl mx-auto pb-20 px-4">
             {/* Header */}
             <div className="mb-10">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-2">Journey</h1>
-                        <p className="text-gray-500 font-medium text-lg">A chronicle of your path to technical mastery.</p>
+                        <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-1">Journey</h1>
+                        <p className="text-gray-500 font-medium text-sm">A chronicle of your path to technical mastery.</p>
                     </div>
                 </div>
 
@@ -204,40 +204,37 @@ const RevisitJournal: React.FC = () => {
                                     {entries.map((item) => (
                                         <div
                                             key={item.id}
-                                            className="bg-white border border-gray-100/60 rounded-[2.5rem] p-10 md:p-12 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-500 group relative overflow-hidden"
+                                            className="bg-white border border-gray-100/60 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-500 group relative overflow-hidden"
                                         >
                                             {/* Accent Gradient */}
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
 
                                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex flex-wrap items-center gap-4 mb-6">
-                                                        <div className="w-8 h-1 bg-gray-50 rounded-full" />
-                                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 bg-gray-50/80 px-3 py-1.5 rounded-full">
-                                                            <Hash className="w-4 h-4 text-emerald-500/50" />
+                                                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                                                        <div className="w-6 h-1 bg-gray-50 rounded-full" />
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 bg-gray-50/80 px-2 py-1 rounded-full">
+                                                            <Hash className="w-3 h-3 text-emerald-500/50" />
                                                             {item.topic || 'General'}
                                                         </span>
-                                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 bg-gray-50/80 px-3 py-1.5 rounded-full">
-                                                            <Clock className="w-4 h-4 text-emerald-500/50" />
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 bg-gray-50/80 px-2 py-1 rounded-full">
+                                                            <Clock className="w-3 h-3 text-emerald-500/50" />
                                                             {new Date(item.revisited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </span>
                                                     </div>
 
                                                     <Link
                                                         to={`/problem/${item.problem_id}`}
-                                                        className="text-3xl md:text-4xl font-black text-gray-900 hover:text-emerald-600 transition-colors block leading-tight mb-4 tracking-tight"
+                                                        className="text-xl md:text-2xl font-black text-gray-900 hover:text-emerald-600 transition-colors block leading-tight mb-3 tracking-tight"
                                                     >
                                                         {item.problem_title}
                                                     </Link>
 
                                                     {item.notes && (
-                                                        <div className="mt-8 relative max-w-2xl">
-                                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-100 rounded-full" />
-                                                            <div className="pl-8 py-1">
-                                                                <p className="text-base font-medium leading-relaxed text-gray-600 italic">
-                                                                    "{item.notes}"
-                                                                </p>
-                                                            </div>
+                                                        <div className="mt-4 relative max-w-2xl px-4 py-2 bg-gray-50/50 rounded-xl border border-gray-100">
+                                                            <p className="text-sm font-medium leading-relaxed text-gray-600 italic">
+                                                                "{item.notes}"
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>
@@ -247,10 +244,10 @@ const RevisitJournal: React.FC = () => {
                                                         href={item.problem_link}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex items-center gap-3 px-8 py-4 bg-gray-50 text-[11px] font-black text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all rounded-2xl uppercase tracking-[0.2em] border border-transparent hover:border-emerald-100"
+                                                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-[10px] font-black text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all rounded-xl uppercase tracking-[0.1em] border border-transparent hover:border-emerald-100"
                                                     >
                                                         View Solution
-                                                        <ExternalLink className="w-4 h-4" />
+                                                        <ExternalLink className="w-3.5 h-3.5" />
                                                     </a>
                                                 </div>
                                             </div>

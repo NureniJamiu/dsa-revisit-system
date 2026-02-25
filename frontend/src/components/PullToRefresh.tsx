@@ -20,7 +20,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({ children, onRefresh }) =>
 
         const handleTouchStart = (e: TouchEvent) => {
             // Only allow pull to refresh if we're at the very top of the scrollable container
-            if (container.scrollTop === 0) {
+            if (container.scrollTop <= 0) {
                 touchStart.current = e.touches[0].clientY;
             } else {
                 touchStart.current = null;
@@ -35,7 +35,15 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({ children, onRefresh }) =>
 
             if (diff > 0) {
                 // We're pulling down
-                const easedPull = Math.min(diff * 0.5, maxPull);
+                // Add a "dead zone" where the indicator doesn't move yet
+                const deadZone = 40;
+                if (diff < deadZone) {
+                    setPullDistance(0);
+                    return;
+                }
+
+                const effectiveDiff = diff - deadZone;
+                const easedPull = Math.min(effectiveDiff * 0.4, maxPull);
                 setPullDistance(easedPull);
 
                 // Prevent default scrolling behavior when pulling down at the top
@@ -52,9 +60,10 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({ children, onRefresh }) =>
         const handleTouchEnd = async () => {
             if (touchStart.current === null || isRefreshing) return;
 
-            if (pullDistance >= pullThreshold) {
+            const triggerThreshold = 100; // Increased trigger threshold
+            if (pullDistance >= triggerThreshold - 40) { // Accounting for eased pull and dead zone
                 setIsRefreshing(true);
-                setPullDistance(pullThreshold); // Keep it at threshold while refreshing
+                setPullDistance(80); // Keep it at a visible threshold while refreshing
 
                 try {
                     if (onRefresh) {
