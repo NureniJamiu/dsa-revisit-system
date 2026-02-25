@@ -27,6 +27,10 @@ const Dashboard: React.FC = () => {
     const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 6;
+
     const handleRevisit = async () => {
         try {
             if (!revisitProblemId) return;
@@ -91,6 +95,18 @@ const Dashboard: React.FC = () => {
         const matchesDifficulty = !difficultyFilter || p.difficulty?.toLowerCase() === difficultyFilter.toLowerCase();
         return matchesSearch && matchesDifficulty;
     });
+
+    // Pagination Logic
+    const totalPages = Math.ceil(filteredProblems.length / ITEMS_PER_PAGE);
+    const paginatedProblems = filteredProblems.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    // Reset page on filter change
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, difficultyFilter]);
 
     return (
         <div className="space-y-12 pb-24 md:pb-12">
@@ -352,7 +368,7 @@ const Dashboard: React.FC = () => {
                                             <p className="text-sm font-medium text-red-400">Failed to load archive data. Try refreshing.</p>
                                         </td>
                                     </tr>
-                                ) : filteredProblems.length === 0 ? (
+                                ) : paginatedProblems.length === 0 ? (
                                     <tr>
                                         <td colSpan={4} className="px-8 py-12 text-center">
                                             <p className="text-sm font-medium text-gray-400">
@@ -361,7 +377,7 @@ const Dashboard: React.FC = () => {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredProblems.map((problem) => (
+                                    paginatedProblems.map((problem) => (
                                         <tr key={problem.id} className="group hover:bg-gray-50/50 transition-colors">
                                             <td className="px-6 md:px-8 py-4 min-w-[200px]">
                                                 <Link to={`/problem/${problem.id}`} className="text-sm font-black text-gray-900 group-hover:text-green-600 transition-colors block truncate max-w-[200px] md:max-w-none">
@@ -408,6 +424,36 @@ const Dashboard: React.FC = () => {
                         </table>
                     </div>
                 </div>
+
+                {/* Pagination Controls */}
+                {!loading && !problemsError && totalPages > 1 && (
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <p className="text-[13px] font-bold text-gray-400 uppercase tracking-widest">
+                            Showing <span className="text-gray-900">{Math.min(filteredProblems.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}-{Math.min(filteredProblems.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="text-gray-900">{filteredProblems.length}</span>
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] font-black text-gray-800 hover:border-gray-900 transition-all disabled:opacity-30 disabled:hover:border-gray-200 uppercase tracking-widest shadow-sm"
+                            >
+                                Previous
+                            </button>
+                            <div className="px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                                <span className="text-[13px] font-black text-gray-900">{currentPage}</span>
+                                <span className="text-[13px] font-bold text-gray-400 mx-2">/</span>
+                                <span className="text-[13px] font-black text-gray-400">{totalPages}</span>
+                            </div>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] font-black text-gray-800 hover:border-gray-900 transition-all disabled:opacity-30 disabled:hover:border-gray-200 uppercase tracking-widest shadow-sm"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Modals */}
                 <AddProblemModal

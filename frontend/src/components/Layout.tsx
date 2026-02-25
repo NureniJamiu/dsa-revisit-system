@@ -14,12 +14,6 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
     const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const navItems = [
-        { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/journey', label: 'Journey', icon: History },
-        { path: '/archive', label: 'Archive', icon: Archive },
-    ];
-
     const handleAddProblemSuccess = () => {
         onProblemAdded?.();
     };
@@ -36,23 +30,27 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
 
                 {/* Main Navigation */}
                 <nav className="px-3 space-y-1 flex-1">
-                    {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <Link
-                                key={item.path}
-                                to={item.path}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${isActive
-                                    ? 'bg-gray-800 text-white'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                                    }`}
-                            >
-                                <Icon className="w-4 h-4" />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
+                    <Link
+                        to="/"
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${location.pathname === '/'
+                            ? 'bg-gray-800 text-white'
+                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                            }`}
+                    >
+                        <LayoutDashboard className="w-4 h-4" />
+                        Dashboard
+                    </Link>
+
+                    <Link
+                        to="/archive"
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${location.pathname === '/archive'
+                            ? 'bg-gray-800 text-white'
+                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                            }`}
+                    >
+                        <Archive className="w-4 h-4" />
+                        Archive
+                    </Link>
 
                     {/* Add Problem Button */}
                     <button
@@ -62,6 +60,18 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                         <PlusCircle className="w-4 h-4" />
                         Add Problem
                     </button>
+
+                    {/* Journey Link */}
+                    <Link
+                        to="/journey"
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${location.pathname === '/journey'
+                            ? 'bg-gray-800 text-white'
+                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                            }`}
+                    >
+                        <History className="w-4 h-4" />
+                        Journey
+                    </Link>
                 </nav>
 
                 {/* Bottom Section: Settings + User */}
@@ -103,23 +113,27 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
 
                 {/* Mobile Bottom Nav */}
                 <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-800 flex justify-around p-2 z-50" style={{ backgroundColor: '#111111' }}>
-                    {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <Link
-                                key={item.path}
-                                to={item.path}
-                                className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] font-bold transition-colors ${isActive
-                                    ? 'text-white'
-                                    : 'text-gray-500'
-                                    }`}
-                            >
-                                <Icon className="w-5 h-5" />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
+                    <Link
+                        to="/"
+                        className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] font-bold transition-colors ${location.pathname === '/'
+                            ? 'text-white'
+                            : 'text-gray-500'
+                            }`}
+                    >
+                        <LayoutDashboard className="w-5 h-5" />
+                        Dashboard
+                    </Link>
+
+                    <Link
+                        to="/archive"
+                        className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] font-bold transition-colors ${location.pathname === '/archive'
+                            ? 'text-white'
+                            : 'text-gray-500'
+                            }`}
+                    >
+                        <Archive className="w-5 h-5" />
+                        Archive
+                    </Link>
 
                     {/* Add Problem Button (mobile) */}
                     <button
@@ -129,6 +143,18 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                         <PlusCircle className="w-5 h-5" />
                         Add Problem
                     </button>
+
+                    {/* Journey Link (mobile) */}
+                    <Link
+                        to="/journey"
+                        className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] font-bold transition-colors ${location.pathname === '/journey'
+                            ? 'text-white'
+                            : 'text-gray-500'
+                            }`}
+                    >
+                        <History className="w-5 h-5" />
+                        Journey
+                    </Link>
 
                     <Link
                         to="/settings"
