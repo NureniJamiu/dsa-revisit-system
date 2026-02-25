@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
     return (
         <div className="min-h-screen flex overflow-x-hidden" style={{ backgroundColor: '#F5F0EB' }}>
             {/* Sidebar */}
-            <aside className="w-64 border-r border-gray-800 hidden md:flex md:flex-col" style={{ backgroundColor: '#111111' }}>
+            <aside className="w-64 border-r border-[#2A2A2A] hidden md:flex md:flex-col" style={{ backgroundColor: '#1A1A1A' }}>
                 {/* Logo & Tagline */}
                 <div className="p-6">
                     <Logo textSize="text-xl" className="text-white mb-1" showText={true} variant="light" />
@@ -76,7 +76,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                 </nav>
 
                 {/* Bottom Section: Settings + User */}
-                <div className="p-3 space-y-2 border-t border-gray-800 pt-6">
+                <div className="p-3 space-y-2 border-t border-[#2A2A2A] pt-6">
                     <Link
                         to="/settings"
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-semibold transition-colors ${location.pathname === '/settings'
@@ -104,7 +104,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
 
             {/* Main Content */}
             <main className="flex-1 min-w-0">
-                <header className="border-b border-gray-200 md:hidden p-4 flex items-center justify-between" style={{ backgroundColor: '#111111' }}>
+                <header className="border-b border-gray-200 md:hidden p-4 flex items-center justify-between" style={{ backgroundColor: '#1A1A1A' }}>
                     <Logo textSize="text-lg" className="text-white" showText={true} variant="light" />
                     <UserButton />
                 </header>
@@ -115,7 +115,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                 </PullToRefresh>
 
                 {/* Mobile Bottom Nav */}
-                <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-800 flex justify-around p-2 z-50" style={{ backgroundColor: '#111111' }}>
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-[#2A2A2A] flex justify-around p-2 z-50" style={{ backgroundColor: '#1A1A1A' }}>
                     <Link
                         to="/"
                         className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] font-bold transition-colors ${location.pathname === '/'
