@@ -728,3 +728,60 @@ func RunCronAllUsers(w http.ResponseWriter, r *http.Request) {
 		"message": "Daily job triggered. Check server logs for detailed progress.",
 	})
 }
+
+// GetRevisitHistory returns all revisit records with problem details
+func GetRevisitHistory(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserIDFromContext(r)
+	searchQuery := r.URL.Query().Get("q")
+
+	query := `
+		SELECT rh.id, rh.problem_id, rh.revisited_at, rh.notes, 
+		       p.title, p.link, COALESCE(p.difficulty, ''), COALESCE(p.topic, '')
+		FROM revisit_history rh
+		JOIN problems p ON rh.problem_id = p.id
+		WHERE p.user_id = $1`
+
+	args := []interface{}{userID}
+
+	if searchQuery != "" {
+		query += " AND (p.title ILIKE $2 OR rh.notes ILIKE $2)"
+		args = append(args, "%"+searchQuery+"%")
+	}
+
+	query += " ORDER BY rh.revisited_at DESC"
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type RevisitHistoryItem struct {
+		ID           uuid.UUID `json:"id"`
+		ProblemID    uuid.UUID `json:"problem_id"`
+		RevisitedAt  time.Time `json:"revisited_at"`
+		Notes        *string   `json:"notes,omitempty"`
+		ProblemTitle string    `json:"problem_title"`
+		ProblemLink  string    `json:"problem_link"`
+		Difficulty   string    `json:"difficulty"`
+		Topic        string    `json:"topic"`
+	}
+
+	history := []RevisitHistoryItem{}
+	for rows.Next() {
+		var item RevisitHistoryItem
+		if err := rows.Scan(&item.ID, &item.ProblemID, &item.RevisitedAt, &item.Notes,
+			&item.ProblemTitle, &item.ProblemLink, &item.Difficulty, &item.Topic); err != nil {
+			log.Printf("[API] Error scanning history item: %v", err)
+			continue
+		}
+		history = append(history, item)
+	}
+
+	if history == nil {
+		history = []RevisitHistoryItem{}
+	}
+
+	respondJSON(w, http.StatusOK, history)
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { PlusCircle, Settings as SettingsIcon, LayoutDashboard, Archive } from 'lucide-react';
+import { PlusCircle, Settings as SettingsIcon, LayoutDashboard, Archive, History } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import AddProblemModal from './AddProblemModal';
 import Logo from './Logo';
@@ -16,6 +16,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
 
     const navItems = [
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/journey', label: 'Journey', icon: History },
         { path: '/archive', label: 'Archive', icon: Archive },
     ];
 

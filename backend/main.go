@@ -76,6 +76,7 @@ func main() {
 
 			r.Get("/problems", GetProblems)
 			r.Get("/problems/today", GetTodaysFocus)
+			r.Get("/history", GetRevisitHistory)
 			r.Get("/problems/weights", GetAllWeights)
 			r.Get("/problems/{id}", GetProblemByID)
 			r.Get("/problems/{id}/weight", GetProblemWeight)
