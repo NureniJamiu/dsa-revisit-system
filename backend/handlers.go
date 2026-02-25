@@ -464,13 +464,20 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 1. Fetch all active problems for this user
+	// 1. Fetch all active problems for this user that were added BEFORE today.
+	// We also fetch their state at the start of the day (ignoring today's revisits)
+	// so the selection is deterministic for the entire day.
 	rows, err := db.Query(`
-		SELECT id, user_id, title, link, date_added, last_revisited_at, 
-		       times_revisited, status, COALESCE(topic, ''), COALESCE(difficulty, ''), COALESCE(source, 'LeetCode'), COALESCE(notes, '')
-		FROM problems
-		WHERE status = 'active' AND user_id = $1
-		ORDER BY date_added ASC`, userID)
+		SELECT p.id, p.user_id, p.title, p.link, p.date_added, p.status, 
+		       COALESCE(p.topic, ''), COALESCE(p.difficulty, ''), COALESCE(p.source, 'LeetCode'), COALESCE(p.notes, ''),
+		       COUNT(CASE WHEN rh.revisited_at::date < CURRENT_DATE THEN 1 END) as prev_times_revisited,
+		       MAX(CASE WHEN rh.revisited_at::date < CURRENT_DATE THEN rh.revisited_at END) as prev_last_revisited_at,
+		       COUNT(CASE WHEN rh.revisited_at::date = CURRENT_DATE THEN 1 END) as today_revisit_count
+		FROM problems p
+		LEFT JOIN revisit_history rh ON p.id = rh.problem_id
+		WHERE p.user_id = $1 AND p.status = 'active' AND p.date_added::date < CURRENT_DATE
+		GROUP BY p.id
+		ORDER BY p.date_added ASC`, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -478,17 +485,24 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	var allProblems []Problem
+	revisitedTodayMap := make(map[uuid.UUID]bool)
+
 	for rows.Next() {
 		var p Problem
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
-			&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
-			&p.Topic, &p.Difficulty, &p.Source, &p.Notes); err != nil {
+		var todayCount int
+		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded, &p.Status,
+			&p.Topic, &p.Difficulty, &p.Source, &p.Notes,
+			&p.TimesRevisited, &p.LastRevisitedAt, &todayCount); err != nil {
+			log.Printf("[API] Error scanning problem in GetTodaysFocus: %v", err)
 			continue
 		}
 		allProblems = append(allProblems, p)
+		if todayCount > 0 {
+			revisitedTodayMap[p.ID] = true
+		}
 	}
 
-	// 2. Filter for eligibility (min revisit days)
+	// 2. Filter for eligibility based on PREVIOUS state (start of day)
 	var eligible []Problem
 	for _, p := range allProblems {
 		daysSinceLast := 9999.0
@@ -507,7 +521,7 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	}
 	selected := SelectProblemsSeeded(eligible, focusCount, DaySeed())
 
-	// 4. Check which of today's focus problems have been revisited today
+	// 4. Return the selected problems with their actual "revisited today" status
 	type TodaysFocusItem struct {
 		Problem        Problem       `json:"problem"`
 		Weight         ProblemWeight `json:"weight"`
@@ -518,20 +532,23 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	completedCount := 0
 
 	for _, p := range selected {
+		// Use the "reverted" state for weight calculation too, to keep it consistent
 		weight := CalculateProblemWeight(p, user.Preferences.MinRevisitDays)
 
-		// Check if revisited today
-		var todayCount int
-		err := db.QueryRow(`
-			SELECT COUNT(*) FROM revisit_history
-			WHERE problem_id = $1 AND revisited_at::date = CURRENT_DATE`, p.ID).Scan(&todayCount)
-		if err != nil {
-			todayCount = 0
-		}
-
-		revisitedToday := todayCount > 0
+		revisitedToday := revisitedTodayMap[p.ID]
 		if revisitedToday {
 			completedCount++
+			// For the response, we might want to show the ACTUAL current state (incremented count)
+			// but wait, if we do that, the UI might flicker or change.
+			// Actually, ProblemDetail (which the dashboard uses to show weight) might expect current state.
+			// Let's stick to the current state for the Problem object itself if it was revisited today,
+			// BUT the selection was based on prev state.
+			if revisitedToday {
+				p.TimesRevisited++
+				// We don't have the exact latest timestamp here without another query or keeping it from join,
+				// but p.LastRevisitedAt for selection was the previous one.
+				// Let's just update the count for the UI.
+			}
 		}
 
 		items = append(items, TodaysFocusItem{

@@ -5,6 +5,7 @@
 .DS_Store
 
 # Go
+/backend/dsa-revisit-api
 /backend/dsa-revisit-system
 /backend/tmp/
 
