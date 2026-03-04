@@ -235,7 +235,7 @@ const Dashboard: React.FC = () => {
                                             {item.revisited_today ? (
                                                 <div className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-100/50 text-green-700 text-[13px] font-bold rounded-xl">
                                                     <CheckCircle className="w-4 h-4" />
-                                                    Mastered today
+                                                    Revisited today
                                                 </div>
                                             ) : (
                                                 <button

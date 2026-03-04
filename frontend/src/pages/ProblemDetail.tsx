@@ -142,7 +142,7 @@ const ProblemDetail: React.FC = () => {
                             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle className="w-8 h-8 text-green-600" />
                             </div>
-                            <h3 className="text-2xl font-black text-green-900 mb-2">Mastered today!</h3>
+                            <h3 className="text-2xl font-black text-green-900 mb-2">Revisited today!</h3>
                             <p className="text-sm font-medium text-green-700/70 mb-8 px-8">Great work. Your neural paths are strengthening. See you tomorrow.</p>
 
                             <div className="bg-white/50 border border-green-200/50 rounded-xl p-4 text-left">
