@@ -201,6 +201,12 @@ body {
     color: var(--brand-hex, currentColor);
 }
 
+/* Platform logo strip — monogram fallback for platforms without a brand SVG */
+.platform-mark:hover .platform-monogram {
+    color: #e4e4e7;
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
 /* ─── Custom scrollbar (dark) ─── */
 ::-webkit-scrollbar {
     width: 6px;
