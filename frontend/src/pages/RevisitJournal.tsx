@@ -53,39 +53,39 @@ const RevisitJournal: React.FC = () => {
     return (
         <div className="max-w-5xl mx-auto pb-20 px-4">
             {/* Header */}
-            <div className="mb-10">
+            <div className="mb-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-black text-gray-800 tracking-tight mb-2">Journey</h1>
-                        <p className="text-[15px] font-medium text-gray-400">A chronicle of your path to technical mastery.</p>
+                        <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight mb-1.5">Journey</h1>
+                        <p className="text-[13px] text-zinc-500">A chronicle of your path to technical mastery.</p>
                     </div>
                 </div>
 
                 {/* Unified Filter Bar */}
-                <div className="flex flex-row gap-3 items-center">
+                <div className="flex flex-row gap-2 items-center">
                     <div className="relative group flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-green-400 transition-colors" />
                         <input
                             type="text"
                             placeholder="Search milestones..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-base font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all shadow-sm"
+                            className="w-full pl-8 pr-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-md text-[13px] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all"
                         />
                     </div>
 
                     <div className="relative">
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`flex items-center gap-2 px-3 py-2 md:py-3 rounded-xl font-bold transition-all shadow-sm border ${difficultyFilter || topicFilter || showFilters
-                                ? 'bg-gray-900 text-white border-gray-900'
-                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-medium text-[13px] transition-colors border ${difficultyFilter || topicFilter || showFilters
+                                ? 'bg-white/[0.08] text-zinc-100 border-white/[0.1]'
+                                : 'bg-transparent text-zinc-400 border-white/[0.08] hover:border-white/[0.16] hover:text-zinc-100'
                                 }`}
                         >
-                            <Filter className="w-4 h-4" />
-                            <span className="hidden md:inline text-xs">Filters</span>
+                            <Filter className="w-3.5 h-3.5" />
+                            <span className="hidden md:inline">Filters</span>
                             {(difficultyFilter || topicFilter) && (
-                                <span className="flex items-center justify-center w-4 h-4 bg-emerald-500 text-white text-[9px] rounded-full">
+                                <span className="flex items-center justify-center w-4 h-4 bg-green-500 text-zinc-950 text-[9px] font-semibold rounded-full">
                                     {(difficultyFilter ? 1 : 0) + (topicFilter ? 1 : 0)}
                                 </span>
                             )}
@@ -94,32 +94,32 @@ const RevisitJournal: React.FC = () => {
                         {showFilters && (
                             <>
                                 <div className="fixed inset-0 z-20" onClick={() => setShowFilters(false)} />
-                                <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl border border-gray-100 shadow-2xl z-30 overflow-hidden">
-                                    <div className="p-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Filters</p>
+                                <div className="absolute right-0 mt-2 w-60 bg-zinc-900 rounded-lg border border-white/[0.08] shadow-2xl z-30 overflow-hidden">
+                                    <div className="p-2.5 border-b border-white/[0.06] flex justify-between items-center">
+                                        <p className="text-[11px] font-medium text-zinc-500">Filters</p>
                                         {(difficultyFilter || topicFilter) && (
                                             <button
                                                 onClick={() => {
                                                     setDifficultyFilter(null);
                                                     setTopicFilter(null);
                                                 }}
-                                                className="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700"
+                                                className="text-[11px] font-medium text-green-400 hover:text-green-300"
                                             >
                                                 Clear
                                             </button>
                                         )}
                                     </div>
-                                    <div className="p-3 space-y-4">
+                                    <div className="p-2.5 space-y-3.5">
                                         <div>
-                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Difficulty</p>
+                                            <p className="text-[11px] font-medium text-zinc-500 mb-1.5">Difficulty</p>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {['all', 'easy', 'medium', 'hard'].map((level) => (
                                                     <button
                                                         key={level}
                                                         onClick={() => setDifficultyFilter(level === 'all' ? null : level)}
-                                                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
-                                                            ? 'bg-gray-900 text-white'
-                                                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                                        className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
+                                                            ? 'bg-white/[0.1] text-zinc-100'
+                                                            : 'bg-white/[0.03] text-zinc-500 hover:bg-white/[0.06]'
                                                             }`}
                                                     >
                                                         {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -128,20 +128,20 @@ const RevisitJournal: React.FC = () => {
                                             </div>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Topic</p>
-                                            <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar">
+                                            <p className="text-[11px] font-medium text-zinc-500 mb-1.5">Topic</p>
+                                            <div className="space-y-0.5 max-h-40 overflow-y-auto custom-scrollbar">
                                                 <button
                                                     onClick={() => setTopicFilter(null)}
-                                                    className={`w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all ${!topicFilter ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 hover:bg-gray-50'
+                                                    className={`w-full text-left px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors ${!topicFilter ? 'bg-green-500/10 text-green-400' : 'text-zinc-500 hover:bg-white/[0.05]'
                                                         }`}
                                                 >
-                                                    All Topics
+                                                    All topics
                                                 </button>
                                                 {topics.map((t) => (
                                                     <button
                                                         key={t}
                                                         onClick={() => setTopicFilter(t)}
-                                                        className={`w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all truncate ${topicFilter === t ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 hover:bg-gray-50'
+                                                        className={`w-full text-left px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors truncate ${topicFilter === t ? 'bg-green-500/10 text-green-400' : 'text-zinc-500 hover:bg-white/[0.05]'
                                                             }`}
                                                     >
                                                         {t}
@@ -163,20 +163,20 @@ const RevisitJournal: React.FC = () => {
                     <CustomLoader text="Loading your history..." />
                 </div>
             ) : isError ? (
-                <div className="text-center py-16 bg-red-50 rounded-3xl border border-red-100">
-                    <p className="text-red-600 font-bold">Failed to load history. Please try again later.</p>
+                <div className="text-center py-16 bg-red-500/[0.04] rounded-lg border border-red-500/10">
+                    <p className="text-red-400 font-medium text-[13px]">Failed to load history. Please try again later.</p>
                 </div>
             ) : Object.keys(groupedHistory).length === 0 ? (
-                <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200 shadow-sm">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Calendar className="w-8 h-8 text-gray-300" />
+                <div className="text-center py-24 bg-white/[0.02] rounded-lg border border-dashed border-white/[0.08]">
+                    <div className="w-14 h-14 bg-white/[0.04] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Calendar className="w-6 h-6 text-zinc-600" strokeWidth={1.5} />
                     </div>
-                    <p className="text-gray-400 font-bold text-lg">No entries found.</p>
-                    <p className="text-gray-300 text-sm mt-1">Try a different search or start revisiting problems!</p>
+                    <p className="text-zinc-400 font-medium text-[14px]">No entries found.</p>
+                    <p className="text-zinc-600 text-[12px] mt-1">Try a different search or start revisiting problems!</p>
                 </div>
             ) : (
-                <div className="relative pb-12 mt-12 overflow-hidden">
-                    <div className="space-y-6">
+                <div className="relative pb-12 mt-10 overflow-hidden">
+                    <div className="space-y-5">
                         {Object.entries(groupedHistory).map(([date, entries], index, array) => {
                             const isExpanded = expandedDates[date];
                             const isFirst = index === 0;
@@ -186,32 +186,32 @@ const RevisitJournal: React.FC = () => {
                                 <div key={date} className="relative z-10 group/item">
                                     {/* Timeline Line Fragment */}
                                     {!isFirst && (
-                                        <div className="absolute left-[10px] top-0 h-4 w-px bg-gray-200 z-0" />
+                                        <div className="absolute left-[10px] top-0 h-4 w-px bg-white/[0.08] z-0" />
                                     )}
                                     {!isLast && (
-                                        <div className="absolute left-[10px] top-4 bottom-0 w-px bg-gray-200 z-0" />
+                                        <div className="absolute left-[10px] top-4 bottom-0 w-px bg-white/[0.08] z-0" />
                                     )}
 
                                     {/* Date Header Row (Clickable) */}
                                     <button
                                         onClick={() => toggleDate(date)}
-                                        className="w-full flex items-center gap-3 group/header hover:bg-emerald-500/5 transition-colors rounded-xl py-2 -ml-1 pl-1 relative z-10"
+                                        className="w-full flex items-center gap-3 group/header hover:bg-white/[0.02] transition-colors rounded-md py-2 -ml-1 pl-1 relative z-10"
                                     >
                                         {/* Left: Indicator Dot */}
                                         <div className="w-8 shrink-0 flex justify-center">
-                                            <div className={`size-3 rounded-full border-2 transition-all duration-300 z-10 ${isExpanded ? 'bg-emerald-500 border-emerald-500 scale-125' : 'bg-[#F5F0EB] border-gray-300'}`} />
+                                            <div className={`size-2.5 rounded-full border-2 transition-all duration-300 z-10 ${isExpanded ? 'bg-green-500 border-green-500 scale-125' : 'bg-zinc-950 border-white/[0.16]'}`} />
                                         </div>
 
                                         {/* Right: Date Text & Chevron */}
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <h2 className={`text-xs font-black uppercase tracking-widest whitespace-nowrap transition-colors ${isExpanded ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                            <h2 className={`text-[12px] font-medium whitespace-nowrap transition-colors ${isExpanded ? 'text-green-400' : 'text-zinc-100'}`}>
                                                 {date}
                                             </h2>
-                                            <div className="h-px bg-gray-100 flex-1" />
+                                            <div className="h-px bg-white/[0.06] flex-1" />
                                             {isExpanded ? (
-                                                <ChevronUp className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                                <ChevronUp className="w-3.5 h-3.5 text-green-400 shrink-0" />
                                             ) : (
-                                                <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                <ChevronDown className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                                             )}
                                         </div>
                                     </button>
@@ -224,26 +224,23 @@ const RevisitJournal: React.FC = () => {
                                                     <Link
                                                         to={`/problem/${item.problem_id}`}
                                                         key={item.id}
-                                                        className="bg-white border border-gray-100/60 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+                                                        className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5 hover:border-white/[0.12] transition-colors group relative overflow-hidden"
                                                     >
-                                                        {/* Accent Gradient */}
-                                                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
-
                                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center gap-3 mb-1.5">
-                                                                    <h3 className="text-[17px] font-black text-gray-900 group-hover:text-emerald-600 transition-colors block leading-snug tracking-tight truncate">
+                                                                    <h3 className="text-[14px] font-semibold text-zinc-100 group-hover:text-green-400 transition-colors block leading-snug truncate">
                                                                         {item.problem_title}
                                                                     </h3>
-                                                                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 bg-gray-50/80 px-2 py-0.5 rounded-full shrink-0">
-                                                                        <Clock className="w-3 h-3 text-emerald-500/50" />
+                                                                    <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1.5 bg-white/[0.03] px-2 py-0.5 rounded-full shrink-0">
+                                                                        <Clock className="w-3 h-3 text-zinc-600" />
                                                                         {new Date(item.revisited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                     </span>
                                                                 </div>
 
                                                                 {item.notes && (
-                                                                    <div className="hidden md:block mt-2 relative max-w-2xl px-3 py-1 bg-gray-50/50 rounded-lg border border-gray-100">
-                                                                        <p className="text-[10px] font-medium leading-relaxed text-gray-500 italic">
+                                                                    <div className="hidden md:block mt-2 relative max-w-2xl px-3 py-1.5 bg-white/[0.03] rounded-md border border-white/[0.06]">
+                                                                        <p className="text-[12px] leading-relaxed text-zinc-400 italic">
                                                                             "{item.notes}"
                                                                         </p>
                                                                     </div>
@@ -251,10 +248,8 @@ const RevisitJournal: React.FC = () => {
                                                             </div>
 
                                                             <div className="hidden md:flex items-center gap-2 shrink-0">
-                                                                <div
-                                                                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-[9px] font-black text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all rounded-lg uppercase tracking-wider border border-transparent hover:border-emerald-100"
-                                                                >
-                                                                    View Source
+                                                                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] text-[11px] font-medium text-zinc-500 group-hover:text-green-400 group-hover:bg-green-500/10 transition-colors rounded-md">
+                                                                    View source
                                                                     <ExternalLink className="w-3 h-3" />
                                                                 </div>
                                                             </div>

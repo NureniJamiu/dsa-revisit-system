@@ -61,10 +61,18 @@ const ProblemDetail: React.FC = () => {
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
-            case 'high': return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' };
-            case 'medium': return { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200' };
-            case 'low': return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' };
-            default: return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200' };
+            case 'high': return { bg: 'bg-red-500/10', text: 'text-red-400' };
+            case 'medium': return { bg: 'bg-amber-500/10', text: 'text-amber-400' };
+            case 'low': return { bg: 'bg-green-500/10', text: 'text-green-400' };
+            default: return { bg: 'bg-white/[0.06]', text: 'text-zinc-400' };
+        }
+    };
+
+    const getDifficultyStyle = (difficulty: string) => {
+        switch (difficulty.toLowerCase()) {
+            case 'hard': return 'bg-red-500/10 text-red-400';
+            case 'medium': return 'bg-amber-500/10 text-amber-400';
+            default: return 'bg-green-500/10 text-green-400';
         }
     };
 
@@ -80,9 +88,9 @@ const ProblemDetail: React.FC = () => {
         return (
             <div className="max-w-4xl mx-auto">
                 <div className="text-center py-20">
-                    <p className="text-red-500 mb-4">{isError ? 'Failed to load problem' : 'Problem not found'}</p>
-                    <Link to="/" className="text-emerald-600 hover:text-emerald-700">
-                        Back to Dashboard
+                    <p className="text-red-400 mb-4 text-[14px]">{isError ? 'Failed to load problem' : 'Problem not found'}</p>
+                    <Link to="/" className="text-green-400 hover:text-green-300 text-[13px] font-medium">
+                        Back to dashboard
                     </Link>
                 </div>
             </div>
@@ -92,29 +100,24 @@ const ProblemDetail: React.FC = () => {
     return (
         <div className="max-w-5xl mx-auto pb-20">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-8">
-                <Link to="/" className="hover:text-gray-900 transition-colors">Library</Link>
-                <span className="text-gray-300">/</span>
-                <span className="text-gray-900 tracking-tight">{problem.title}</span>
+            <nav className="flex items-center gap-2 text-[12px] font-medium text-zinc-500 mb-6">
+                <Link to="/" className="hover:text-zinc-200 transition-colors">Library</Link>
+                <span className="text-zinc-700">/</span>
+                <span className="text-zinc-300">{problem.title}</span>
             </nav>
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-2.5 mb-3">
                         {problem.difficulty && (
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${problem.difficulty.toLowerCase() === 'hard'
-                                ? 'bg-red-50 text-red-600'
-                                : problem.difficulty.toLowerCase() === 'medium'
-                                    ? 'bg-yellow-50 text-yellow-600'
-                                    : 'bg-green-50 text-green-600'
-                                }`}>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getDifficultyStyle(problem.difficulty)}`}>
                                 {problem.difficulty}
                             </span>
                         )}
-                        <span className="text-[11px] font-black text-gray-300 uppercase tracking-tight">{problem.source || 'LeetCode'}</span>
+                        <span className="text-[11px] font-medium text-zinc-600">{problem.source || 'LeetCode'}</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">{problem.title}</h1>
+                    <h1 className="text-3xl md:text-4xl font-semibold text-zinc-100 tracking-tight leading-tight">{problem.title}</h1>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -122,51 +125,51 @@ const ProblemDetail: React.FC = () => {
                         href={problem.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-[13px] font-bold text-gray-900 rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-transparent border border-white/[0.08] text-[13px] font-medium text-zinc-200 rounded-md hover:border-white/[0.16] transition-colors"
                     >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="w-3.5 h-3.5" />
                         View problem source
                     </a>
                 </div>
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
                 {/* Mark as Revisited Card */}
-                <div className={`lg:col-span-7 rounded-2xl border p-8 transition-all ${problem.revisited_today
-                    ? 'bg-green-50/50 border-green-200/50'
-                    : 'bg-white border-gray-200/80 shadow-sm'
+                <div className={`lg:col-span-7 rounded-lg border p-7 transition-colors ${problem.revisited_today
+                    ? 'bg-green-500/[0.04] border-green-500/15'
+                    : 'bg-white/[0.02] border-white/[0.06]'
                     }`}>
                     {problem.revisited_today ? (
                         <div className="text-center py-4">
-                            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="w-8 h-8 text-green-600" />
+                            <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-5">
+                                <CheckCircle className="w-7 h-7 text-green-400" strokeWidth={1.5} />
                             </div>
-                            <h3 className="text-2xl font-black text-green-900 mb-2">Revisited today!</h3>
-                            <p className="text-sm font-medium text-green-700/70 mb-8 px-8">Great work. Your neural paths are strengthening. See you tomorrow.</p>
+                            <h3 className="text-xl font-semibold text-green-300 mb-1.5">Revisited today!</h3>
+                            <p className="text-[13px] text-green-400/70 mb-7 px-8">Great work. Your neural paths are strengthening. See you tomorrow.</p>
 
-                            <div className="bg-white/50 border border-green-200/50 rounded-xl p-4 text-left">
-                                <p className="text-[10px] font-black text-green-800 uppercase tracking-widest mb-1">Session Record</p>
-                                <p className="text-sm font-bold text-green-900 leading-relaxed italic">
+                            <div className="bg-white/[0.03] border border-green-500/10 rounded-md p-4 text-left">
+                                <p className="text-[11px] font-medium text-green-400 mb-1">Session record</p>
+                                <p className="text-[13px] font-medium text-zinc-300 leading-relaxed italic">
                                     {problem.revisit_history?.[0]?.notes || 'Fast completion, no notes recorded.'}
                                 </p>
                             </div>
                         </div>
                     ) : (
                         <>
-                            <h3 className="text-lg font-black text-gray-900 mb-2">Daily Revisit</h3>
-                            <p className="text-sm font-medium text-gray-400 mb-8">
+                            <h3 className="text-[15px] font-semibold text-zinc-100 mb-1.5">Daily revisit</h3>
+                            <p className="text-[13px] text-zinc-500 mb-6">
                                 Confirm your revisit session to update your mastery history and adjust the scheduling algorithm.
                             </p>
 
-                            <div className="space-y-6">
+                            <div className="space-y-5">
                                 <div>
-                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Session Notes</label>
+                                    <label className="text-[11px] font-medium text-zinc-500 block mb-2">Session notes</label>
                                     <textarea
                                         value={note}
                                         onChange={(e) => setNote(e.target.value)}
                                         placeholder="What did you learn? Any pitfalls to remember next time?"
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all resize-none"
+                                        className="w-full px-3.5 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-md text-[13px] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all resize-none"
                                         rows={3}
                                     />
                                 </div>
@@ -174,12 +177,12 @@ const ProblemDetail: React.FC = () => {
                                 <button
                                     onClick={() => setShowRevisitConfirm(true)}
                                     disabled={revisitMutation.isPending}
-                                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
+                                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-zinc-100 text-zinc-900 text-[13px] font-medium rounded-md hover:bg-white transition-colors disabled:opacity-50"
                                 >
                                     {revisitMutation.isPending ? (
-                                        <div className="animate-spin w-5 h-5 border-2 border-white/20 border-t-white rounded-full" />
+                                        <div className="animate-spin w-4 h-4 border-2 border-zinc-900/20 border-t-zinc-900 rounded-full" />
                                     ) : (
-                                        <CheckSquare className="w-5 h-5 text-green-400" />
+                                        <CheckSquare className="w-4 h-4" />
                                     )}
                                     {revisitMutation.isPending ? 'Processing...' : 'Mark as revisited'}
                                 </button>
@@ -189,39 +192,39 @@ const ProblemDetail: React.FC = () => {
                 </div>
 
                 {/* Stats Card */}
-                <div className="lg:col-span-5 rounded-2xl border border-[#C5CDC2] p-8 flex flex-col justify-between" style={{ backgroundColor: '#D4DDD2' }}>
+                <div className="lg:col-span-5 rounded-lg border border-white/[0.06] bg-white/[0.02] p-7 flex flex-col justify-between">
                     <div>
-                        <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-1">Mastery Score</p>
-                        <div className="flex items-baseline gap-2 mb-8">
-                            <span className="text-5xl font-black text-gray-900">{problem.times_revisited}</span>
-                            <span className="text-sm font-bold text-gray-600">revisits</span>
+                        <p className="text-[11px] font-medium text-zinc-500 mb-1">Mastery score</p>
+                        <div className="flex items-baseline gap-2 mb-7">
+                            <span className="text-4xl font-semibold text-zinc-100">{problem.times_revisited}</span>
+                            <span className="text-[13px] font-medium text-zinc-500">revisits</span>
                         </div>
 
                         {problem.weight_info && (
-                            <div className="space-y-6">
+                            <div className="space-y-5">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Priority</span>
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${getPriorityColor(problem.weight_info.priority).bg} ${getPriorityColor(problem.weight_info.priority).text}`}>
+                                    <span className="text-[11px] font-medium text-zinc-500">Priority</span>
+                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityColor(problem.weight_info.priority).bg} ${getPriorityColor(problem.weight_info.priority).text}`}>
                                         {problem.weight_info.priority}
                                     </span>
                                 </div>
 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Retention Decay</span>
-                                        <span className="text-[13px] font-black text-gray-900">{Math.round(problem.weight_info.revisit_decay * 100)}%</span>
+                                        <span className="text-[11px] font-medium text-zinc-500">Retention decay</span>
+                                        <span className="text-[12px] font-semibold text-zinc-100">{Math.round(problem.weight_info.revisit_decay * 100)}%</span>
                                     </div>
-                                    <div className="w-full bg-[#C5CDC2] rounded-full h-2 overflow-hidden">
+                                    <div className="w-full bg-white/[0.06] rounded-full h-1.5 overflow-hidden">
                                         <div
-                                            className="bg-gray-800 h-2 rounded-full transition-all duration-1000"
+                                            className="bg-green-500 h-1.5 rounded-full transition-all duration-1000"
                                             style={{ width: `${Math.round(problem.weight_info.revisit_decay * 100)}%` }}
                                         />
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-[#C5CDC2]">
-                                    <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-1">Next Revisit</p>
-                                    <p className={`text-[13px] font-bold ${problem.weight_info.is_eligible ? 'text-green-700' : 'text-gray-600'}`}>
+                                <div className="pt-4 border-t border-white/[0.06]">
+                                    <p className="text-[11px] font-medium text-zinc-500 mb-1">Next revisit</p>
+                                    <p className={`text-[12px] font-medium ${problem.weight_info.is_eligible ? 'text-green-400' : 'text-zinc-400'}`}>
                                         {problem.weight_info.is_eligible
                                             ? 'Highly likely in tomorrow\'s email'
                                             : `Scheduled for cooldown (${problem.weight_info.days_since_last_revisit}d since last)`
@@ -232,13 +235,13 @@ const ProblemDetail: React.FC = () => {
                         )}
                     </div>
 
-                    <div className="mt-8">
+                    <div className="mt-7">
                         <button
                             onClick={() => setShowRetireConfirm(true)}
-                            className="flex items-center gap-2 text-[11px] font-black text-gray-500 hover:text-red-600 transition-colors uppercase tracking-widest"
+                            className="flex items-center gap-2 text-[11px] font-medium text-zinc-500 hover:text-red-400 transition-colors"
                         >
-                            <Archive className="w-4 h-4" />
-                            Retire from Active
+                            <Archive className="w-3.5 h-3.5" />
+                            Retire from active
                         </button>
                     </div>
                 </div>
@@ -246,47 +249,47 @@ const ProblemDetail: React.FC = () => {
 
             {/* Problem Notes/Context */}
             {problem.notes && (
-                <div className="mb-12">
-                    <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Problem Context</h2>
-                    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8">
-                        <p className="text-gray-600 font-medium leading-relaxed whitespace-pre-wrap">{problem.notes}</p>
+                <div className="mb-10">
+                    <h2 className="text-[11px] font-medium text-zinc-500 mb-3">Problem context</h2>
+                    <div className="bg-white/[0.02] rounded-lg border border-white/[0.06] p-7">
+                        <p className="text-zinc-300 text-[14px] leading-relaxed whitespace-pre-wrap">{problem.notes}</p>
                     </div>
                 </div>
             )}
 
             {/* Revisit History */}
             <div>
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-8">Progress Timeline</h2>
+                <h2 className="text-[15px] font-semibold text-zinc-100 tracking-tight mb-6">Progress timeline</h2>
 
-                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-10">
-                    <div className="space-y-10 relative">
+                <div className="bg-white/[0.02] rounded-lg border border-white/[0.06] p-8">
+                    <div className="space-y-8 relative">
                         {/* Vertical line through timeline */}
-                        <div className="absolute left-[7.5px] top-2 bottom-8 w-[1px] bg-gray-100" />
+                        <div className="absolute left-[7.5px] top-2 bottom-8 w-px bg-white/[0.06]" />
 
                         {problem.revisit_history && problem.revisit_history.length > 0 ? (
                             problem.revisit_history.map((entry, index) => (
-                                <div key={entry.id} className="relative flex gap-8">
-                                    <div className={`w-4 h-4 rounded-full mt-1.5 z-10 border-2 border-white shadow-sm ${index === 0 ? 'bg-green-500 scale-125' : 'bg-gray-300'
+                                <div key={entry.id} className="relative flex gap-7">
+                                    <div className={`w-3.5 h-3.5 rounded-full mt-1.5 z-10 border-2 border-zinc-950 ${index === 0 ? 'bg-green-500 scale-125' : 'bg-zinc-700'
                                         }`} />
 
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-base font-black text-gray-900">{formatDate(entry.revisited_at)}</h3>
-                                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{getTimeAgo(entry.revisited_at)}</span>
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <h3 className="text-[13px] font-semibold text-zinc-100">{formatDate(entry.revisited_at)}</h3>
+                                            <span className="text-[11px] font-medium text-zinc-500">{getTimeAgo(entry.revisited_at)}</span>
                                         </div>
                                         {entry.notes ? (
-                                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                                <p className="text-sm font-medium text-gray-600 leading-relaxed italic">"{entry.notes}"</p>
+                                            <div className="bg-white/[0.03] rounded-md p-3.5 border border-white/[0.06]">
+                                                <p className="text-[13px] text-zinc-400 leading-relaxed italic">"{entry.notes}"</p>
                                             </div>
                                         ) : (
-                                            <p className="text-xs font-bold text-gray-300 uppercase italic">No session notes recorded.</p>
+                                            <p className="text-[12px] text-zinc-600 italic">No session notes recorded.</p>
                                         )}
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="text-center py-10">
-                                <p className="text-sm font-bold text-gray-300 uppercase tracking-widest">No history recorded yet.</p>
+                                <p className="text-[13px] text-zinc-600">No history recorded yet.</p>
                             </div>
                         )}
                     </div>
@@ -298,9 +301,9 @@ const ProblemDetail: React.FC = () => {
                 isOpen={showRevisitConfirm}
                 onClose={() => setShowRevisitConfirm(false)}
                 onConfirm={handleMarkRevisited}
-                title="Confirm Revisit Session"
+                title="Confirm revisit session"
                 description={`You're marking "${problem.title}" as revisited. This will update your mastery data.`}
-                confirmLabel={revisitMutation.isPending ? "Confirming..." : "Confirm Session"}
+                confirmLabel={revisitMutation.isPending ? "Confirming..." : "Confirm session"}
                 cancelLabel="Cancel"
                 variant="info"
                 loading={revisitMutation.isPending}
@@ -310,10 +313,10 @@ const ProblemDetail: React.FC = () => {
                 isOpen={showRetireConfirm}
                 onClose={() => setShowRetireConfirm(false)}
                 onConfirm={handleRetire}
-                title="Retire Problem?"
+                title="Retire problem?"
                 description={`Are you sure you want to retire "${problem.title}"? It will be moved to your archive and removed from daily reminders.`}
-                confirmLabel={archiveMutation.isPending ? "Retiring..." : "Retire Problem"}
-                cancelLabel="Keep Active"
+                confirmLabel={archiveMutation.isPending ? "Retiring..." : "Retire problem"}
+                cancelLabel="Keep active"
                 variant="danger"
                 loading={archiveMutation.isPending}
             />
