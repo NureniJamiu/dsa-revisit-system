@@ -80,51 +80,54 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
 
     if (!isOpen) return null;
 
+    const inputClass = "w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-md text-[14px] font-medium text-zinc-100 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:bg-white/[0.05] focus:border-green-500/40 transition-all placeholder:text-zinc-600";
+    const labelClass = "block text-[11px] font-medium text-zinc-500 mb-2";
+
     return (
         <div
-            className={`fixed inset-0 z-[60] flex ${isMobile ? 'items-end' : 'items-center justify-center'} bg-black/40 backdrop-blur-sm animate-fadeIn`}
+            className={`fixed inset-0 z-[60] flex ${isMobile ? 'items-end' : 'items-center justify-center'} bg-black/60 backdrop-blur-sm animate-fadeIn`}
             onClick={onClose}
         >
             {/* Sheet / Modal Container */}
             <div
-                className={`bg-white shadow-2xl w-full transform transition-all overflow-hidden ${isMobile
-                    ? 'rounded-t-[32px] animate-sheetSlideUp'
-                    : 'rounded-[32px] max-w-[440px] m-6 animate-scaleIn'
+                className={`bg-zinc-900 border border-white/[0.08] shadow-2xl w-full transform transition-all overflow-hidden ${isMobile
+                    ? 'rounded-t-2xl animate-sheetSlideUp'
+                    : 'rounded-xl max-w-[440px] m-6 animate-scaleIn'
                     }`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Mobile Drag Handle */}
                 {isMobile && (
                     <div className="pt-4 pb-2">
-                        <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto" />
+                        <div className="w-10 h-1 bg-white/[0.1] rounded-full mx-auto" />
                     </div>
                 )}
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-8 pt-6 pb-4">
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                        {problem ? 'Refine Problem' : 'Expand Library'}
+                <div className="flex items-center justify-between px-6 pt-6 pb-4">
+                    <h2 className="text-[17px] font-semibold text-zinc-100 tracking-tight">
+                        {problem ? 'Edit problem' : 'Add problem'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-900 transition-colors"
+                        className="p-1.5 text-zinc-500 hover:text-zinc-100 hover:bg-white/[0.06] rounded-md transition-colors"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-4.5 h-4.5" />
                     </button>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className={`px-8 space-y-8 ${isMobile ? 'pb-12' : 'pb-10'}`}>
-                    <div className="space-y-6">
+                <form onSubmit={handleSubmit} className={`px-6 space-y-6 ${isMobile ? 'pb-10' : 'pb-8'}`}>
+                    <div className="space-y-4">
                         <div>
-                            <label htmlFor="title" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                                Problem Title
+                            <label htmlFor="title" className={labelClass}>
+                                Problem title
                             </label>
                             <input
                                 type="text"
                                 id="title"
                                 required
-                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
+                                className={inputClass}
                                 placeholder="e.g. Invert Binary Tree"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
@@ -132,44 +135,44 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                         </div>
 
                         <div>
-                            <label htmlFor="link" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                                Source URI
+                            <label htmlFor="link" className={labelClass}>
+                                Source URL
                             </label>
                             <input
                                 type="url"
                                 id="link"
                                 required
-                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
+                                className={inputClass}
                                 placeholder="https://leetcode.com/problems/..."
                                 value={link}
                                 onChange={(e) => setLink(e.target.value)}
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label htmlFor="difficulty" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                                <label htmlFor="difficulty" className={labelClass}>
                                     Difficulty
                                 </label>
                                 <select
                                     id="difficulty"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all"
+                                    className={`${inputClass} appearance-none`}
                                     value={difficulty}
                                     onChange={(e) => setDifficulty(e.target.value)}
                                 >
-                                    <option value="Easy">Easy</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="Hard">Hard</option>
+                                    <option value="Easy" className="bg-zinc-900">Easy</option>
+                                    <option value="Medium" className="bg-zinc-900">Medium</option>
+                                    <option value="Hard" className="bg-zinc-900">Hard</option>
                                 </select>
                             </div>
                             <div>
-                                <label htmlFor="source" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                                <label htmlFor="source" className={labelClass}>
                                     Source
                                 </label>
                                 <input
                                     type="text"
                                     id="source"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300"
+                                    className={inputClass}
                                     placeholder="e.g. LeetCode"
                                     value={source}
                                     onChange={(e) => setSource(e.target.value)}
@@ -178,12 +181,12 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                         </div>
 
                         <div>
-                            <label htmlFor="notes" className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                                Notes (Optional)
+                            <label htmlFor="notes" className={labelClass}>
+                                Notes (optional)
                             </label>
                             <textarea
                                 id="notes"
-                                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-[16px] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all placeholder:text-gray-300 resize-none"
+                                className={`${inputClass} resize-none`}
                                 placeholder="Any context or thoughts on this problem..."
                                 rows={3}
                                 value={notes}
@@ -193,18 +196,18 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-col gap-3 pt-2">
+                    <div className="flex flex-col gap-2 pt-1">
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full flex justify-center items-center gap-2 bg-gray-800 text-white py-4.5 rounded-2xl hover:bg-gray-800 text-sm font-black transition-all shadow-xl shadow-gray-200 uppercase tracking-widest disabled:opacity-50"
+                            className="w-full flex justify-center items-center gap-2 bg-zinc-100 text-zinc-900 py-3 rounded-md hover:bg-white text-[13px] font-medium transition-colors disabled:opacity-50"
                         >
                             {isSubmitting ? (
-                                <span className="flex items-center gap-2">Saving...</span>
+                                <span>Saving...</span>
                             ) : (
                                 <>
-                                    {problem ? <Plus className="w-5 h-5 text-green-400 rotate-45" /> : <Plus className="w-5 h-5 text-green-400" />}
-                                    {problem ? 'Save Changes' : 'Save & remind me later'}
+                                    {problem ? <Plus className="w-4 h-4 rotate-45" /> : <Plus className="w-4 h-4" />}
+                                    {problem ? 'Save changes' : 'Save & remind me later'}
                                 </>
                             )}
                         </button>
@@ -212,7 +215,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="w-full py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors"
+                                className="w-full py-2.5 text-[12px] font-medium text-zinc-500 hover:text-zinc-200 transition-colors"
                             >
                                 Cancel
                             </button>

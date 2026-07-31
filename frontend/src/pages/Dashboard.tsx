@@ -77,10 +77,18 @@ const Dashboard: React.FC = () => {
 
     const getPriorityStyle = (priority: string) => {
         switch (priority) {
-            case 'high': return { text: 'text-red-600', badge: 'bg-red-50' };
-            case 'medium': return { text: 'text-yellow-600', badge: 'bg-yellow-50' };
-            case 'low': return { text: 'text-green-600', badge: 'bg-green-50' };
-            default: return { text: 'text-gray-600', badge: 'bg-gray-50' };
+            case 'high': return { text: 'text-red-400', badge: 'bg-red-500/10' };
+            case 'medium': return { text: 'text-amber-400', badge: 'bg-amber-500/10' };
+            case 'low': return { text: 'text-green-400', badge: 'bg-green-500/10' };
+            default: return { text: 'text-zinc-400', badge: 'bg-white/5' };
+        }
+    };
+
+    const getDifficultyStyle = (difficulty: string) => {
+        switch (difficulty.toLowerCase()) {
+            case 'hard': return 'bg-red-500/10 text-red-400';
+            case 'medium': return 'bg-amber-500/10 text-amber-400';
+            default: return 'bg-green-500/10 text-green-400';
         }
     };
 
@@ -109,14 +117,14 @@ const Dashboard: React.FC = () => {
     }, [searchQuery, difficultyFilter]);
 
     return (
-        <div className="space-y-12 pb-24 md:pb-12">
+        <div className="space-y-10 pb-24 md:pb-12">
             {/* Greeting Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-gray-800 tracking-tight mb-2 break-words">
-                        {getGreeting()}{user?.firstName ? `, ${user.firstName}.` : ' '}
+                    <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight mb-1.5 break-words">
+                        {getGreeting()}{user?.firstName ? `, ${user.firstName}` : ''}
                     </h1>
-                    <p className="text-[15px] font-medium text-gray-400">Your mastery curve is looking strong today.</p>
+                    <p className="text-[13px] text-zinc-500">Your mastery curve is looking strong today.</p>
                 </div>
                 <div className="flex items-center justify-between md:justify-end gap-6">
                     <button
@@ -124,37 +132,35 @@ const Dashboard: React.FC = () => {
                             setEditingProblem(null);
                             setIsAddModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-gray-800 text-white text-[13px] font-black rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 uppercase tracking-widest"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 text-zinc-900 text-[13px] font-medium rounded-md hover:bg-white transition-colors"
                     >
-                        <Plus className="w-4 h-4 text-green-400" />
-                        Add Problem
+                        <Plus className="w-3.5 h-3.5" />
+                        Add problem
                     </button>
                     <div className="text-right">
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Mastery</p>
-                        <p className="text-2xl font-black text-gray-900">{problems.length}</p>
+                        <p className="text-[11px] font-medium text-zinc-600 mb-0.5">Total tracked</p>
+                        <p className="text-lg font-semibold text-zinc-100">{problems.length}</p>
                     </div>
                 </div>
             </div>
 
             {/* Today's Focus Section */}
             <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-3">
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">Today's Focus</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-2.5">
+                        <h2 className="text-[15px] font-semibold text-zinc-100 tracking-tight">Today's focus</h2>
                         {summary && summary.total_focus > 0 && (
-                            <span className="px-2 py-0.5 rounded bg-green-100 text-[10px] font-black text-green-700 uppercase tracking-wider">
-                                {summary.remaining} Remaining
+                            <span className="px-1.5 py-0.5 rounded bg-green-500/10 text-[11px] font-medium text-green-400">
+                                {summary.remaining} remaining
                             </span>
                         )}
                     </div>
                     {summary && summary.total_focus > 0 && (
-                        <div className="flex items-center justify-between gap-4 bg-white px-4 py-2 rounded-xl border border-gray-200/80 shadow-sm">
-                            <div className="flex items-center gap-2 text-[13px] font-bold text-gray-600">
-                                <span>{summary.completed}/{summary.total_focus} complete</span>
-                            </div>
-                            <div className="w-24 sm:w-32 bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div className="flex items-center gap-3 bg-white/[0.03] px-3 py-1.5 rounded-md border border-white/[0.06]">
+                            <span className="text-[12px] font-medium text-zinc-400">{summary.completed}/{summary.total_focus} complete</span>
+                            <div className="w-24 bg-white/[0.06] rounded-full h-1.5 overflow-hidden">
                                 <div
-                                    className="h-2 bg-green-500 transition-all duration-1000 ease-out"
+                                    className="h-1.5 bg-green-500 transition-all duration-1000 ease-out"
                                     style={{ width: `${completionPct}%` }}
                                 />
                             </div>
@@ -167,41 +173,41 @@ const Dashboard: React.FC = () => {
                         <CustomLoader text="Curating your focus..." />
                     </div>
                 ) : focusError ? (
-                    <div className="text-center py-16 bg-red-50 rounded-2xl border border-red-100 shadow-sm">
-                        <h3 className="text-lg font-bold text-red-900 mb-1">Failed to load today's focus</h3>
-                        <p className="text-sm text-red-600/70">Please check your connection and try again.</p>
+                    <div className="text-center py-16 bg-red-500/[0.04] rounded-lg border border-red-500/10">
+                        <h3 className="text-[15px] font-semibold text-red-300 mb-1">Failed to load today's focus</h3>
+                        <p className="text-[13px] text-red-400/70">Please check your connection and try again.</p>
                     </div>
                 ) : !todaysFocus || todaysFocus.problems.length === 0 ? (
-                    <div className="text-center py-16 bg-white rounded-2xl border border-gray-200/80 shadow-sm">
-                        <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">All caught up!</h3>
-                        <p className="text-sm text-gray-400">No problems scheduled for revisit today.</p>
+                    <div className="text-center py-16 bg-white/[0.02] rounded-lg border border-white/[0.06]">
+                        <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-3" strokeWidth={1.5} />
+                        <h3 className="text-[15px] font-semibold text-zinc-100 mb-1">All caught up!</h3>
+                        <p className="text-[13px] text-zinc-500">No problems scheduled for revisit today.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {todaysFocus.problems.map((item) => {
                             const priorityStyle = getPriorityStyle(item.weight.priority);
 
                             return (
                                 <div
                                     key={item.problem.id}
-                                    className={`group rounded-2xl border transition-all duration-300 ${item.revisited_today
-                                        ? 'bg-green-50/50 border-green-200/50 shadow-none'
-                                        : 'bg-white border-gray-200/80 hover:shadow-2xl hover:shadow-gray-200/60 hover:-translate-y-1'
+                                    className={`group rounded-lg border transition-colors ${item.revisited_today
+                                        ? 'bg-green-500/[0.04] border-green-500/15'
+                                        : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]'
                                         }`}
                                 >
-                                    <div className="p-6">
-                                        <div className="flex items-start justify-between gap-3 mb-4">
+                                    <div className="p-5">
+                                        <div className="flex items-start justify-between gap-3 mb-3">
                                             <div className="flex-1 min-w-0">
                                                 <Link to={`/problem/${item.problem.id}`}>
-                                                    <h3 className={`text-[17px] font-black leading-snug truncate transition-colors cursor-pointer ${item.revisited_today
-                                                        ? 'text-green-800'
-                                                        : 'text-gray-900 group-hover:text-green-600'
+                                                    <h3 className={`text-[14px] font-semibold leading-snug truncate transition-colors cursor-pointer ${item.revisited_today
+                                                        ? 'text-green-300'
+                                                        : 'text-zinc-100 group-hover:text-green-400'
                                                         }`}>
                                                         {item.problem.title}
                                                     </h3>
                                                 </Link>
-                                                <p className="text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-tight">
+                                                <p className="text-[11px] font-medium text-zinc-500 mt-1">
                                                     {item.problem.source || 'DSA Library'} · {getTimeAgo(item.problem.last_revisited_at)}
                                                 </p>
                                             </div>
@@ -209,32 +215,27 @@ const Dashboard: React.FC = () => {
                                                 href={item.problem.link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-green-600 hover:bg-green-50 transition-all flex-shrink-0"
+                                                className="w-7 h-7 flex items-center justify-center rounded-md text-zinc-500 hover:text-green-400 hover:bg-white/[0.05] transition-colors flex-shrink-0"
                                             >
-                                                <ExternalLink className="w-4 h-4" />
+                                                <ExternalLink className="w-3.5 h-3.5" />
                                             </a>
                                         </div>
 
-                                        <div className="flex items-center gap-2 mb-6">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${priorityStyle.badge} ${priorityStyle.text}`}>
+                                        <div className="flex items-center gap-1.5 mb-5">
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${priorityStyle.badge} ${priorityStyle.text}`}>
                                                 {item.weight.priority}
                                             </span>
                                             {item.problem.difficulty && (
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${item.problem.difficulty.toLowerCase() === 'hard'
-                                                    ? 'bg-red-50 text-red-600'
-                                                    : item.problem.difficulty.toLowerCase() === 'medium'
-                                                        ? 'bg-yellow-50 text-yellow-600'
-                                                        : 'bg-green-50 text-green-600'
-                                                    }`}>
+                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getDifficultyStyle(item.problem.difficulty)}`}>
                                                     {item.problem.difficulty}
                                                 </span>
                                             )}
                                         </div>
 
-                                        <div className="flex gap-2 pt-2 border-t border-gray-100">
+                                        <div className="flex gap-2 pt-3 border-t border-white/[0.06]">
                                             {item.revisited_today ? (
-                                                <div className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-100/50 text-green-700 text-[13px] font-bold rounded-xl">
-                                                    <CheckCircle className="w-4 h-4" />
+                                                <div className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-500/10 text-green-400 text-[12px] font-medium rounded-md">
+                                                    <CheckCircle className="w-3.5 h-3.5" />
                                                     Revisited today
                                                 </div>
                                             ) : (
@@ -244,14 +245,14 @@ const Dashboard: React.FC = () => {
                                                         setIsRevisitConfirmOpen(true);
                                                     }}
                                                     disabled={revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id}
-                                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 text-white text-[13px] font-bold rounded-xl hover:bg-gray-800 transition-all disabled:opacity-50"
+                                                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-zinc-100 text-zinc-900 text-[12px] font-medium rounded-md hover:bg-white transition-colors disabled:opacity-50"
                                                 >
                                                     {revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id ? (
-                                                        <div className="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full" />
+                                                        <div className="animate-spin w-3.5 h-3.5 border-2 border-zinc-900/20 border-t-zinc-900 rounded-full" />
                                                     ) : (
-                                                        <Zap className="w-4 h-4 text-green-400" />
+                                                        <Zap className="w-3.5 h-3.5" />
                                                     )}
-                                                    {revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id ? 'Processing...' : 'Mark as Revisited'}
+                                                    {revisitMutation.isPending && revisitMutation.variables?.id === item.problem.id ? 'Processing...' : 'Mark revisited'}
                                                 </button>
                                             )}
                                         </div>
@@ -265,26 +266,26 @@ const Dashboard: React.FC = () => {
 
             {/* All Problems Table */}
             <div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">All Problems</h2>
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
+                    <h2 className="text-[15px] font-semibold text-zinc-100 tracking-tight">All problems</h2>
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         {/* Search Input */}
                         <div className="relative group flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-green-400 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search problems..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full sm:w-64 pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                className="w-full sm:w-56 pl-8 pr-3 py-1.5 bg-white/[0.03] border border-white/[0.08] rounded-md text-[13px] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all"
                             />
                             {searchQuery && (
                                 <button
                                     onClick={() => setSearchQuery('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-white/10 rounded-full transition-colors"
                                 >
-                                    <X className="w-3 h-3 text-gray-400" />
+                                    <X className="w-3 h-3 text-zinc-500" />
                                 </button>
                             )}
                         </div>
@@ -293,21 +294,21 @@ const Dashboard: React.FC = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`flex items-center justify-center gap-2 px-4 py-2 text-[13px] font-bold rounded-xl border transition-all shadow-sm ${difficultyFilter || showFilters
-                                    ? 'bg-gray-800 text-white border-gray-800'
-                                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'
+                                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-md border transition-colors ${difficultyFilter || showFilters
+                                    ? 'bg-white/[0.08] text-zinc-100 border-white/[0.1]'
+                                    : 'bg-transparent text-zinc-400 border-white/[0.08] hover:border-white/[0.16] hover:text-zinc-100'
                                     }`}
                             >
-                                <Filter className={`w-4 h-4 ${difficultyFilter ? 'text-green-400' : ''}`} />
+                                <Filter className="w-3.5 h-3.5" />
                                 {difficultyFilter ? difficultyFilter.charAt(0).toUpperCase() + difficultyFilter.slice(1) : 'Filter'}
                             </button>
 
                             {showFilters && (
                                 <>
                                     <div className="fixed inset-0 z-10" onClick={() => setShowFilters(false)} />
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl border border-gray-200 shadow-xl z-20 overflow-hidden">
-                                        <div className="p-2 border-b border-gray-50 bg-gray-50/50">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2 py-1">Difficulty</p>
+                                    <div className="absolute right-0 mt-2 w-44 bg-zinc-900 rounded-lg border border-white/[0.08] shadow-2xl z-20 overflow-hidden">
+                                        <div className="p-2 border-b border-white/[0.06]">
+                                            <p className="text-[11px] font-medium text-zinc-500 px-2 py-1">Difficulty</p>
                                         </div>
                                         <div className="p-1">
                                             {['all', 'easy', 'medium', 'hard'].map((level) => (
@@ -317,9 +318,9 @@ const Dashboard: React.FC = () => {
                                                         setDifficultyFilter(level === 'all' ? null : level);
                                                         setShowFilters(false);
                                                     }}
-                                                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
-                                                        ? 'bg-green-50 text-green-700'
-                                                        : 'text-gray-600 hover:bg-gray-50'
+                                                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
+                                                        ? 'bg-green-500/10 text-green-400'
+                                                        : 'text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-100'
                                                         }`}
                                                 >
                                                     {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -333,87 +334,84 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden w-full relative group/table">
-                    {/* Horizontal Scroll indicator (Fades on desktop/appears on mobile) */}
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 opacity-0 md:group-hover/table:opacity-100 transition-opacity" />
-
+                <div className="bg-white/[0.02] rounded-lg border border-white/[0.06] overflow-hidden w-full relative group/table">
                     <div className="overflow-x-auto min-w-0 custom-scrollbar scroll-shadow-right">
                         <table className="w-full">
                             <thead>
-                                <tr className="border-b border-gray-100 bg-gray-50/50">
-                                    <th className="text-left px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                                <tr className="border-b border-white/[0.06]">
+                                    <th className="text-left px-5 md:px-6 py-3 text-[11px] font-medium text-zinc-500 whitespace-nowrap">
                                         Problem
                                     </th>
-                                    <th className="text-left px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">
-                                        Last Touch
+                                    <th className="text-left px-5 md:px-6 py-3 text-[11px] font-medium text-zinc-500 whitespace-nowrap">
+                                        Last touch
                                     </th>
-                                    <th className="hidden md:table-cell text-left px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                                    <th className="hidden md:table-cell text-left px-5 md:px-6 py-3 text-[11px] font-medium text-zinc-500 whitespace-nowrap">
                                         Attempts
                                     </th>
-                                    <th className="text-right px-6 md:px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-widest min-w-[120px] whitespace-nowrap">
+                                    <th className="text-right px-5 md:px-6 py-3 text-[11px] font-medium text-zinc-500 min-w-[100px] whitespace-nowrap">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-white/[0.05]">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} className="px-8 py-16 text-center">
+                                        <td colSpan={4} className="px-6 py-16 text-center">
                                             <CustomLoader text="Loading mastery archive..." />
                                         </td>
                                     </tr>
                                 ) : problemsError ? (
                                     <tr>
-                                        <td colSpan={4} className="px-8 py-12 text-center">
-                                            <p className="text-sm font-medium text-red-400">Failed to load archive data. Try refreshing.</p>
+                                        <td colSpan={4} className="px-6 py-12 text-center">
+                                            <p className="text-[13px] text-red-400/80">Failed to load archive data. Try refreshing.</p>
                                         </td>
                                     </tr>
                                 ) : paginatedProblems.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-8 py-12 text-center">
-                                            <p className="text-sm font-medium text-gray-400">
-                                                {searchQuery || difficultyFilter ? 'No problems match your filters.' : 'No problems tracked in your archive yet.'}
+                                        <td colSpan={4} className="px-6 py-12 text-center">
+                                            <p className="text-[13px] text-zinc-500">
+                                                {searchQuery || difficultyFilter ? 'No problems match your filters.' : 'No problems tracked yet.'}
                                             </p>
                                         </td>
                                     </tr>
                                 ) : (
                                     paginatedProblems.map((problem) => (
-                                        <tr key={problem.id} className="group hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 md:px-8 py-4 min-w-[200px]">
-                                                <Link to={`/problem/${problem.id}`} className="text-sm font-black text-gray-900 group-hover:text-green-600 transition-colors block truncate max-w-[200px] md:max-w-none">
+                                        <tr key={problem.id} className="group hover:bg-white/[0.02] transition-colors">
+                                            <td className="px-5 md:px-6 py-3.5 min-w-[200px]">
+                                                <Link to={`/problem/${problem.id}`} className="text-[13px] font-medium text-zinc-100 group-hover:text-green-400 transition-colors block truncate max-w-[200px] md:max-w-none">
                                                     {problem.title}
                                                 </Link>
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase mt-0.5 tracking-tight">{problem.source || 'Unknown'}</p>
+                                                <p className="text-[11px] text-zinc-500 mt-0.5">{problem.source || 'Unknown'}</p>
                                             </td>
-                                            <td className="px-6 md:px-8 py-4 text-sm font-bold text-gray-500 whitespace-nowrap">
+                                            <td className="px-5 md:px-6 py-3.5 text-[13px] text-zinc-400 whitespace-nowrap">
                                                 {getTimeAgo(problem.last_revisited_at)}
                                             </td>
-                                            <td className="hidden md:table-cell px-6 md:px-8 py-4">
-                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-100 text-[11px] font-black text-gray-600 whitespace-nowrap">
-                                                    {problem.times_revisited} Focus points
+                                            <td className="hidden md:table-cell px-5 md:px-6 py-3.5">
+                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.05] text-[11px] font-medium text-zinc-400 whitespace-nowrap">
+                                                    {problem.times_revisited} focus points
                                                 </span>
                                             </td>
-                                            <td className="px-6 md:px-8 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-1">
+                                            <td className="px-5 md:px-6 py-3.5 text-right">
+                                                <div className="flex items-center justify-end gap-0.5">
                                                     <button
                                                         onClick={() => {
                                                             setEditingProblem(problem);
                                                             setIsAddModalOpen(true);
                                                         }}
-                                                        className="p-2 text-gray-300 hover:text-green-600 transition-colors"
+                                                        className="p-1.5 text-zinc-600 hover:text-green-400 hover:bg-white/[0.05] rounded-md transition-colors"
                                                         title="Edit problem"
                                                     >
-                                                        <Edit2 className="w-4 h-4" />
+                                                        <Edit2 className="w-3.5 h-3.5" />
                                                     </button>
                                                     <button
                                                         onClick={() => {
                                                             setDeletingProblemId(problem.id);
                                                             setIsDeleteConfirmOpen(true);
                                                         }}
-                                                        className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                                        className="p-1.5 text-zinc-600 hover:text-red-400 hover:bg-white/[0.05] rounded-md transition-colors"
                                                         title="Delete problem"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -427,27 +425,27 @@ const Dashboard: React.FC = () => {
 
                 {/* Pagination Controls */}
                 {!loading && !problemsError && totalPages > 1 && (
-                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <p className="text-[13px] font-bold text-gray-400 uppercase tracking-widest">
-                            Showing <span className="text-gray-900">{Math.min(filteredProblems.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}-{Math.min(filteredProblems.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="text-gray-900">{filteredProblems.length}</span>
+                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <p className="text-[12px] text-zinc-500">
+                            Showing <span className="text-zinc-300">{Math.min(filteredProblems.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}-{Math.min(filteredProblems.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="text-zinc-300">{filteredProblems.length}</span>
                         </p>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                 disabled={currentPage === 1}
-                                className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] font-black text-gray-800 hover:border-gray-900 transition-all disabled:opacity-30 disabled:hover:border-gray-200 uppercase tracking-widest shadow-sm"
+                                className="px-3 py-1.5 bg-transparent border border-white/[0.08] rounded-md text-[12px] font-medium text-zinc-300 hover:border-white/[0.16] hover:text-zinc-100 transition-colors disabled:opacity-30"
                             >
                                 Previous
                             </button>
-                            <div className="px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-                                <span className="text-[13px] font-black text-gray-900">{currentPage}</span>
-                                <span className="text-[13px] font-bold text-gray-400 mx-2">/</span>
-                                <span className="text-[13px] font-black text-gray-400">{totalPages}</span>
+                            <div className="px-3 py-1.5 bg-white/[0.03] rounded-md border border-white/[0.06]">
+                                <span className="text-[12px] font-medium text-zinc-100">{currentPage}</span>
+                                <span className="text-[12px] text-zinc-600 mx-1.5">/</span>
+                                <span className="text-[12px] font-medium text-zinc-500">{totalPages}</span>
                             </div>
                             <button
                                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                 disabled={currentPage === totalPages}
-                                className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] font-black text-gray-800 hover:border-gray-900 transition-all disabled:opacity-30 disabled:hover:border-gray-200 uppercase tracking-widest shadow-sm"
+                                className="px-3 py-1.5 bg-transparent border border-white/[0.08] rounded-md text-[12px] font-medium text-zinc-300 hover:border-white/[0.16] hover:text-zinc-100 transition-colors disabled:opacity-30"
                             >
                                 Next
                             </button>
@@ -473,9 +471,9 @@ const Dashboard: React.FC = () => {
                         setDeletingProblemId(null);
                     }}
                     onConfirm={() => deletingProblemId && handleDelete(deletingProblemId)}
-                    title="Delete Problem"
+                    title="Delete problem"
                     description="Are you sure you want to permanently delete this problem and its entire revisit history? This action cannot be undone."
-                    confirmLabel={deleteMutation.isPending ? "Deleting..." : "Delete Permanently"}
+                    confirmLabel={deleteMutation.isPending ? "Deleting..." : "Delete permanently"}
                     variant="danger"
                     loading={deleteMutation.isPending}
                 />
@@ -488,7 +486,7 @@ const Dashboard: React.FC = () => {
                         setRevisitNote('');
                     }}
                     onConfirm={handleRevisit}
-                    title="Mark as Revisited"
+                    title="Mark as revisited"
                     description="Record your revisit session. You can optionally add notes about what you learned."
                     confirmLabel={revisitNote.trim() ? "Submit" : "Proceed without note"}
                     variant="info"
@@ -498,7 +496,7 @@ const Dashboard: React.FC = () => {
                         value={revisitNote}
                         onChange={(e) => setRevisitNote(e.target.value)}
                         placeholder="What did you learn? Any pitfalls to remember next time?"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent transition-all resize-none"
+                        className="w-full px-3.5 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-md text-[13px] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all resize-none"
                         rows={3}
                     />
                 </ConfirmDialog>

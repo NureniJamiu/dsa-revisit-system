@@ -21,28 +21,32 @@ const variantStyles: Record<ConfirmDialogVariant, {
     iconBg: string;
     iconColor: string;
     buttonBg: string;
+    buttonText: string;
     buttonHover: string;
     DefaultIcon: React.FC<{ className?: string }>;
 }> = {
     info: {
-        iconBg: 'bg-green-50',
-        iconColor: 'text-green-600',
-        buttonBg: 'bg-gray-800',
-        buttonHover: 'hover:bg-gray-800',
+        iconBg: 'bg-green-500/10',
+        iconColor: 'text-green-400',
+        buttonBg: 'bg-zinc-100',
+        buttonText: 'text-zinc-900',
+        buttonHover: 'hover:bg-white',
         DefaultIcon: Info,
     },
     success: {
-        iconBg: 'bg-green-50',
-        iconColor: 'text-green-600',
-        buttonBg: 'bg-gray-800',
-        buttonHover: 'hover:bg-gray-800',
+        iconBg: 'bg-green-500/10',
+        iconColor: 'text-green-400',
+        buttonBg: 'bg-zinc-100',
+        buttonText: 'text-zinc-900',
+        buttonHover: 'hover:bg-white',
         DefaultIcon: CheckCircle,
     },
     danger: {
-        iconBg: 'bg-red-50',
-        iconColor: 'text-red-500',
+        iconBg: 'bg-red-500/10',
+        iconColor: 'text-red-400',
         buttonBg: 'bg-red-500',
-        buttonHover: 'hover:bg-red-600',
+        buttonText: 'text-white',
+        buttonHover: 'hover:bg-red-400',
         DefaultIcon: AlertTriangle,
     },
 };
@@ -79,47 +83,47 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-fadeIn"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fadeIn"
             onClick={handleBackdropClick}
         >
             <div
-                className="bg-white rounded-[32px] shadow-2xl w-full max-w-[380px] transform transition-all animate-scaleIn overflow-hidden"
+                className="bg-zinc-900 border border-white/[0.08] rounded-xl shadow-2xl w-full max-w-[380px] transform transition-all animate-scaleIn overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Content */}
-                <div className="px-8 pt-10 pb-8 text-center">
+                <div className="px-7 pt-9 pb-7 text-center">
                     {/* Icon */}
-                    <div className="flex justify-center mb-6">
-                        <div className={`w-16 h-16 rounded-full ${style.iconBg} flex items-center justify-center border border-current border-opacity-10`}>
-                            {icon || <IconComponent className={`w-8 h-8 ${style.iconColor}`} />}
+                    <div className="flex justify-center mb-5">
+                        <div className={`w-12 h-12 rounded-full ${style.iconBg} flex items-center justify-center`}>
+                            {icon || <IconComponent className={`w-6 h-6 ${style.iconColor}`} />}
                         </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-3 px-2">{title}</h3>
+                    <h3 className="text-[17px] font-semibold text-zinc-100 tracking-tight mb-2 px-2">{title}</h3>
 
                     {/* Description */}
                     {description && (
-                        <p className="text-sm font-medium text-gray-400 mb-8 leading-relaxed px-2">{description}</p>
+                        <p className="text-[13px] text-zinc-500 mb-6 leading-relaxed px-2">{description}</p>
                     )}
 
                     {/* Children for custom content e.g. inputs */}
                     {children && (
-                        <div className="mb-8 text-left">
+                        <div className="mb-6 text-left">
                             {children}
                         </div>
                     )}
 
                     {/* Actions */}
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2">
                         <button
                             onClick={handleConfirm}
                             disabled={loading}
-                            className={`w-full py-4 text-white rounded-2xl font-black transition-all shadow-xl shadow-gray-200 uppercase tracking-widest text-sm disabled:opacity-50 disabled:cursor-not-allowed ${style.buttonBg} ${style.buttonHover}`}
+                            className={`w-full py-3 rounded-md font-medium transition-colors text-[13px] disabled:opacity-50 disabled:cursor-not-allowed ${style.buttonBg} ${style.buttonText} ${style.buttonHover}`}
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                     </svg>
@@ -132,7 +136,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         <button
                             onClick={onClose}
                             disabled={loading}
-                            className="w-full py-3 text-[11px] font-black text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-widest disabled:opacity-50"
+                            className="w-full py-2.5 text-[12px] font-medium text-zinc-500 hover:text-zinc-200 transition-colors disabled:opacity-50"
                         >
                             {cancelLabel}
                         </button>
