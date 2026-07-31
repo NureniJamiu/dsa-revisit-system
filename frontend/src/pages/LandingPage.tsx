@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Mail,
     Brain,
@@ -12,39 +12,48 @@ import {
     Search,
     Clock,
     HelpCircle,
+    Zap,
+    Plus,
+    Archive as ArchiveIcon,
 } from 'lucide-react';
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import Logo from '../components/Logo';
+
+/* ─── Shared styles ─── */
+const btnPrimary =
+    'bg-gradient-to-b from-white to-zinc-200 text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,0,0,0.35)] hover:brightness-105 transition-all';
+const btnGhost =
+    'text-zinc-300 border border-white/[0.08] hover:bg-white/[0.04] hover:border-white/[0.14] transition-colors';
+
+function useSpotlight() {
+    const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
+        e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
+    };
+    return onMouseMove;
+}
 
 /* ─── Data ─── */
 const platforms = [
     'LeetCode', 'HackerRank', 'Codeforces', 'NeetCode', 'AlgoExpert', 'Codewars',
 ];
 
-const steps = [
+const showcaseTabs = [
     {
-        step: '01',
-        title: 'Link your account',
-        desc: 'Sign in securely with Clerk. Your problem list, history, and settings are scoped to you alone.',
-        icon: Shield,
-    },
-    {
-        step: '02',
-        title: 'Build your library',
-        desc: 'Paste a link from LeetCode, NeetCode, or anywhere else. We track the title and difficulty for you.',
+        label: 'Build your library',
         icon: Search,
+        desc: 'Paste a link from LeetCode, NeetCode, or anywhere else. We track the title and difficulty for you.',
     },
     {
-        step: '03',
-        title: 'Get a daily focus set',
-        desc: 'Each morning we surface a handful of problems chosen by a weighted spaced-repetition algorithm — right before you\'d start forgetting them.',
+        label: 'Get a daily focus set',
         icon: Mail,
+        desc: 'Each morning we surface a handful of problems chosen by a weighted spaced-repetition algorithm — right before you\'d start forgetting them.',
     },
     {
-        step: '04',
-        title: 'Track your mastery',
+        label: 'Track your mastery',
+        icon: Zap,
         desc: 'Mark problems as revisited and retire the ones you\'ve mastered. The rotation adjusts automatically.',
-        icon: CheckCircle2,
     },
 ];
 
@@ -54,31 +63,43 @@ const features = [
         title: 'Weighted spaced repetition',
         desc: 'Problems resurface based on age, days since your last revisit, and how many times you\'ve solved them — never fully random, never forgotten.',
         span: 'md:col-span-7',
+        visual: 'weights',
     },
     {
         icon: Mail,
         title: 'Daily focus set',
         desc: 'The same deterministic selection shows up on your dashboard and in your inbox, all day.',
         span: 'md:col-span-5',
+        visual: 'inbox',
     },
     {
         icon: Search,
         title: 'Practice anywhere',
         desc: 'LeetCode, HackerRank, Codeforces, or any custom URL — one place to track it all.',
         span: 'md:col-span-4',
+        visual: 'chips',
     },
     {
         icon: BarChart3,
         title: 'Revisit history',
         desc: 'Every review is logged, so you can see exactly how a problem\'s mastery has progressed.',
         span: 'md:col-span-4',
+        visual: 'timeline',
     },
     {
-        icon: Shield,
+        icon: ArchiveIcon,
         title: 'The archive',
         desc: 'Retire problems you\'ve fully mastered. Out of rotation, never deleted.',
         span: 'md:col-span-4',
+        visual: 'stack',
     },
+];
+
+const stats = [
+    { label: 'Age curve', value: '√days', hint: 'Older problems gently gain weight' },
+    { label: 'Revisit urgency', value: 'linear(Δt)', hint: 'Longer since last touch, more urgent' },
+    { label: 'Newness cooldown', value: '2 days', hint: 'Fresh adds sit out the first rotation' },
+    { label: 'Weight floor', value: '1.0', hint: 'No problem ever fully disappears' },
 ];
 
 const faqs = [
@@ -114,6 +135,135 @@ const faqs = [
     },
 ];
 
+/* ─── Feature card mini-visuals ─── */
+function FeatureVisual({ type }: { type: string }) {
+    if (type === 'weights') {
+        const bars = [92, 74, 58, 41, 27, 18];
+        return (
+            <div className="flex items-end gap-1.5 h-12 mt-5">
+                {bars.map((h, i) => (
+                    <div key={i} className="flex-1 rounded-sm bg-green-500" style={{ height: `${h}%`, opacity: 1 - i * 0.13 }} />
+                ))}
+            </div>
+        );
+    }
+    if (type === 'inbox') {
+        return (
+            <div className="mt-5 space-y-1.5">
+                {[100, 85, 60].map((w, i) => (
+                    <div key={i} className={`h-2 rounded-full bg-white/[0.06] ${i === 0 ? 'border border-green-500/30' : ''}`} style={{ width: `${w}%` }} />
+                ))}
+            </div>
+        );
+    }
+    if (type === 'chips') {
+        return (
+            <div className="flex flex-wrap gap-1.5 mt-5">
+                {['LeetCode', 'Codeforces', 'NeetCode', '+3'].map((c) => (
+                    <span key={c} className="px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-medium text-zinc-500">{c}</span>
+                ))}
+            </div>
+        );
+    }
+    if (type === 'timeline') {
+        return (
+            <div className="flex items-center gap-0 mt-5">
+                {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center flex-1 last:flex-none">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${i === 3 ? 'bg-green-500' : 'bg-white/[0.12]'}`} />
+                        {i < 3 && <div className="h-px flex-1 bg-white/[0.08]" />}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    if (type === 'stack') {
+        return (
+            <div className="relative h-12 mt-5 ml-1">
+                {[0, 1, 2].map((i) => (
+                    <div
+                        key={i}
+                        className="absolute inset-x-0 h-7 rounded-md bg-white/[0.04] border border-white/[0.08]"
+                        style={{ top: `${i * 8}px`, left: `${i * 6}px`, right: `${-i * 6}px`, opacity: 1 - i * 0.28 }}
+                    />
+                ))}
+            </div>
+        );
+    }
+    return null;
+}
+
+/* ─── Showcase mockups (right-hand panel per tab) ─── */
+function ShowcaseMockup({ index }: { index: number }) {
+    if (index === 0) {
+        return (
+            <div className="w-full max-w-sm space-y-3">
+                <div className="bg-white/[0.03] p-4 rounded-lg border border-white/[0.08]">
+                    <p className="text-[10px] font-medium text-zinc-500 mb-2">Paste URL</p>
+                    <div className="flex gap-2">
+                        <div className="h-9 flex-1 bg-white/[0.03] rounded-md border border-white/[0.08] px-3 flex items-center">
+                            <span className="text-[11px] font-mono-tabular text-zinc-600 truncate">leetcode.com/problems/lru-cache</span>
+                        </div>
+                        <div className="w-9 h-9 bg-zinc-100 rounded-md flex items-center justify-center flex-shrink-0">
+                            <Plus className="w-4 h-4 text-zinc-900" />
+                        </div>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <div className="h-7 px-3 bg-white/[0.03] rounded-full border border-white/[0.08] flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                        <span className="text-[10px] font-medium text-zinc-400">Hard</span>
+                    </div>
+                    <div className="h-7 px-3 bg-green-500/10 rounded-full border border-green-500/20 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3 h-3 text-green-400" />
+                        <span className="text-[10px] font-medium text-green-400">Indexed</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    if (index === 1) {
+        return (
+            <div className="w-full max-w-[220px] bg-zinc-900 rounded-xl shadow-xl overflow-hidden border border-white/[0.08]">
+                <div className="bg-green-600 p-3 text-center">
+                    <span className="text-[11px] font-semibold text-white">Today's daily recall</span>
+                </div>
+                <div className="p-4 space-y-2">
+                    {['1. LRU Cache', '2. Merge K Lists', '3. 3Sum'].map((t, i) => (
+                        <div key={t} className={`p-2.5 bg-white/[0.03] rounded-md border border-white/[0.06] flex items-center justify-between ${i > 0 ? 'opacity-50' : ''}`}>
+                            <span className="text-[11px] font-medium text-zinc-200">{t}</span>
+                            <ChevronRight className="w-3 h-3 text-zinc-600" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div className="w-full max-w-sm">
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <p className="text-[10px] font-medium text-zinc-500 mb-1">Global retention</p>
+                    <p className="text-3xl font-mono-tabular font-semibold text-zinc-100">84%</p>
+                </div>
+                <div className="w-14 h-14 rounded-full border-[3px] border-white/[0.08] border-t-green-500 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-green-400" />
+                </div>
+            </div>
+            <div className="space-y-2.5">
+                {[100, 75, 40].map((w, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                        <div className="h-1.5 flex-1 bg-white/[0.06] rounded-full overflow-hidden">
+                            <div className="h-full bg-green-500 rounded-full" style={{ width: `${w}%` }} />
+                        </div>
+                        <span className="text-[10px] font-mono-tabular text-zinc-600 w-8">{w}%</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 /* ─── FAQ Accordion Item ─── */
 function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>; q: string; a: string }) {
     const [open, setOpen] = useState(false);
@@ -121,7 +271,7 @@ function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>;
         <div className="border-b border-white/[0.06] last:border-0">
             <button
                 onClick={() => setOpen(!open)}
-                className="w-full flex items-center gap-4 py-5 text-left group"
+                className="w-full flex items-center gap-4 px-6 py-5 text-left group"
             >
                 <Icon className="w-4 h-4 text-zinc-600 flex-shrink-0" />
                 <span className="flex-1 text-[14px] font-medium text-zinc-100 group-hover:text-zinc-300 transition-colors">
@@ -132,7 +282,7 @@ function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>;
                 />
             </button>
             <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-48 pb-5' : 'max-h-0'}`}>
-                <p className="text-[13px] text-zinc-500 leading-relaxed pl-8">{a}</p>
+                <p className="text-[13px] text-zinc-500 leading-relaxed px-6 pl-14">{a}</p>
             </div>
         </div>
     );
@@ -141,6 +291,19 @@ function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>;
 /* ─── Landing Page ─── */
 export default function LandingPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState(0);
+    const spotlight = useSpotlight();
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        intervalRef.current = setInterval(() => {
+            setActiveTab((prev) => (prev + 1) % showcaseTabs.length);
+        }, 5000);
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [activeTab]);
+
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100">
 
@@ -165,7 +328,7 @@ export default function LandingPage() {
                             </button>
                         </SignInButton>
                         <SignUpButton mode="modal">
-                            <button className="text-[13px] font-medium bg-zinc-100 text-zinc-900 px-3.5 py-1.5 rounded-md hover:bg-white transition-colors ml-2">
+                            <button className={`text-[13px] font-medium px-3.5 py-1.5 rounded-md ml-2 ${btnPrimary}`}>
                                 Get started
                             </button>
                         </SignUpButton>
@@ -212,12 +375,12 @@ export default function LandingPage() {
                         </div>
                         <div className="pt-6 border-t border-white/[0.06] flex flex-col gap-3">
                             <SignInButton mode="modal">
-                                <button className="w-full py-3 text-zinc-100 font-medium text-[13px] border border-white/[0.08] rounded-md hover:bg-white/[0.04] transition-colors">
+                                <button className={`w-full py-3 font-medium text-[13px] rounded-md ${btnGhost}`}>
                                     Sign in
                                 </button>
                             </SignInButton>
                             <SignUpButton mode="modal">
-                                <button className="w-full py-3 bg-zinc-100 text-zinc-900 font-medium text-[13px] rounded-md hover:bg-white transition-colors">
+                                <button className={`w-full py-3 font-medium text-[13px] rounded-md ${btnPrimary}`}>
                                     Get started
                                 </button>
                             </SignUpButton>
@@ -229,6 +392,7 @@ export default function LandingPage() {
             {/* ═══ Hero Section ═══ */}
             <section className="relative pt-20 pb-24 px-6 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] pointer-events-none bg-glow" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] pointer-events-none bg-dot-grid" />
 
                 <div className="max-w-5xl mx-auto flex flex-col items-center relative">
                     <div className="text-center max-w-2xl mb-14">
@@ -248,12 +412,12 @@ export default function LandingPage() {
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-slideUp delay-200">
                             <SignUpButton mode="modal">
-                                <button className="w-full sm:w-auto px-5 py-2.5 bg-zinc-100 text-zinc-900 text-[13px] font-medium rounded-md hover:bg-white transition-colors flex items-center justify-center gap-2">
+                                <button className={`w-full sm:w-auto px-5 py-2.5 text-[13px] font-medium rounded-md flex items-center justify-center gap-2 ${btnPrimary}`}>
                                     Get started for free
                                     <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                             </SignUpButton>
-                            <a href="#how-it-works" className="w-full sm:w-auto px-5 py-2.5 text-zinc-300 text-[13px] font-medium rounded-md hover:bg-white/[0.04] transition-colors text-center border border-white/[0.08]">
+                            <a href="#how-it-works" className={`w-full sm:w-auto px-5 py-2.5 text-[13px] font-medium rounded-md text-center ${btnGhost}`}>
                                 See how it works
                             </a>
                         </div>
@@ -268,7 +432,7 @@ export default function LandingPage() {
                                     <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
                                     <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
                                 </div>
-                                <div className="bg-white/[0.03] border border-white/[0.06] px-4 py-1 rounded text-[11px] font-medium text-zinc-500">
+                                <div className="bg-white/[0.03] border border-white/[0.06] px-4 py-1 rounded text-[11px] font-mono-tabular text-zinc-500">
                                     app.restack.dev/dashboard
                                 </div>
                                 <div className="w-14" />
@@ -282,7 +446,7 @@ export default function LandingPage() {
                                             <p className="text-[13px] text-zinc-500">3 problems prioritized for you today.</p>
                                         </div>
                                         <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06]">
-                                            <span className="text-[12px] font-medium text-zinc-400">14 day streak</span>
+                                            <span className="text-[12px] font-mono-tabular font-medium text-zinc-400">14 day streak</span>
                                         </div>
                                     </div>
 
@@ -308,12 +472,12 @@ export default function LandingPage() {
                                         <div className="flex-1 flex items-center gap-6">
                                             <div>
                                                 <p className="text-[11px] font-medium text-zinc-500 mb-1">Consistency</p>
-                                                <p className="text-[15px] font-semibold text-zinc-100">14 days</p>
+                                                <p className="text-[15px] font-mono-tabular font-semibold text-zinc-100">14 days</p>
                                             </div>
                                             <div className="h-7 w-px bg-white/[0.06]" />
                                             <div>
                                                 <p className="text-[11px] font-medium text-zinc-500 mb-1">Mastered</p>
-                                                <p className="text-[15px] font-semibold text-zinc-100">128</p>
+                                                <p className="text-[15px] font-mono-tabular font-semibold text-zinc-100">128</p>
                                             </div>
                                         </div>
                                         <div className="w-28 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
@@ -327,30 +491,84 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ═══ How It Works ═══ */}
+            {/* ═══ Tabbed Feature Showcase ═══ */}
             <section id="how-it-works" className="py-24 px-6 border-t border-white/[0.06]">
                 <div className="max-w-5xl mx-auto">
                     <div className="max-w-xl mb-16">
                         <p className="text-[12px] font-medium text-green-400 mb-3">How it works</p>
                         <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight mb-3 leading-tight">
-                            Four steps to never forget a problem again.
+                            Purpose-built for one loop: practice, track, revisit.
                         </h2>
                         <p className="text-[15px] text-zinc-500 leading-relaxed">
                             No planning, no spreadsheets — just a rotation that keeps itself fresh.
                         </p>
                     </div>
 
-                    <div className="space-y-10">
-                        {steps.map((item, i) => (
-                            <div key={i} className="flex flex-col md:flex-row gap-4 md:gap-10 md:items-start">
-                                <div className="flex items-center gap-4 md:w-64 flex-shrink-0">
-                                    <span className="text-[13px] font-mono font-medium text-zinc-700">{item.step}</span>
-                                    <div className="w-8 h-8 rounded-md bg-white/[0.03] border border-white/[0.06] flex items-center justify-center flex-shrink-0">
-                                        <item.icon className="w-3.5 h-3.5 text-zinc-400" strokeWidth={1.75} />
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
+                        {/* Tab list */}
+                        <div className="md:col-span-5 space-y-1">
+                            {showcaseTabs.map((tab, i) => (
+                                <button
+                                    key={tab.label}
+                                    onClick={() => setActiveTab(i)}
+                                    className={`w-full text-left p-4 rounded-lg border transition-colors relative overflow-hidden ${activeTab === i
+                                        ? 'bg-white/[0.03] border-white/[0.1]'
+                                        : 'bg-transparent border-transparent hover:bg-white/[0.02]'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-3 mb-1.5">
+                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${activeTab === i ? 'bg-green-500/10' : 'bg-white/[0.03]'}`}>
+                                            <tab.icon className={`w-3.5 h-3.5 ${activeTab === i ? 'text-green-400' : 'text-zinc-500'}`} strokeWidth={1.75} />
+                                        </div>
+                                        <span className={`text-[14px] font-semibold ${activeTab === i ? 'text-zinc-100' : 'text-zinc-500'}`}>
+                                            {tab.label}
+                                        </span>
                                     </div>
-                                    <h3 className="text-[14px] font-semibold text-zinc-100">{item.title}</h3>
+                                    {activeTab === i && (
+                                        <p className="text-[13px] text-zinc-500 leading-relaxed pl-10 pr-2">{tab.desc}</p>
+                                    )}
+                                    {activeTab === i && (
+                                        <div className="mt-3 ml-10 h-[2px] bg-white/[0.06] rounded-full overflow-hidden">
+                                            <div key={activeTab} className="h-full bg-green-500 animate-fillBar" />
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Mockup panel */}
+                        <div className="md:col-span-7">
+                            <div className="bg-zinc-900 rounded-xl border border-white/[0.08] overflow-hidden shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)]">
+                                <div className="h-10 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-5 gap-1.5">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
                                 </div>
-                                <p className="text-[14px] text-zinc-500 leading-relaxed max-w-xl">{item.desc}</p>
+                                <div className="bg-zinc-950 p-8 md:p-10 min-h-[280px] flex items-center justify-center">
+                                    <ShowcaseMockup index={activeTab} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══ Under the hood: real algorithm, not vibes ═══ */}
+            <section className="py-20 px-6 border-t border-white/[0.06] relative overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[300px] pointer-events-none bg-dot-grid opacity-60" />
+                <div className="max-w-5xl mx-auto relative">
+                    <div className="max-w-xl mb-10">
+                        <p className="text-[12px] font-medium text-green-400 mb-3">Under the hood</p>
+                        <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight leading-tight">
+                            Real math, not vibes.
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-white/[0.06] bg-white/[0.02] divide-x divide-y md:divide-y-0 divide-white/[0.06]">
+                        {stats.map((s) => (
+                            <div key={s.label} className="p-6">
+                                <p className="text-[11px] font-medium text-zinc-500 mb-2">{s.label}</p>
+                                <p className="text-2xl font-mono-tabular font-semibold text-zinc-100 mb-1.5">{s.value}</p>
+                                <p className="text-[12px] text-zinc-600 leading-relaxed">{s.hint}</p>
                             </div>
                         ))}
                     </div>
@@ -371,13 +589,18 @@ export default function LandingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                        {features.map((f, i) => (
-                            <div key={i} className={`${f.span} bg-white/[0.02] rounded-xl border border-white/[0.06] p-6 hover:border-white/[0.12] transition-colors`}>
-                                <div className="w-8 h-8 rounded-md bg-green-500/10 flex items-center justify-center mb-5">
+                        {features.map((f) => (
+                            <div
+                                key={f.title}
+                                onMouseMove={spotlight}
+                                className={`${f.span} spotlight-card bg-white/[0.02] rounded-xl border border-white/[0.06] p-6 hover:border-white/[0.14] transition-colors`}
+                            >
+                                <div className="w-8 h-8 rounded-md bg-green-500/10 flex items-center justify-center">
                                     <f.icon className="w-3.5 h-3.5 text-green-400" strokeWidth={1.75} />
                                 </div>
-                                <h3 className="text-[14px] font-semibold text-zinc-100 mb-1.5">{f.title}</h3>
+                                <h3 className="text-[14px] font-semibold text-zinc-100 mt-5 mb-1.5">{f.title}</h3>
                                 <p className="text-[13px] text-zinc-500 leading-relaxed">{f.desc}</p>
+                                <FeatureVisual type={f.visual} />
                             </div>
                         ))}
                     </div>
@@ -385,12 +608,14 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Platform strip ═══ */}
-            <section className="py-14 px-6 border-t border-white/[0.06]">
-                <div className="max-w-5xl mx-auto">
-                    <p className="text-center text-[12px] font-medium text-zinc-600 mb-7">Works with problems from any platform</p>
-                    <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-                        {platforms.map((name) => (
-                            <span key={name} className="text-[13px] font-medium text-zinc-700">
+            <section className="py-14 border-t border-white/[0.06] overflow-hidden">
+                <p className="text-center text-[12px] font-medium text-zinc-600 mb-7 px-6">Works with problems from any platform</p>
+                <div className="relative">
+                    <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
+                    <div className="animate-marquee flex items-center gap-16 whitespace-nowrap w-max">
+                        {[...platforms, ...platforms].map((name, i) => (
+                            <span key={i} className="text-[15px] font-medium text-zinc-700 select-none">
                                 {name}
                             </span>
                         ))}
@@ -415,7 +640,7 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <div className="w-full md:w-2/3">
+                        <div className="w-full md:w-2/3 bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
                             {faqs.map((faq, i) => (
                                 <FaqItem key={i} icon={faq.icon} q={faq.q} a={faq.a} />
                             ))}
@@ -427,6 +652,7 @@ export default function LandingPage() {
             {/* ═══ Call to Action ═══ */}
             <section className="relative py-24 px-6 border-t border-white/[0.06] overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] pointer-events-none bg-glow" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] pointer-events-none bg-dot-grid" />
                 <div className="relative max-w-3xl mx-auto text-center">
                     <h2 className="text-3xl md:text-5xl font-semibold text-zinc-50 leading-[1.05] tracking-tight mb-6 text-balance">
                         Ready to build your<br />
@@ -438,7 +664,7 @@ export default function LandingPage() {
                     </p>
 
                     <SignUpButton mode="modal">
-                        <button className="px-6 py-3 bg-zinc-100 text-zinc-900 text-[13px] font-medium rounded-md hover:bg-white transition-colors inline-flex items-center justify-center gap-2">
+                        <button className={`px-6 py-3 text-[13px] font-medium rounded-md inline-flex items-center justify-center gap-2 ${btnPrimary}`}>
                             Get started for free
                             <ArrowRight className="w-3.5 h-3.5" />
                         </button>

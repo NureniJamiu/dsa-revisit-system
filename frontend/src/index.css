@@ -1,9 +1,10 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ─── Design System (Linear-inspired) ─── */
 :root {
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
     /* Surfaces */
     --bg-app: #08090a;
@@ -141,6 +142,77 @@ body {
 /* Linear-style radial glow, used behind hero/CTA sections */
 .bg-glow {
     background-image: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.16), transparent 60%);
+}
+
+/* Fading dot-grid backdrop, used behind hero/CTA sections */
+.bg-dot-grid {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse 60% 55% at 50% 0%, black 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 0%, black 40%, transparent 100%);
+}
+
+/* Mono numerals — tabular figures for stats/labels, Linear's signature accent */
+.font-mono-tabular {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Cursor-tracking spotlight glow for cards — set --x/--y via onMouseMove */
+.spotlight-card {
+    position: relative;
+    isolation: isolate;
+}
+
+.spotlight-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(480px circle at var(--x, 50%) var(--y, 50%), rgba(34, 197, 94, 0.12), transparent 45%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.spotlight-card:hover::before {
+    opacity: 1;
+}
+
+/* Fill animation for the tabbed showcase's autoplay progress bar */
+@keyframes fillBar {
+    from {
+        width: 0%;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+.animate-fillBar {
+    animation: fillBar 5s linear;
+}
+
+/* ─── Marquee (platform strip) ─── */
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-marquee {
+    animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+    animation-play-state: paused;
 }
 
 /* ─── Custom scrollbar (dark) ─── */
