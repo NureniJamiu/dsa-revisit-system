@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import Logo from '../components/Logo';
+import PlatformIcon from '../components/PlatformIcon';
+import { platformMarks } from '../data/platformMarks';
 
 /* ─── Shared styles ─── */
 const btnPrimary =
@@ -35,10 +37,6 @@ function useSpotlight() {
 }
 
 /* ─── Data ─── */
-const platforms = [
-    'LeetCode', 'HackerRank', 'Codeforces', 'NeetCode', 'AlgoExpert', 'Codewars',
-];
-
 const showcaseTabs = [
     {
         label: 'Build your library',
@@ -608,18 +606,21 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Platform strip ═══ */}
-            <section className="py-14 border-t border-white/[0.06] overflow-hidden">
-                <p className="text-center text-[12px] font-medium text-zinc-600 mb-7 px-6">Works with problems from any platform</p>
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
-                    <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
-                    <div className="animate-marquee flex items-center gap-16 whitespace-nowrap w-max">
-                        {[...platforms, ...platforms].map((name, i) => (
-                            <span key={i} className="text-[15px] font-medium text-zinc-700 select-none">
-                                {name}
+            <section className="py-16 px-6 border-t border-white/[0.06]">
+                <p className="text-center text-[12px] font-medium text-zinc-600 mb-9">Works with problems from any platform</p>
+                <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
+                    {platformMarks.map((mark) => (
+                        <div
+                            key={mark.name}
+                            className="platform-mark group flex items-center gap-2.5"
+                            style={{ '--brand-hex': mark.hex } as React.CSSProperties}
+                        >
+                            <PlatformIcon mark={mark} className="w-5 h-5 text-zinc-600 transition-colors duration-200" />
+                            <span className="text-[14px] font-medium text-zinc-600 group-hover:text-zinc-300 transition-colors duration-200">
+                                {mark.name}
                             </span>
-                        ))}
-                    </div>
+                        </div>
+                    ))}
                 </div>
             </section>
 

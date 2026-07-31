@@ -196,23 +196,9 @@ body {
     animation: fillBar 5s linear;
 }
 
-/* ─── Marquee (platform strip) ─── */
-@keyframes marquee {
-    0% {
-        transform: translateX(0);
-    }
-
-    100% {
-        transform: translateX(-50%);
-    }
-}
-
-.animate-marquee {
-    animation: marquee 30s linear infinite;
-}
-
-.animate-marquee:hover {
-    animation-play-state: paused;
+/* Platform logo strip — colorizes to the brand's own hex on hover */
+.platform-mark:hover svg {
+    color: var(--brand-hex, currentColor);
 }
 
 /* ─── Custom scrollbar (dark) ─── */
