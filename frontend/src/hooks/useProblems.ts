@@ -13,6 +13,7 @@ export interface Problem {
     source?: string;
     notes?: string;
     tags?: string[];
+    topic?: string;
     status?: string;
 }
 

@@ -301,6 +301,24 @@ body {
     border-color: var(--platform-monogram-border-hover);
 }
 
+/* ─── Topic badges ─── */
+/* Hue is supplied per-instance via inline style (--hue), computed in
+   lib/topicColors.ts so each topic gets a stable, distinct color without a
+   fixed palette. Written against hsl() directly (rather than the --status-*
+   tokens) since the whole point is per-topic variety, but the lightness
+   values are tuned separately for each theme so contrast holds up in both. */
+.topic-badge {
+    background: hsl(var(--hue) 45% 22%);
+    color: hsl(var(--hue) 65% 78%);
+    border: 1px solid hsl(var(--hue) 40% 32%);
+}
+
+.light .topic-badge {
+    background: hsl(var(--hue) 70% 95%);
+    color: hsl(var(--hue) 55% 32%);
+    border: 1px solid hsl(var(--hue) 55% 85%);
+}
+
 /* ─── Custom scrollbar ─── */
 ::-webkit-scrollbar {
     width: 6px;

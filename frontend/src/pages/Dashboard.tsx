@@ -6,6 +6,7 @@ import { useProblems, useTodaysFocus, useRevisitProblemMutation, useDeleteProble
 import AddProblemModal from '../components/AddProblemModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import CustomLoader from '../components/CustomLoader';
+import { topicBadgeStyle } from '../lib/topicColors';
 
 const Dashboard: React.FC = () => {
     const { data: problems = [], isLoading: loading, isError: problemsError } = useProblems('active');
@@ -25,6 +26,7 @@ const Dashboard: React.FC = () => {
     // Search & Filter State
     const [searchQuery, setSearchQuery] = useState('');
     const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
+    const [topicFilter, setTopicFilter] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
 
     // Pagination State
@@ -97,11 +99,19 @@ const Dashboard: React.FC = () => {
         ? Math.round((summary.completed / summary.total_focus) * 100)
         : 0;
 
+    const topics = Array.from(
+        new Set(problems.map(p => p.topic).filter((t): t is string => !!t?.trim()))
+    ).sort((a, b) => a.localeCompare(b));
+    const activeFilterCount = (difficultyFilter ? 1 : 0) + (topicFilter ? 1 : 0);
+
     const filteredProblems = problems.filter(p => {
-        const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (p.source?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = p.title.toLowerCase().includes(query) ||
+            (p.source?.toLowerCase() || '').includes(query) ||
+            (p.topic?.toLowerCase() || '').includes(query);
         const matchesDifficulty = !difficultyFilter || p.difficulty?.toLowerCase() === difficultyFilter.toLowerCase();
-        return matchesSearch && matchesDifficulty;
+        const matchesTopic = !topicFilter || p.topic === topicFilter;
+        return matchesSearch && matchesDifficulty && matchesTopic;
     });
 
     // Pagination Logic
@@ -114,7 +124,7 @@ const Dashboard: React.FC = () => {
     // Reset page on filter change
     React.useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, difficultyFilter]);
+    }, [searchQuery, difficultyFilter, topicFilter]);
 
     return (
         <div className="space-y-10 pb-24 md:pb-12">
@@ -221,13 +231,21 @@ const Dashboard: React.FC = () => {
                                             </a>
                                         </div>
 
-                                        <div className="flex items-center gap-1.5 mb-5">
+                                        <div className="flex items-center gap-1.5 mb-5 flex-wrap">
                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${priorityStyle.badge} ${priorityStyle.text}`}>
                                                 {item.weight.priority}
                                             </span>
                                             {item.problem.difficulty && (
                                                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getDifficultyStyle(item.problem.difficulty)}`}>
                                                     {item.problem.difficulty}
+                                                </span>
+                                            )}
+                                            {item.problem.topic && (
+                                                <span
+                                                    className="topic-badge px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                                    style={topicBadgeStyle(item.problem.topic)}
+                                                >
+                                                    {item.problem.topic}
                                                 </span>
                                             )}
                                         </div>
@@ -294,30 +312,32 @@ const Dashboard: React.FC = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-md border transition-colors ${difficultyFilter || showFilters
+                                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-md border transition-colors ${activeFilterCount > 0 || showFilters
                                     ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border-default)]'
                                     : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
                                     }`}
                             >
                                 <Filter className="w-3.5 h-3.5" />
-                                {difficultyFilter ? difficultyFilter.charAt(0).toUpperCase() + difficultyFilter.slice(1) : 'Filter'}
+                                Filter
+                                {activeFilterCount > 0 && (
+                                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500/15 text-green-400 text-[10px] font-semibold">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
                             </button>
 
                             {showFilters && (
                                 <>
                                     <div className="fixed inset-0 z-10" onClick={() => setShowFilters(false)} />
-                                    <div className="absolute right-0 mt-2 w-44 bg-[var(--bg-surface-raised)] rounded-lg border border-[var(--border-default)] shadow-2xl z-20 overflow-hidden">
+                                    <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-surface-raised)] rounded-lg border border-[var(--border-default)] shadow-2xl z-20 overflow-hidden max-h-80 overflow-y-auto custom-scrollbar">
                                         <div className="p-2 border-b border-[var(--border-subtle)]">
                                             <p className="text-[11px] font-medium text-[var(--text-secondary)] px-2 py-1">Difficulty</p>
                                         </div>
-                                        <div className="p-1">
+                                        <div className="p-1 border-b border-[var(--border-subtle)]">
                                             {['all', 'easy', 'medium', 'hard'].map((level) => (
                                                 <button
                                                     key={level}
-                                                    onClick={() => {
-                                                        setDifficultyFilter(level === 'all' ? null : level);
-                                                        setShowFilters(false);
-                                                    }}
+                                                    onClick={() => setDifficultyFilter(level === 'all' ? null : level)}
                                                     className={`w-full text-left px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
                                                         ? 'bg-green-500/10 text-green-400'
                                                         : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--text-primary)]'
@@ -327,6 +347,40 @@ const Dashboard: React.FC = () => {
                                                 </button>
                                             ))}
                                         </div>
+                                        {topics.length > 0 && (
+                                            <>
+                                                <div className="p-2 border-b border-[var(--border-subtle)]">
+                                                    <p className="text-[11px] font-medium text-[var(--text-secondary)] px-2 py-1">Topic</p>
+                                                </div>
+                                                <div className="p-1">
+                                                    <button
+                                                        onClick={() => setTopicFilter(null)}
+                                                        className={`w-full text-left px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors ${!topicFilter
+                                                            ? 'bg-green-500/10 text-green-400'
+                                                            : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--text-primary)]'
+                                                            }`}
+                                                    >
+                                                        All
+                                                    </button>
+                                                    {topics.map((topic) => (
+                                                        <button
+                                                            key={topic}
+                                                            onClick={() => setTopicFilter(topicFilter === topic ? null : topic)}
+                                                            className={`w-full flex items-center gap-2 text-left px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors ${topicFilter === topic
+                                                                ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)]'
+                                                                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--text-primary)]'
+                                                                }`}
+                                                        >
+                                                            <span
+                                                                className="w-2 h-2 rounded-full flex-shrink-0"
+                                                                style={{ ...topicBadgeStyle(topic), background: 'hsl(var(--hue) 60% 50%)' }}
+                                                            />
+                                                            <span className="truncate">{topic}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </>
                             )}
@@ -370,7 +424,7 @@ const Dashboard: React.FC = () => {
                                     <tr>
                                         <td colSpan={4} className="px-6 py-12 text-center">
                                             <p className="text-[13px] text-[var(--text-secondary)]">
-                                                {searchQuery || difficultyFilter ? 'No problems match your filters.' : 'No problems tracked yet.'}
+                                                {searchQuery || difficultyFilter || topicFilter ? 'No problems match your filters.' : 'No problems tracked yet.'}
                                             </p>
                                         </td>
                                     </tr>
@@ -381,7 +435,17 @@ const Dashboard: React.FC = () => {
                                                 <Link to={`/problem/${problem.id}`} className="text-[13px] font-medium text-[var(--text-primary)] group-hover:text-green-400 transition-colors block truncate max-w-[200px] md:max-w-none">
                                                     {problem.title}
                                                 </Link>
-                                                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">{problem.source || 'Unknown'}</p>
+                                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                                    <p className="text-[11px] text-[var(--text-secondary)]">{problem.source || 'Unknown'}</p>
+                                                    {problem.topic && (
+                                                        <span
+                                                            className="topic-badge px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                                            style={topicBadgeStyle(problem.topic)}
+                                                        >
+                                                            {problem.topic}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-5 md:px-6 py-3.5 text-[13px] text-[var(--text-secondary)] whitespace-nowrap">
                                                 {getTimeAgo(problem.last_revisited_at)}
