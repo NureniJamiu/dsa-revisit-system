@@ -4,6 +4,7 @@ import { ExternalLink, CheckSquare, CheckCircle, Archive } from 'lucide-react';
 import { useProblem, useRevisitProblemMutation, useArchiveProblemMutation } from '../hooks/useProblems';
 import ConfirmDialog from '../components/ConfirmDialog';
 import CustomLoader from '../components/CustomLoader';
+import { topicBadgeStyle } from '../lib/topicColors';
 
 const ProblemDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -116,6 +117,15 @@ const ProblemDetail: React.FC = () => {
                             </span>
                         )}
                         <span className="text-[11px] font-medium text-[var(--text-tertiary)]">{problem.source || 'LeetCode'}</span>
+                        {(problem.topics ?? []).map((topic) => (
+                            <span
+                                key={topic}
+                                className="topic-badge px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                style={topicBadgeStyle(topic)}
+                            >
+                                {topic}
+                            </span>
+                        ))}
                     </div>
                     <h1 className="text-3xl md:text-4xl font-semibold text-[var(--text-primary)] tracking-tight leading-tight">{problem.title}</h1>
                 </div>

@@ -13,7 +13,7 @@ export interface Problem {
     source?: string;
     notes?: string;
     tags?: string[];
-    topic?: string;
+    topics?: string[];
     status?: string;
 }
 
@@ -67,7 +67,7 @@ export interface RevisitHistoryItem {
     problem_title: string;
     problem_link: string;
     difficulty: string;
-    topic: string;
+    topics: string[];
 }
 
 // Keys for Query Caching

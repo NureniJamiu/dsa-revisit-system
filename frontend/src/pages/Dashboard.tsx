@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
         : 0;
 
     const topics = Array.from(
-        new Set(problems.map(p => p.topic).filter((t): t is string => !!t?.trim()))
+        new Set(problems.flatMap(p => p.topics ?? []).filter((t): t is string => !!t?.trim()))
     ).sort((a, b) => a.localeCompare(b));
     const activeFilterCount = (difficultyFilter ? 1 : 0) + (topicFilter ? 1 : 0);
 
@@ -115,9 +115,9 @@ const Dashboard: React.FC = () => {
         const query = searchQuery.toLowerCase();
         const matchesSearch = p.title.toLowerCase().includes(query) ||
             (p.source?.toLowerCase() || '').includes(query) ||
-            (p.topic?.toLowerCase() || '').includes(query);
+            (p.topics ?? []).some(t => t.toLowerCase().includes(query));
         const matchesDifficulty = !difficultyFilter || p.difficulty?.toLowerCase() === difficultyFilter.toLowerCase();
-        const matchesTopic = !topicFilter || p.topic === topicFilter;
+        const matchesTopic = !topicFilter || (p.topics ?? []).includes(topicFilter);
         return matchesSearch && matchesDifficulty && matchesTopic;
     });
 
@@ -300,14 +300,15 @@ const Dashboard: React.FC = () => {
                                                     {item.problem.difficulty}
                                                 </span>
                                             )}
-                                            {item.problem.topic && (
+                                            {(item.problem.topics ?? []).map((topic) => (
                                                 <span
+                                                    key={topic}
                                                     className="topic-badge px-1.5 py-0.5 rounded text-[10px] font-medium"
-                                                    style={topicBadgeStyle(item.problem.topic)}
+                                                    style={topicBadgeStyle(topic)}
                                                 >
-                                                    {item.problem.topic}
+                                                    {topic}
                                                 </span>
-                                            )}
+                                            ))}
                                         </div>
 
                                         <div className="flex gap-2 pt-3 border-t border-[var(--border-subtle)]">
@@ -500,14 +501,15 @@ const Dashboard: React.FC = () => {
                                                 </Link>
                                                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                                                     <p className="text-[11px] text-[var(--text-secondary)]">{problem.source || 'Unknown'}</p>
-                                                    {problem.topic && (
+                                                    {(problem.topics ?? []).map((topic) => (
                                                         <span
+                                                            key={topic}
                                                             className="topic-badge px-1.5 py-0.5 rounded text-[10px] font-medium"
-                                                            style={topicBadgeStyle(problem.topic)}
+                                                            style={topicBadgeStyle(topic)}
                                                         >
-                                                            {problem.topic}
+                                                            {topic}
                                                         </span>
-                                                    )}
+                                                    ))}
                                                 </div>
                                             </td>
                                             <td className="px-5 md:px-6 py-3.5 text-[13px] text-[var(--text-secondary)] whitespace-nowrap">

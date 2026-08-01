@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"log"
@@ -30,6 +31,80 @@ func getUserPreferencesOrDefault(userID uuid.UUID) UserPreferences {
 		}
 	}
 	return prefs
+}
+
+// topicsForProblems returns each problem ID's topics (a problem may belong to
+// more than one) from the problem_topics junction table. Safe to call with an
+// empty slice. Returns an empty map on query error rather than failing the
+// whole request -- topics are additive display/scheduling data, not required
+// for a problem to render.
+func topicsForProblems(ids []uuid.UUID) map[uuid.UUID][]string {
+	result := make(map[uuid.UUID][]string, len(ids))
+	if len(ids) == 0 {
+		return result
+	}
+	strIDs := make([]string, len(ids))
+	for i, id := range ids {
+		strIDs[i] = id.String()
+	}
+
+	rows, err := db.Query(`
+		SELECT problem_id, topic FROM problem_topics
+		WHERE problem_id::text = ANY($1)
+		ORDER BY topic ASC`, strIDs)
+	if err != nil {
+		log.Printf("[API] topicsForProblems query: %v", err)
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var problemID uuid.UUID
+		var topic string
+		if err := rows.Scan(&problemID, &topic); err != nil {
+			continue
+		}
+		result[problemID] = append(result[problemID], topic)
+	}
+	return result
+}
+
+// attachTopics populates the Topics field on each problem in place.
+func attachTopics(problems []Problem) {
+	if len(problems) == 0 {
+		return
+	}
+	ids := make([]uuid.UUID, len(problems))
+	for i, p := range problems {
+		ids[i] = p.ID
+	}
+	topicMap := topicsForProblems(ids)
+	for i := range problems {
+		problems[i].Topics = topicMap[problems[i].ID]
+	}
+}
+
+// replaceProblemTopics overwrites a problem's topic set: delete then
+// reinsert, which is simplest/correct for the small lists topics realistically
+// have. A nil topics slice is treated the same as an empty one (clears all
+// topics) so omitting the field from a PUT doesn't accidentally leave stale
+// rows -- callers that want to leave topics untouched should not call this.
+func replaceProblemTopics(tx *sql.Tx, problemID uuid.UUID, topics []string) error {
+	if _, err := tx.Exec(`DELETE FROM problem_topics WHERE problem_id = $1`, problemID); err != nil {
+		return err
+	}
+	seen := make(map[string]bool, len(topics))
+	for _, topic := range topics {
+		topic = strings.TrimSpace(topic)
+		if topic == "" || seen[topic] {
+			continue
+		}
+		seen[topic] = true
+		if _, err := tx.Exec(`INSERT INTO problem_topics (problem_id, topic) VALUES ($1, $2)`, problemID, topic); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Helper for JSON responses
@@ -103,6 +178,7 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 		problems = append(problems, p)
 	}
 
+	attachTopics(problems)
 	respondJSON(w, http.StatusOK, problems)
 }
 
@@ -154,6 +230,7 @@ func GetProblemByID(w http.ResponseWriter, r *http.Request) {
 	}
 	prefs := getUserPreferencesOrDefault(userID)
 	p.WeightInfo = CalculateProblemWeight(problemForWeight, prefs.MinRevisitDays)
+	p.Topics = topicsForProblems([]uuid.UUID{p.ID})[p.ID]
 
 	// Fetch revisit history for this problem (newest first)
 	historyRows, err := db.Query(`
@@ -208,14 +285,31 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		p.Source = "LeetCode"
 	}
 
+	tx, err := db.Begin()
+	if err != nil {
+		internalError(w, "CreateProblem begin tx", err, "Failed to create problem")
+		return
+	}
+	defer tx.Rollback()
+
 	sqlStatement := `
 		INSERT INTO problems (user_id, title, link, status, times_revisited, date_added, difficulty, source, notes)
 		VALUES ($1, $2, $3, 'active', 0, NOW(), $4, $5, $6)
 		RETURNING id, date_added, status`
 
-	err := db.QueryRow(sqlStatement, p.UserID, p.Title, p.Link, p.Difficulty, p.Source, p.Notes).Scan(&p.ID, &p.DateAdded, &p.Status)
+	err = tx.QueryRow(sqlStatement, p.UserID, p.Title, p.Link, p.Difficulty, p.Source, p.Notes).Scan(&p.ID, &p.DateAdded, &p.Status)
 	if err != nil {
 		internalError(w, "CreateProblem insert", err, "Failed to create problem")
+		return
+	}
+
+	if err := replaceProblemTopics(tx, p.ID, p.Topics); err != nil {
+		internalError(w, "CreateProblem insert topics", err, "Failed to create problem")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		internalError(w, "CreateProblem commit", err, "Failed to create problem")
 		return
 	}
 
@@ -356,7 +450,14 @@ func UpdateProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Exec(`
+	tx, err := db.Begin()
+	if err != nil {
+		internalError(w, "UpdateProblem begin tx", err, "Failed to update problem")
+		return
+	}
+	defer tx.Rollback()
+
+	result, err := tx.Exec(`
 		UPDATE problems
 		SET title = $1, link = $2, difficulty = $3, source = $4, notes = $5
 		WHERE id = $6 AND user_id = $7`,
@@ -370,6 +471,16 @@ func UpdateProblem(w http.ResponseWriter, r *http.Request) {
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
 		http.Error(w, "Problem not found", http.StatusNotFound)
+		return
+	}
+
+	if err := replaceProblemTopics(tx, id, p.Topics); err != nil {
+		internalError(w, "UpdateProblem update topics", err, "Failed to update problem")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		internalError(w, "UpdateProblem commit", err, "Failed to update problem")
 		return
 	}
 
@@ -486,6 +597,15 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 		results = append(results, ProblemWithWeight{Problem: p, Weight: weight})
 	}
 
+	resultProblems := make([]Problem, len(results))
+	for i, r := range results {
+		resultProblems[i] = r.Problem
+	}
+	attachTopics(resultProblems)
+	for i := range results {
+		results[i].Problem.Topics = resultProblems[i].Topics
+	}
+
 	// Sort by weight descending (highest priority first)
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Weight.Weight > results[j].Weight.Weight
@@ -553,6 +673,8 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 			revisitedTodayMap[p.ID] = true
 		}
 	}
+
+	attachTopics(allProblems)
 
 	// 2. Filter for eligibility based on PREVIOUS state (start of day)
 	var eligible []Problem
@@ -805,8 +927,8 @@ func GetRevisitHistory(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("q")
 
 	query := `
-		SELECT rh.id, rh.problem_id, rh.revisited_at, rh.notes, 
-		       p.title, p.link, COALESCE(p.difficulty, ''), COALESCE(p.topic, '')
+		SELECT rh.id, rh.problem_id, rh.revisited_at, rh.notes,
+		       p.title, p.link, COALESCE(p.difficulty, '')
 		FROM revisit_history rh
 		JOIN problems p ON rh.problem_id = p.id
 		WHERE p.user_id = $1`
@@ -835,14 +957,14 @@ func GetRevisitHistory(w http.ResponseWriter, r *http.Request) {
 		ProblemTitle string    `json:"problem_title"`
 		ProblemLink  string    `json:"problem_link"`
 		Difficulty   string    `json:"difficulty"`
-		Topic        string    `json:"topic"`
+		Topics       []string  `json:"topics"`
 	}
 
 	history := []RevisitHistoryItem{}
 	for rows.Next() {
 		var item RevisitHistoryItem
 		if err := rows.Scan(&item.ID, &item.ProblemID, &item.RevisitedAt, &item.Notes,
-			&item.ProblemTitle, &item.ProblemLink, &item.Difficulty, &item.Topic); err != nil {
+			&item.ProblemTitle, &item.ProblemLink, &item.Difficulty); err != nil {
 			log.Printf("[API] Error scanning history item: %v", err)
 			continue
 		}
@@ -851,6 +973,15 @@ func GetRevisitHistory(w http.ResponseWriter, r *http.Request) {
 
 	if history == nil {
 		history = []RevisitHistoryItem{}
+	}
+
+	ids := make([]uuid.UUID, len(history))
+	for i, item := range history {
+		ids[i] = item.ProblemID
+	}
+	topicMap := topicsForProblems(ids)
+	for i := range history {
+		history[i].Topics = topicMap[history[i].ProblemID]
 	}
 
 	respondJSON(w, http.StatusOK, history)

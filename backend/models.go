@@ -94,10 +94,11 @@ type Problem struct {
 	LastRevisitedAt NullTime  `json:"last_revisited_at"`
 	TimesRevisited  int       `json:"times_revisited"`
 	Status          string    `json:"status"` // active, retired
-	Topic           string    `json:"topic,omitempty"`
+	Topic           string    `json:"topic,omitempty"` // legacy single-value column; no longer written to, kept for backward compat. Use Topics.
 	Difficulty      string    `json:"difficulty,omitempty"`
 	Source          string    `json:"source,omitempty"`
 	Notes           string    `json:"notes,omitempty"`
+	Topics          []string  `json:"topics"` // populated separately from the problem_topics join table; a problem may belong to more than one topic
 }
 
 // ProblemDetail is the response for the problem detail endpoint, includes revisit history
@@ -110,10 +111,11 @@ type ProblemDetail struct {
 	LastRevisitedAt NullTime       `json:"last_revisited_at"`
 	TimesRevisited  int            `json:"times_revisited"`
 	Status          string         `json:"status"`
-	Topic           string         `json:"topic,omitempty"`
+	Topic           string         `json:"topic,omitempty"` // legacy single-value column; see Problem.Topic
 	Difficulty      string         `json:"difficulty,omitempty"`
 	Source          string         `json:"source,omitempty"`
 	Notes           string         `json:"notes,omitempty"`
+	Topics          []string       `json:"topics"`
 	RevisitedToday  bool           `json:"revisited_today"`
 	RevisitHistory  []RevisitEntry `json:"revisit_history"`
 	WeightInfo      ProblemWeight  `json:"weight_info"`

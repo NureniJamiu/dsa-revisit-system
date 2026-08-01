@@ -13,16 +13,20 @@ const RevisitJournal: React.FC = () => {
 
     const { data: history = [], isLoading, isError } = useHistory(searchQuery);
 
-    // Derived Data
+    // Derived Data. A history entry's problem may have zero, one, or several
+    // topics -- fall back to "General" when it has none so the filter still
+    // has somewhere to put it.
+    const topicsOf = (item: RevisitHistoryItem): string[] => item.topics?.length ? item.topics : ['General'];
+
     const topics = useMemo(() => {
-        const uniqueTopics = new Set(history.map(item => item.topic || 'General'));
+        const uniqueTopics = new Set(history.flatMap(topicsOf));
         return Array.from(uniqueTopics).sort();
     }, [history]);
 
     const filteredHistory = useMemo(() => {
         return history.filter(item => {
             const matchesDifficulty = !difficultyFilter || item.difficulty.toLowerCase() === difficultyFilter.toLowerCase();
-            const matchesTopic = !topicFilter || (item.topic || 'General') === topicFilter;
+            const matchesTopic = !topicFilter || topicsOf(item).includes(topicFilter);
             return matchesDifficulty && matchesTopic;
         });
     }, [history, difficultyFilter, topicFilter]);

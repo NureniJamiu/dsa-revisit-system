@@ -45,7 +45,18 @@ CREATE TABLE IF NOT EXISTS revisit_history (
     notes TEXT
 );
 
+-- Problem Topics Table (many-to-many: a problem can belong to multiple topics)
+-- NOTE: problems.topic (singular column, above) predates this and is no
+-- longer written to or read from -- left in place rather than dropped, per
+-- this project's "never remove, only add" migration convention.
+CREATE TABLE IF NOT EXISTS problem_topics (
+    problem_id UUID NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    topic VARCHAR(255) NOT NULL,
+    PRIMARY KEY (problem_id, topic)
+);
+
 -- Index for scheduling queries
 CREATE INDEX IF NOT EXISTS idx_problems_user_scheduling ON problems(user_id, status, last_revisited_at);
 CREATE INDEX IF NOT EXISTS idx_revisit_history_problem ON revisit_history(problem_id, revisited_at DESC);
+CREATE INDEX IF NOT EXISTS idx_problem_topics_problem ON problem_topics(problem_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);

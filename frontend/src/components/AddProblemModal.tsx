@@ -2,12 +2,13 @@ import React from 'react';
 import { X, Plus } from 'lucide-react';
 import { useAddProblemMutation, useUpdateProblemMutation } from '../hooks/useProblems';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { topicBadgeStyle } from '../lib/topicColors';
 
 interface AddProblemModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
-    problem?: { id: string; title: string; link: string; difficulty?: string; source?: string; notes?: string } | null;
+    problem?: { id: string; title: string; link: string; difficulty?: string; source?: string; notes?: string; topics?: string[] } | null;
 }
 
 const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSuccess, problem }) => {
@@ -16,6 +17,8 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
     const [difficulty, setDifficulty] = React.useState('Medium');
     const [source, setSource] = React.useState('LeetCode');
     const [notes, setNotes] = React.useState('');
+    const [topics, setTopics] = React.useState<string[]>([]);
+    const [topicInput, setTopicInput] = React.useState('');
 
     const addMutation = useAddProblemMutation();
     const updateMutation = useUpdateProblemMutation();
@@ -30,14 +33,37 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
             setDifficulty(problem.difficulty || 'Medium');
             setSource(problem.source || 'LeetCode');
             setNotes(problem.notes || '');
+            setTopics(problem.topics || []);
         } else {
             setTitle('');
             setLink('');
             setDifficulty('Medium');
             setSource('LeetCode');
             setNotes('');
+            setTopics([]);
         }
+        setTopicInput('');
     }, [problem, isOpen]);
+
+    const addTopic = (raw: string) => {
+        const topic = raw.trim();
+        if (!topic || topics.some(t => t.toLowerCase() === topic.toLowerCase())) return;
+        setTopics(prev => [...prev, topic]);
+        setTopicInput('');
+    };
+
+    const removeTopic = (topic: string) => {
+        setTopics(prev => prev.filter(t => t !== topic));
+    };
+
+    const handleTopicInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            addTopic(topicInput);
+        } else if (e.key === 'Backspace' && topicInput === '' && topics.length > 0) {
+            removeTopic(topics[topics.length - 1]);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,6 +74,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
             difficulty,
             source,
             notes,
+            topics,
         };
 
         if (problem) {
@@ -68,6 +95,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                     setDifficulty('Medium');
                     setSource('LeetCode');
                     setNotes('');
+                    setTopics([]);
                     onSuccess?.();
                     onClose();
                 },
@@ -178,6 +206,42 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                                     onChange={(e) => setSource(e.target.value)}
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="topic-input" className={labelClass}>
+                                Topics (optional)
+                            </label>
+                            <div className={`${inputClass} flex flex-wrap items-center gap-1.5 py-2`}>
+                                {topics.map((topic) => (
+                                    <span
+                                        key={topic}
+                                        className="topic-badge inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium"
+                                        style={topicBadgeStyle(topic)}
+                                    >
+                                        {topic}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeTopic(topic)}
+                                            className="hover:opacity-70"
+                                            aria-label={`Remove ${topic}`}
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                                <input
+                                    type="text"
+                                    id="topic-input"
+                                    value={topicInput}
+                                    onChange={(e) => setTopicInput(e.target.value)}
+                                    onKeyDown={handleTopicInputKeyDown}
+                                    onBlur={() => addTopic(topicInput)}
+                                    placeholder={topics.length ? '' : 'e.g. Dynamic Programming, Arrays'}
+                                    className="flex-1 min-w-[100px] bg-transparent border-none outline-none text-[14px] font-medium text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] placeholder:font-normal"
+                                />
+                            </div>
+                            <p className="text-[11px] text-[var(--text-tertiary)] mt-1.5">Press Enter or comma to add. A problem can have more than one topic.</p>
                         </div>
 
                         <div>

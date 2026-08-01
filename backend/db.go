@@ -83,6 +83,23 @@ func runMigrations() {
 	} else {
 		log.Println("Migration: notes column ensured")
 	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS problem_topics (
+			problem_id UUID NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+			topic VARCHAR(255) NOT NULL,
+			PRIMARY KEY (problem_id, topic)
+		)`)
+	if err != nil {
+		log.Printf("Migration warning (problem_topics table): %v", err)
+	} else {
+		log.Println("Migration: problem_topics table ensured")
+	}
+
+	_, err = db.Exec(`CREATE INDEX IF NOT EXISTS idx_problem_topics_problem ON problem_topics(problem_id)`)
+	if err != nil {
+		log.Printf("Migration warning (problem_topics index): %v", err)
+	}
 }
 
 // FindOrCreateUserByClerkID looks up a user by their Clerk ID.
