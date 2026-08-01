@@ -8,6 +8,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import CustomLoader from '../components/CustomLoader';
 import { topicBadgeStyle } from '../lib/topicColors';
 import WeightBreakdown from '../components/WeightBreakdown';
+import ActivityHeatmap from '../components/ActivityHeatmap';
 
 type SortColumn = 'title' | 'last_touch' | 'attempts' | 'weight';
 
@@ -209,6 +210,8 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <ActivityHeatmap />
 
             {/* Today's Focus Section */}
             <div>
