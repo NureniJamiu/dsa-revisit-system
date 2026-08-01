@@ -54,6 +54,11 @@ export interface ProblemDetailResponse extends Problem {
     weight_info?: WeightInfo;
 }
 
+export interface ProblemWithWeight {
+    problem: Problem;
+    weight: WeightInfo;
+}
+
 export interface RevisitHistoryItem {
     id: string;
     problem_id: string;
@@ -70,6 +75,7 @@ export const problemKeys = {
     all: ['problems'] as const,
     lists: (status?: string) => [...problemKeys.all, 'list', { status }] as const,
     today: () => [...problemKeys.all, 'today'] as const,
+    weights: () => [...problemKeys.all, 'weights'] as const,
     history: (q?: string) => [...problemKeys.all, 'history', { q }] as const,
     details: () => [...problemKeys.all, 'detail'] as const,
     detail: (id: string) => [...problemKeys.details(), id] as const,
@@ -98,6 +104,18 @@ export function useTodaysFocus() {
             const res = await apiFetch('/problems/today', {}, getToken);
             if (!res.ok) throw new Error('Failed to fetch today\'s focus');
             return (await res.json()) as TodaysFocusResponse;
+        },
+    });
+}
+
+export function useAllWeights() {
+    const { getToken } = useAuth();
+    return useQuery({
+        queryKey: problemKeys.weights(),
+        queryFn: async () => {
+            const res = await apiFetch('/problems/weights', {}, getToken);
+            if (!res.ok) throw new Error('Failed to fetch problem weights');
+            return (await res.json()) as ProblemWithWeight[];
         },
     });
 }

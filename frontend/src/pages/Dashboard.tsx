@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Filter, CheckCircle, Zap, Plus, Edit2, Trash2, Search, X } from 'lucide-react';
+import { ExternalLink, Filter, CheckCircle, Zap, Plus, Edit2, Trash2, Search, X, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
 import { useUser } from '@clerk/clerk-react';
-import { useProblems, useTodaysFocus, useRevisitProblemMutation, useDeleteProblemMutation, type Problem } from '../hooks/useProblems';
+import { useAllWeights, useTodaysFocus, useRevisitProblemMutation, useDeleteProblemMutation, type Problem } from '../hooks/useProblems';
 import AddProblemModal from '../components/AddProblemModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import CustomLoader from '../components/CustomLoader';
 import { topicBadgeStyle } from '../lib/topicColors';
 import WeightBreakdown from '../components/WeightBreakdown';
 
+type SortColumn = 'title' | 'last_touch' | 'attempts' | 'weight';
+
 const Dashboard: React.FC = () => {
-    const { data: problems = [], isLoading: loading, isError: problemsError } = useProblems('active');
+    const { data: weightedProblems = [], isLoading: loading, isError: problemsError } = useAllWeights();
+    const problems = React.useMemo(() => weightedProblems.map(w => w.problem), [weightedProblems]);
     const { data: todaysFocus, isLoading: focusLoading, isError: focusError } = useTodaysFocus();
     const { user } = useUser();
     const revisitMutation = useRevisitProblemMutation();
@@ -29,6 +32,8 @@ const Dashboard: React.FC = () => {
     const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
     const [topicFilter, setTopicFilter] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
+    const [sortColumn, setSortColumn] = useState<SortColumn>('weight');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -105,7 +110,7 @@ const Dashboard: React.FC = () => {
     ).sort((a, b) => a.localeCompare(b));
     const activeFilterCount = (difficultyFilter ? 1 : 0) + (topicFilter ? 1 : 0);
 
-    const filteredProblems = problems.filter(p => {
+    const filteredProblems = weightedProblems.filter(({ problem: p }) => {
         const query = searchQuery.toLowerCase();
         const matchesSearch = p.title.toLowerCase().includes(query) ||
             (p.source?.toLowerCase() || '').includes(query) ||
@@ -115,9 +120,59 @@ const Dashboard: React.FC = () => {
         return matchesSearch && matchesDifficulty && matchesTopic;
     });
 
+    const sortedProblems = [...filteredProblems].sort((a, b) => {
+        let cmp = 0;
+        switch (sortColumn) {
+            case 'title':
+                cmp = a.problem.title.localeCompare(b.problem.title);
+                break;
+            case 'last_touch': {
+                const at = a.problem.last_revisited_at ? new Date(a.problem.last_revisited_at).getTime() : 0;
+                const bt = b.problem.last_revisited_at ? new Date(b.problem.last_revisited_at).getTime() : 0;
+                cmp = at - bt;
+                break;
+            }
+            case 'attempts':
+                cmp = a.problem.times_revisited - b.problem.times_revisited;
+                break;
+            case 'weight':
+            default:
+                cmp = a.weight.weight - b.weight.weight;
+                break;
+        }
+        return sortDirection === 'asc' ? cmp : -cmp;
+    });
+
+    const handleSort = (column: SortColumn) => {
+        if (sortColumn === column) {
+            setSortDirection(d => (d === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setSortColumn(column);
+            setSortDirection(column === 'title' ? 'asc' : 'desc');
+        }
+    };
+
+    const SortHeader: React.FC<{ column: SortColumn; children: React.ReactNode }> = ({ column, children }) => {
+        const active = sortColumn === column;
+        return (
+            <button
+                type="button"
+                onClick={() => handleSort(column)}
+                className={`inline-flex items-center gap-1 text-[11px] font-medium transition-colors hover:text-[var(--text-primary)] ${active ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+            >
+                {children}
+                {active ? (
+                    sortDirection === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-40" />
+                )}
+            </button>
+        );
+    };
+
     // Pagination Logic
-    const totalPages = Math.ceil(filteredProblems.length / ITEMS_PER_PAGE);
-    const paginatedProblems = filteredProblems.slice(
+    const totalPages = Math.ceil(sortedProblems.length / ITEMS_PER_PAGE);
+    const paginatedProblems = sortedProblems.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
     );
@@ -395,14 +450,17 @@ const Dashboard: React.FC = () => {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-[var(--border-subtle)]">
-                                    <th className="text-left px-5 md:px-6 py-3 text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
-                                        Problem
+                                    <th className="text-left px-5 md:px-6 py-3 whitespace-nowrap">
+                                        <SortHeader column="title">Problem</SortHeader>
                                     </th>
-                                    <th className="text-left px-5 md:px-6 py-3 text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
-                                        Last touch
+                                    <th className="text-left px-5 md:px-6 py-3 whitespace-nowrap">
+                                        <SortHeader column="last_touch">Last touch</SortHeader>
                                     </th>
-                                    <th className="hidden md:table-cell text-left px-5 md:px-6 py-3 text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
-                                        Attempts
+                                    <th className="hidden md:table-cell text-left px-5 md:px-6 py-3 whitespace-nowrap">
+                                        <SortHeader column="attempts">Attempts</SortHeader>
+                                    </th>
+                                    <th className="hidden lg:table-cell text-left px-5 md:px-6 py-3 whitespace-nowrap">
+                                        <SortHeader column="weight">Weight</SortHeader>
                                     </th>
                                     <th className="text-right px-5 md:px-6 py-3 text-[11px] font-medium text-[var(--text-secondary)] min-w-[100px] whitespace-nowrap">
                                         Actions
@@ -412,26 +470,26 @@ const Dashboard: React.FC = () => {
                             <tbody className="divide-y divide-[var(--border-subtle)]">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-16 text-center">
+                                        <td colSpan={5} className="px-6 py-16 text-center">
                                             <CustomLoader text="Loading mastery archive..." />
                                         </td>
                                     </tr>
                                 ) : problemsError ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center">
+                                        <td colSpan={5} className="px-6 py-12 text-center">
                                             <p className="text-[13px] text-red-400/80">Failed to load archive data. Try refreshing.</p>
                                         </td>
                                     </tr>
                                 ) : paginatedProblems.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center">
+                                        <td colSpan={5} className="px-6 py-12 text-center">
                                             <p className="text-[13px] text-[var(--text-secondary)]">
                                                 {searchQuery || difficultyFilter || topicFilter ? 'No problems match your filters.' : 'No problems tracked yet.'}
                                             </p>
                                         </td>
                                     </tr>
                                 ) : (
-                                    paginatedProblems.map((problem) => (
+                                    paginatedProblems.map(({ problem, weight }) => (
                                         <tr key={problem.id} className="group hover:bg-[var(--bg-surface)] transition-colors">
                                             <td className="px-5 md:px-6 py-3.5 min-w-[200px]">
                                                 <Link to={`/problem/${problem.id}`} className="text-[13px] font-medium text-[var(--text-primary)] group-hover:text-green-400 transition-colors block truncate max-w-[200px] md:max-w-none">
@@ -456,6 +514,15 @@ const Dashboard: React.FC = () => {
                                                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--bg-surface-hover)] text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
                                                     {problem.times_revisited} focus points
                                                 </span>
+                                            </td>
+                                            <td className="hidden lg:table-cell px-5 md:px-6 py-3.5">
+                                                <div className="flex items-center gap-1">
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityStyle(weight.priority).badge} ${getPriorityStyle(weight.priority).text}`}>
+                                                        {weight.priority}
+                                                    </span>
+                                                    <span className="font-mono-tabular text-[11px] text-[var(--text-tertiary)]">{weight.weight.toFixed(1)}</span>
+                                                    <WeightBreakdown weight={weight} lastRevisitedAt={problem.last_revisited_at} className="w-4 h-4" />
+                                                </div>
                                             </td>
                                             <td className="px-5 md:px-6 py-3.5 text-right">
                                                 <div className="flex items-center justify-end gap-0.5">
