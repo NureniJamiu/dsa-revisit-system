@@ -7,10 +7,45 @@ import { toast } from 'react-toastify';
 import { useTheme } from '../providers/ThemeContext';
 
 export type UserSettings = {
-    daily_problems: number;
+    problems_per_day: number;
+    min_revisit_days: number;
+    max_revisit_days: number;
     skip_weekends: boolean;
-    email_time: string;
+    email_time: string; // 24h "HH:MM", matches backend cron parsing
     ai_encouragement: boolean;
+}
+
+// Display list for the reminder-time select: 24h "value" is what gets sent to
+// the backend (cron.go parses email_time with time.Parse("15:04", ...), which
+// is strictly 24h — it does not accept "AM"/"PM" suffixes), "label" is what
+// the user sees.
+const EMAIL_TIME_OPTIONS = [
+    { value: '06:00', label: '06:00 AM' },
+    { value: '07:00', label: '07:00 AM' },
+    { value: '08:00', label: '08:00 AM' },
+    { value: '09:00', label: '09:00 AM' },
+    { value: '10:00', label: '10:00 AM' },
+    { value: '11:00', label: '11:00 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:00', label: '01:00 PM' },
+    { value: '14:00', label: '02:00 PM' },
+    { value: '15:00', label: '03:00 PM' },
+    { value: '16:00', label: '04:00 PM' },
+    { value: '17:00', label: '05:00 PM' },
+];
+
+// Some users may have a legacy "HH:MM AM/PM" value saved from before this form
+// sent the correct 24h format (see EMAIL_TIME_OPTIONS comment above). Normalize
+// on load so the select has a valid match instead of silently showing nothing.
+function normalizeEmailTime(value: string): string {
+    const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return value;
+    let hour = parseInt(match[1], 10);
+    const minute = match[2];
+    const period = match[3].toUpperCase();
+    if (period === 'PM' && hour !== 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+    return `${String(hour).padStart(2, '0')}:${minute}`;
 }
 
 const Toggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked, onChange }) => (
@@ -39,9 +74,11 @@ const Settings: React.FC = () => {
             if (!res.ok) {
                 // Return defaults if not found or error
                 return {
-                    daily_problems: 3,
+                    problems_per_day: 3,
+                    min_revisit_days: 2,
+                    max_revisit_days: 10,
                     skip_weekends: true,
-                    email_time: '09:00 AM',
+                    email_time: '09:00',
                     ai_encouragement: false
                 } as UserSettings;
             }
@@ -69,23 +106,33 @@ const Settings: React.FC = () => {
     });
 
     const [dailyProblems, setDailyProblems] = useState(3);
+    const [minRevisitDays, setMinRevisitDays] = useState(2);
+    const [maxRevisitDays, setMaxRevisitDays] = useState(10);
     const [skipWeekends, setSkipWeekends] = useState(true);
-    const [emailTime, setEmailTime] = useState('09:00 AM');
+    const [emailTime, setEmailTime] = useState('09:00');
     const [aiEncouragement, setAiEncouragement] = useState(false);
 
     // Sync state with loaded data
     React.useEffect(() => {
         if (settings) {
-            setDailyProblems(settings.daily_problems);
+            setDailyProblems(settings.problems_per_day);
+            setMinRevisitDays(settings.min_revisit_days);
+            setMaxRevisitDays(settings.max_revisit_days);
             setSkipWeekends(settings.skip_weekends);
-            setEmailTime(settings.email_time);
+            setEmailTime(normalizeEmailTime(settings.email_time));
             setAiEncouragement(settings.ai_encouragement);
         }
     }, [settings]);
 
     const handleSave = () => {
+        if (maxRevisitDays <= minRevisitDays) {
+            toast.error('Max revisit days must be greater than min revisit days.');
+            return;
+        }
         updateSettingsMutation.mutate({
-            daily_problems: dailyProblems,
+            problems_per_day: dailyProblems,
+            min_revisit_days: minRevisitDays,
+            max_revisit_days: maxRevisitDays,
             skip_weekends: skipWeekends,
             email_time: emailTime,
             ai_encouragement: aiEncouragement
@@ -94,8 +141,10 @@ const Settings: React.FC = () => {
 
     const handleReset = () => {
         setDailyProblems(3);
+        setMinRevisitDays(2);
+        setMaxRevisitDays(10);
         setSkipWeekends(true);
-        setEmailTime('09:00 AM');
+        setEmailTime('09:00');
         setAiEncouragement(false);
     };
 
@@ -148,6 +197,52 @@ const Settings: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Min Revisit Days Slider */}
+                <div className="border-t border-[var(--border-subtle)] pt-8">
+                    <div className="flex items-start justify-between mb-5">
+                        <div>
+                            <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Minimum days before revisit</h3>
+                            <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">A problem won't be suggested again until at least this many days have passed.</p>
+                        </div>
+                        <div className="flex-shrink-0 w-9 h-9 bg-green-500/10 rounded-md flex items-center justify-center border border-green-500/20">
+                            <span className="text-[15px] font-semibold text-green-400">{minRevisitDays}</span>
+                        </div>
+                    </div>
+                    <div className="px-1">
+                        <input
+                            type="range"
+                            min="1"
+                            max="14"
+                            value={minRevisitDays}
+                            onChange={(e) => setMinRevisitDays(Number(e.target.value))}
+                            className="w-full h-1 bg-[var(--bg-elevated)] rounded-full appearance-none cursor-pointer accent-green-500"
+                        />
+                    </div>
+                </div>
+
+                {/* Max Revisit Days Slider */}
+                <div className="border-t border-[var(--border-subtle)] pt-8">
+                    <div className="flex items-start justify-between mb-5">
+                        <div>
+                            <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Maximum days before revisit</h3>
+                            <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">A problem is guaranteed to resurface once it's gone this many days without a revisit, regardless of its normal priority.</p>
+                        </div>
+                        <div className="flex-shrink-0 w-9 h-9 bg-green-500/10 rounded-md flex items-center justify-center border border-green-500/20">
+                            <span className="text-[15px] font-semibold text-green-400">{maxRevisitDays}</span>
+                        </div>
+                    </div>
+                    <div className="px-1">
+                        <input
+                            type="range"
+                            min="2"
+                            max="60"
+                            value={maxRevisitDays}
+                            onChange={(e) => setMaxRevisitDays(Number(e.target.value))}
+                            className="w-full h-1 bg-[var(--bg-elevated)] rounded-full appearance-none cursor-pointer accent-green-500"
+                        />
+                    </div>
+                </div>
+
                 {/* Skip Weekends Toggle */}
                 <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-8">
                     <div>
@@ -169,8 +264,8 @@ const Settings: React.FC = () => {
                             onChange={(e) => setEmailTime(e.target.value)}
                             className="w-full px-4 py-3 bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md text-[14px] font-medium text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all appearance-none"
                         >
-                            {['06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'].map(time => (
-                                <option key={time} className="bg-[var(--bg-surface-raised)]">{time}</option>
+                            {EMAIL_TIME_OPTIONS.map(({ value, label }) => (
+                                <option key={value} value={value} className="bg-[var(--bg-surface-raised)]">{label}</option>
                             ))}
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-secondary)]">
