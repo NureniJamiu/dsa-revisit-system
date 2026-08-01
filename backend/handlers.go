@@ -13,6 +13,25 @@ import (
 	"github.com/google/uuid"
 )
 
+// getUserPreferencesOrDefault fetches a user's scheduling preferences, falling
+// back to sane defaults if the row can't be read (mirrors the fallback
+// GetTodaysFocus already used inline). Centralized so every handler that
+// scores/filters problems by min/max revisit days reads the same real
+// per-user values instead of a hardcoded constant.
+func getUserPreferencesOrDefault(userID uuid.UUID) UserPreferences {
+	var prefs UserPreferences
+	err := db.QueryRow("SELECT preferences FROM users WHERE id = $1", userID).Scan(&prefs)
+	if err != nil {
+		log.Printf("[API] Error fetching preferences for user %s: %v", userID, err)
+		return UserPreferences{
+			ProblemsPerDay: 3,
+			MinRevisitDays: 2,
+			MaxRevisitDays: 10,
+		}
+	}
+	return prefs
+}
+
 // Helper for JSON responses
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	response, err := json.Marshal(payload)
@@ -133,8 +152,8 @@ func GetProblemByID(w http.ResponseWriter, r *http.Request) {
 		TimesRevisited:  p.TimesRevisited,
 		Status:          p.Status,
 	}
-	// Use default min revisit days (2) for MVP; can be user-specific later
-	p.WeightInfo = CalculateProblemWeight(problemForWeight, 2)
+	prefs := getUserPreferencesOrDefault(userID)
+	p.WeightInfo = CalculateProblemWeight(problemForWeight, prefs.MinRevisitDays)
 
 	// Fetch revisit history for this problem (newest first)
 	historyRows, err := db.Query(`
@@ -428,13 +447,15 @@ func GetProblemWeight(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	weight := CalculateProblemWeight(p, 2) // default min_revisit_days = 2
+	prefs := getUserPreferencesOrDefault(userID)
+	weight := CalculateProblemWeight(p, prefs.MinRevisitDays)
 	respondJSON(w, http.StatusOK, weight)
 }
 
 // GetAllWeights returns all active problems with their scheduling weights
 func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 	userID := GetUserIDFromContext(r)
+	prefs := getUserPreferencesOrDefault(userID)
 
 	rows, err := db.Query(`
 		SELECT id, user_id, title, link, date_added, last_revisited_at, 
@@ -461,7 +482,7 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 			&p.Topic, &p.Difficulty, &p.Source, &p.Notes); err != nil {
 			continue
 		}
-		weight := CalculateProblemWeight(p, 2)
+		weight := CalculateProblemWeight(p, prefs.MinRevisitDays)
 		results = append(results, ProblemWithWeight{Problem: p, Weight: weight})
 	}
 
