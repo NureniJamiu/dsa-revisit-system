@@ -56,21 +56,21 @@ const RevisitJournal: React.FC = () => {
             <div className="mb-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight mb-1.5">Journey</h1>
-                        <p className="text-[13px] text-zinc-500">A chronicle of your path to technical mastery.</p>
+                        <h1 className="text-2xl font-semibold text-[var(--text-primary)] tracking-tight mb-1.5">Journey</h1>
+                        <p className="text-[13px] text-[var(--text-secondary)]">A chronicle of your path to technical mastery.</p>
                     </div>
                 </div>
 
                 {/* Unified Filter Bar */}
                 <div className="flex flex-row gap-2 items-center">
                     <div className="relative group flex-1">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-green-400 transition-colors" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-secondary)] group-focus-within:text-green-400 transition-colors" />
                         <input
                             type="text"
                             placeholder="Search milestones..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-md text-[13px] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all"
+                            className="w-full pl-8 pr-3 py-2 bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all"
                         />
                     </div>
 
@@ -78,8 +78,8 @@ const RevisitJournal: React.FC = () => {
                         <button
                             onClick={() => setShowFilters(!showFilters)}
                             className={`flex items-center gap-1.5 px-3 py-2 rounded-md font-medium text-[13px] transition-colors border ${difficultyFilter || topicFilter || showFilters
-                                ? 'bg-white/[0.08] text-zinc-100 border-white/[0.1]'
-                                : 'bg-transparent text-zinc-400 border-white/[0.08] hover:border-white/[0.16] hover:text-zinc-100'
+                                ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border-default)]'
+                                : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
                                 }`}
                         >
                             <Filter className="w-3.5 h-3.5" />
@@ -94,9 +94,9 @@ const RevisitJournal: React.FC = () => {
                         {showFilters && (
                             <>
                                 <div className="fixed inset-0 z-20" onClick={() => setShowFilters(false)} />
-                                <div className="absolute right-0 mt-2 w-60 bg-zinc-900 rounded-lg border border-white/[0.08] shadow-2xl z-30 overflow-hidden">
-                                    <div className="p-2.5 border-b border-white/[0.06] flex justify-between items-center">
-                                        <p className="text-[11px] font-medium text-zinc-500">Filters</p>
+                                <div className="absolute right-0 mt-2 w-60 bg-[var(--bg-surface-raised)] rounded-lg border border-[var(--border-default)] shadow-2xl z-30 overflow-hidden">
+                                    <div className="p-2.5 border-b border-[var(--border-subtle)] flex justify-between items-center">
+                                        <p className="text-[11px] font-medium text-[var(--text-secondary)]">Filters</p>
                                         {(difficultyFilter || topicFilter) && (
                                             <button
                                                 onClick={() => {
@@ -111,15 +111,15 @@ const RevisitJournal: React.FC = () => {
                                     </div>
                                     <div className="p-2.5 space-y-3.5">
                                         <div>
-                                            <p className="text-[11px] font-medium text-zinc-500 mb-1.5">Difficulty</p>
+                                            <p className="text-[11px] font-medium text-[var(--text-secondary)] mb-1.5">Difficulty</p>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {['all', 'easy', 'medium', 'hard'].map((level) => (
                                                     <button
                                                         key={level}
                                                         onClick={() => setDifficultyFilter(level === 'all' ? null : level)}
                                                         className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${(level === 'all' && !difficultyFilter) || difficultyFilter === level
-                                                            ? 'bg-white/[0.1] text-zinc-100'
-                                                            : 'bg-white/[0.03] text-zinc-500 hover:bg-white/[0.06]'
+                                                            ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)]'
+                                                            : 'bg-[var(--bg-surface-raised)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'
                                                             }`}
                                                     >
                                                         {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -128,11 +128,11 @@ const RevisitJournal: React.FC = () => {
                                             </div>
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-medium text-zinc-500 mb-1.5">Topic</p>
+                                            <p className="text-[11px] font-medium text-[var(--text-secondary)] mb-1.5">Topic</p>
                                             <div className="space-y-0.5 max-h-40 overflow-y-auto custom-scrollbar">
                                                 <button
                                                     onClick={() => setTopicFilter(null)}
-                                                    className={`w-full text-left px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors ${!topicFilter ? 'bg-green-500/10 text-green-400' : 'text-zinc-500 hover:bg-white/[0.05]'
+                                                    className={`w-full text-left px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors ${!topicFilter ? 'bg-green-500/10 text-green-400' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)]'
                                                         }`}
                                                 >
                                                     All topics
@@ -141,7 +141,7 @@ const RevisitJournal: React.FC = () => {
                                                     <button
                                                         key={t}
                                                         onClick={() => setTopicFilter(t)}
-                                                        className={`w-full text-left px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors truncate ${topicFilter === t ? 'bg-green-500/10 text-green-400' : 'text-zinc-500 hover:bg-white/[0.05]'
+                                                        className={`w-full text-left px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors truncate ${topicFilter === t ? 'bg-green-500/10 text-green-400' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)]'
                                                             }`}
                                                     >
                                                         {t}
@@ -167,12 +167,12 @@ const RevisitJournal: React.FC = () => {
                     <p className="text-red-400 font-medium text-[13px]">Failed to load history. Please try again later.</p>
                 </div>
             ) : Object.keys(groupedHistory).length === 0 ? (
-                <div className="text-center py-24 bg-white/[0.02] rounded-lg border border-dashed border-white/[0.08]">
-                    <div className="w-14 h-14 bg-white/[0.04] rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Calendar className="w-6 h-6 text-zinc-600" strokeWidth={1.5} />
+                <div className="text-center py-24 bg-[var(--bg-surface)] rounded-lg border border-dashed border-[var(--border-default)]">
+                    <div className="w-14 h-14 bg-[var(--bg-surface-hover)] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Calendar className="w-6 h-6 text-[var(--text-tertiary)]" strokeWidth={1.5} />
                     </div>
-                    <p className="text-zinc-400 font-medium text-[14px]">No entries found.</p>
-                    <p className="text-zinc-600 text-[12px] mt-1">Try a different search or start revisiting problems!</p>
+                    <p className="text-[var(--text-secondary)] font-medium text-[14px]">No entries found.</p>
+                    <p className="text-[var(--text-tertiary)] text-[12px] mt-1">Try a different search or start revisiting problems!</p>
                 </div>
             ) : (
                 <div className="relative pb-12 mt-10 overflow-hidden">
@@ -186,32 +186,32 @@ const RevisitJournal: React.FC = () => {
                                 <div key={date} className="relative z-10 group/item">
                                     {/* Timeline Line Fragment */}
                                     {!isFirst && (
-                                        <div className="absolute left-[10px] top-0 h-4 w-px bg-white/[0.08] z-0" />
+                                        <div className="absolute left-[10px] top-0 h-4 w-px bg-[var(--bg-elevated)] z-0" />
                                     )}
                                     {!isLast && (
-                                        <div className="absolute left-[10px] top-4 bottom-0 w-px bg-white/[0.08] z-0" />
+                                        <div className="absolute left-[10px] top-4 bottom-0 w-px bg-[var(--bg-elevated)] z-0" />
                                     )}
 
                                     {/* Date Header Row (Clickable) */}
                                     <button
                                         onClick={() => toggleDate(date)}
-                                        className="w-full flex items-center gap-3 group/header hover:bg-white/[0.02] transition-colors rounded-md py-2 -ml-1 pl-1 relative z-10"
+                                        className="w-full flex items-center gap-3 group/header hover:bg-[var(--bg-surface)] transition-colors rounded-md py-2 -ml-1 pl-1 relative z-10"
                                     >
                                         {/* Left: Indicator Dot */}
                                         <div className="w-8 shrink-0 flex justify-center">
-                                            <div className={`size-2.5 rounded-full border-2 transition-all duration-300 z-10 ${isExpanded ? 'bg-green-500 border-green-500 scale-125' : 'bg-zinc-950 border-white/[0.16]'}`} />
+                                            <div className={`size-2.5 rounded-full border-2 transition-all duration-300 z-10 ${isExpanded ? 'bg-green-500 border-green-500 scale-125' : 'bg-[var(--bg-app)] border-[var(--border-strong)]'}`} />
                                         </div>
 
                                         {/* Right: Date Text & Chevron */}
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <h2 className={`text-[12px] font-medium whitespace-nowrap transition-colors ${isExpanded ? 'text-green-400' : 'text-zinc-100'}`}>
+                                            <h2 className={`text-[12px] font-medium whitespace-nowrap transition-colors ${isExpanded ? 'text-green-400' : 'text-[var(--text-primary)]'}`}>
                                                 {date}
                                             </h2>
-                                            <div className="h-px bg-white/[0.06] flex-1" />
+                                            <div className="h-px bg-[var(--bg-elevated)] flex-1" />
                                             {isExpanded ? (
                                                 <ChevronUp className="w-3.5 h-3.5 text-green-400 shrink-0" />
                                             ) : (
-                                                <ChevronDown className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                                                <ChevronDown className="w-3.5 h-3.5 text-[var(--text-secondary)] shrink-0" />
                                             )}
                                         </div>
                                     </button>
@@ -224,23 +224,23 @@ const RevisitJournal: React.FC = () => {
                                                     <Link
                                                         to={`/problem/${item.problem_id}`}
                                                         key={item.id}
-                                                        className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5 hover:border-white/[0.12] transition-colors group relative overflow-hidden"
+                                                        className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg p-5 hover:border-[var(--border-strong)] transition-colors group relative overflow-hidden"
                                                     >
                                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center gap-3 mb-1.5">
-                                                                    <h3 className="text-[14px] font-semibold text-zinc-100 group-hover:text-green-400 transition-colors block leading-snug truncate">
+                                                                    <h3 className="text-[14px] font-semibold text-[var(--text-primary)] group-hover:text-green-400 transition-colors block leading-snug truncate">
                                                                         {item.problem_title}
                                                                     </h3>
-                                                                    <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1.5 bg-white/[0.03] px-2 py-0.5 rounded-full shrink-0">
-                                                                        <Clock className="w-3 h-3 text-zinc-600" />
+                                                                    <span className="text-[11px] font-medium text-[var(--text-secondary)] flex items-center gap-1.5 bg-[var(--bg-surface-raised)] px-2 py-0.5 rounded-full shrink-0">
+                                                                        <Clock className="w-3 h-3 text-[var(--text-tertiary)]" />
                                                                         {new Date(item.revisited_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                     </span>
                                                                 </div>
 
                                                                 {item.notes && (
-                                                                    <div className="hidden md:block mt-2 relative max-w-2xl px-3 py-1.5 bg-white/[0.03] rounded-md border border-white/[0.06]">
-                                                                        <p className="text-[12px] leading-relaxed text-zinc-400 italic">
+                                                                    <div className="hidden md:block mt-2 relative max-w-2xl px-3 py-1.5 bg-[var(--bg-surface-raised)] rounded-md border border-[var(--border-subtle)]">
+                                                                        <p className="text-[12px] leading-relaxed text-[var(--text-secondary)] italic">
                                                                             "{item.notes}"
                                                                         </p>
                                                                     </div>
@@ -248,7 +248,7 @@ const RevisitJournal: React.FC = () => {
                                                             </div>
 
                                                             <div className="hidden md:flex items-center gap-2 shrink-0">
-                                                                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] text-[11px] font-medium text-zinc-500 group-hover:text-green-400 group-hover:bg-green-500/10 transition-colors rounded-md">
+                                                                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[var(--bg-surface-raised)] text-[11px] font-medium text-[var(--text-secondary)] group-hover:text-green-400 group-hover:bg-green-500/10 transition-colors rounded-md">
                                                                     View source
                                                                     <ExternalLink className="w-3 h-3" />
                                                                 </div>

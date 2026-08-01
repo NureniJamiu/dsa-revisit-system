@@ -65,6 +65,11 @@
     --btn-primary-bg: #f4f4f5;
     --btn-primary-text: #18181b;
     --btn-primary-hover-bg: #ffffff;
+
+    /* Landing page CTA gradient button */
+    --btn-cta-from: #ffffff;
+    --btn-cta-to: #e4e4e7;
+    --btn-cta-text: #18181b;
 }
 
 /* ─── Light theme (restores the pre-redesign palette; colors only) ─── */
@@ -121,6 +126,11 @@
     --btn-primary-bg: #111827;
     --btn-primary-text: #ffffff;
     --btn-primary-hover-bg: #1f2937;
+
+    /* Landing page CTA gradient button */
+    --btn-cta-from: #1f2937;
+    --btn-cta-to: #111827;
+    --btn-cta-text: #ffffff;
 }
 
 /* Custom base styles */

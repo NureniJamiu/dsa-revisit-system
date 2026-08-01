@@ -80,17 +80,17 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
 
     if (!isOpen) return null;
 
-    const inputClass = "w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-md text-[14px] font-medium text-zinc-100 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:bg-white/[0.05] focus:border-green-500/40 transition-all placeholder:text-zinc-600";
-    const labelClass = "block text-[11px] font-medium text-zinc-500 mb-2";
+    const inputClass = "w-full px-4 py-3 bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md text-[14px] font-medium text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:bg-[var(--bg-surface-hover)] focus:border-green-500/40 transition-all placeholder:text-[var(--text-tertiary)]";
+    const labelClass = "block text-[11px] font-medium text-[var(--text-secondary)] mb-2";
 
     return (
         <div
-            className={`fixed inset-0 z-[60] flex ${isMobile ? 'items-end' : 'items-center justify-center'} bg-black/60 backdrop-blur-sm animate-fadeIn`}
+            className={`fixed inset-0 z-[60] flex ${isMobile ? 'items-end' : 'items-center justify-center'} bg-[var(--overlay)] backdrop-blur-sm animate-fadeIn`}
             onClick={onClose}
         >
             {/* Sheet / Modal Container */}
             <div
-                className={`bg-zinc-900 border border-white/[0.08] shadow-2xl w-full transform transition-all overflow-hidden ${isMobile
+                className={`bg-[var(--bg-surface-raised)] border border-[var(--border-default)] shadow-2xl w-full transform transition-all overflow-hidden ${isMobile
                     ? 'rounded-t-2xl animate-sheetSlideUp'
                     : 'rounded-xl max-w-[440px] m-6 animate-scaleIn'
                     }`}
@@ -99,18 +99,18 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                 {/* Mobile Drag Handle */}
                 {isMobile && (
                     <div className="pt-4 pb-2">
-                        <div className="w-10 h-1 bg-white/[0.1] rounded-full mx-auto" />
+                        <div className="w-10 h-1 bg-[var(--bg-elevated)] rounded-full mx-auto" />
                     </div>
                 )}
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 pt-6 pb-4">
-                    <h2 className="text-[17px] font-semibold text-zinc-100 tracking-tight">
+                    <h2 className="text-[17px] font-semibold text-[var(--text-primary)] tracking-tight">
                         {problem ? 'Edit problem' : 'Add problem'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-zinc-500 hover:text-zinc-100 hover:bg-white/[0.06] rounded-md transition-colors"
+                        className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-md transition-colors"
                     >
                         <X className="w-4.5 h-4.5" />
                     </button>
@@ -160,9 +160,9 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                                     value={difficulty}
                                     onChange={(e) => setDifficulty(e.target.value)}
                                 >
-                                    <option value="Easy" className="bg-zinc-900">Easy</option>
-                                    <option value="Medium" className="bg-zinc-900">Medium</option>
-                                    <option value="Hard" className="bg-zinc-900">Hard</option>
+                                    <option value="Easy" className="bg-[var(--bg-surface-raised)]">Easy</option>
+                                    <option value="Medium" className="bg-[var(--bg-surface-raised)]">Medium</option>
+                                    <option value="Hard" className="bg-[var(--bg-surface-raised)]">Hard</option>
                                 </select>
                             </div>
                             <div>
@@ -200,7 +200,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full flex justify-center items-center gap-2 bg-zinc-100 text-zinc-900 py-3 rounded-md hover:bg-white text-[13px] font-medium transition-colors disabled:opacity-50"
+                            className="w-full flex justify-center items-center gap-2 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] py-3 rounded-md hover:bg-[var(--btn-primary-hover-bg)] text-[13px] font-medium transition-colors disabled:opacity-50"
                         >
                             {isSubmitting ? (
                                 <span>Saving...</span>
@@ -215,7 +215,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSu
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="w-full py-2.5 text-[12px] font-medium text-zinc-500 hover:text-zinc-200 transition-colors"
+                                className="w-full py-2.5 text-[12px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                             >
                                 Cancel
                             </button>

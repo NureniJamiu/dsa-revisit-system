@@ -4,6 +4,7 @@ import { apiFetch } from '../lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CustomLoader from '../components/CustomLoader';
 import { toast } from 'react-toastify';
+import { useTheme } from '../providers/ThemeContext';
 
 export type UserSettings = {
     daily_problems: number;
@@ -15,7 +16,7 @@ export type UserSettings = {
 const Toggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked, onChange }) => (
     <button
         onClick={onChange}
-        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${checked ? 'bg-green-500' : 'bg-white/[0.1]'
+        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${checked ? 'bg-green-500' : 'bg-[var(--border-strong)]'
             }`}
     >
         <span
@@ -28,6 +29,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked,
 const Settings: React.FC = () => {
     const { getToken } = useAuth();
     const queryClient = useQueryClient();
+    const { theme, toggleTheme } = useTheme();
 
     // Queries
     const { data: settings, isLoading } = useQuery({
@@ -109,19 +111,19 @@ const Settings: React.FC = () => {
         <div className="max-w-2xl mx-auto pb-20">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight mb-1.5">Preferences</h1>
-                <p className="text-[13px] text-zinc-500">Fine-tune your learning pace and notification preferences.</p>
+                <h1 className="text-2xl font-semibold text-[var(--text-primary)] tracking-tight mb-1.5">Preferences</h1>
+                <p className="text-[13px] text-[var(--text-secondary)]">Fine-tune your learning pace and notification preferences.</p>
             </div>
 
             {/* Settings Card */}
-            <div className="bg-white/[0.02] rounded-lg border border-white/[0.06] p-8 space-y-8">
+            <div className="bg-[var(--bg-surface)] rounded-lg border border-[var(--border-subtle)] p-8 space-y-8">
 
                 {/* Daily Problems Slider */}
                 <div>
                     <div className="flex items-start justify-between mb-5">
                         <div>
-                            <h3 className="text-[14px] font-semibold text-zinc-100">Daily target</h3>
-                            <p className="text-[13px] text-zinc-500 mt-0.5">Number of problems to solve each day.</p>
+                            <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Daily target</h3>
+                            <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Number of problems to solve each day.</p>
                         </div>
                         <div className="flex-shrink-0 w-9 h-9 bg-green-500/10 rounded-md flex items-center justify-center border border-green-500/20">
                             <span className="text-[15px] font-semibold text-green-400">{dailyProblems}</span>
@@ -134,9 +136,9 @@ const Settings: React.FC = () => {
                             max="5"
                             value={dailyProblems}
                             onChange={(e) => setDailyProblems(Number(e.target.value))}
-                            className="w-full h-1 bg-white/[0.08] rounded-full appearance-none cursor-pointer accent-green-500"
+                            className="w-full h-1 bg-[var(--bg-elevated)] rounded-full appearance-none cursor-pointer accent-green-500"
                         />
-                        <div className="flex justify-between px-0.5 text-[11px] font-medium text-zinc-600 mt-2.5">
+                        <div className="flex justify-between px-0.5 text-[11px] font-medium text-[var(--text-tertiary)] mt-2.5">
                             <span>1</span>
                             <span>2</span>
                             <span>3</span>
@@ -147,48 +149,57 @@ const Settings: React.FC = () => {
                 </div>
 
                 {/* Skip Weekends Toggle */}
-                <div className="flex items-center justify-between border-t border-white/[0.06] pt-8">
+                <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-8">
                     <div>
-                        <h3 className="text-[14px] font-semibold text-zinc-100">Skip weekends</h3>
-                        <p className="text-[13px] text-zinc-500 mt-0.5">Pause your streak and daily notifications over the weekend.</p>
+                        <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Skip weekends</h3>
+                        <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Pause your streak and daily notifications over the weekend.</p>
                     </div>
                     <Toggle checked={skipWeekends} onChange={() => setSkipWeekends(!skipWeekends)} />
                 </div>
 
                 {/* Email Notification */}
-                <div className="border-t border-white/[0.06] pt-8">
+                <div className="border-t border-[var(--border-subtle)] pt-8">
                     <div className="mb-5">
-                        <h3 className="text-[14px] font-semibold text-zinc-100">Reminder time</h3>
-                        <p className="text-[13px] text-zinc-500 mt-0.5">Choose when to receive your daily problem set reminders.</p>
+                        <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Reminder time</h3>
+                        <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Choose when to receive your daily problem set reminders.</p>
                     </div>
                     <div className="relative">
                         <select
                             value={emailTime}
                             onChange={(e) => setEmailTime(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-md text-[14px] font-medium text-zinc-100 focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all appearance-none"
+                            className="w-full px-4 py-3 bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md text-[14px] font-medium text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all appearance-none"
                         >
                             {['06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'].map(time => (
-                                <option key={time} className="bg-zinc-900">{time}</option>
+                                <option key={time} className="bg-[var(--bg-surface-raised)]">{time}</option>
                             ))}
                         </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-secondary)]">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                         </div>
                     </div>
                 </div>
 
                 {/* AI Encouragement Toggle */}
-                <div className="flex items-center justify-between border-t border-white/[0.06] pt-8">
+                <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-8">
                     <div>
                         <div className="flex items-center gap-2 mb-0.5">
-                            <h3 className="text-[14px] font-semibold text-zinc-100">AI pulse</h3>
+                            <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">AI pulse</h3>
                             <span className="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[10px] font-medium rounded border border-green-500/20">
                                 Beta
                             </span>
                         </div>
-                        <p className="text-[13px] text-zinc-500 mt-0.5">Personalized, gentle nudges generated by AI based on your progress.</p>
+                        <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Personalized, gentle nudges generated by AI based on your progress.</p>
                     </div>
                     <Toggle checked={aiEncouragement} onChange={() => setAiEncouragement(!aiEncouragement)} />
+                </div>
+
+                {/* Appearance */}
+                <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-8">
+                    <div>
+                        <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Light mode</h3>
+                        <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Switch between the dark (default) and light appearance. This is stored on this device only.</p>
+                    </div>
+                    <Toggle checked={theme === 'light'} onChange={toggleTheme} />
                 </div>
             </div>
 
@@ -196,14 +207,14 @@ const Settings: React.FC = () => {
             <div className="mt-8 space-y-3">
                 <button
                     onClick={handleSave}
-                    className="w-full px-6 py-3 bg-zinc-100 text-zinc-900 text-[13px] font-medium rounded-md hover:bg-white transition-colors"
+                    className="w-full px-6 py-3 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] text-[13px] font-medium rounded-md hover:bg-[var(--btn-primary-hover-bg)] transition-colors"
                 >
                     Save changes
                 </button>
                 <div className="text-center">
                     <button
                         onClick={handleReset}
-                        className="text-[12px] font-medium text-zinc-600 hover:text-zinc-300 transition-colors"
+                        className="text-[12px] font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                     >
                         Reset to defaults
                     </button>

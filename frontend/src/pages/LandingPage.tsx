@@ -19,14 +19,15 @@ import {
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import Logo from '../components/Logo';
 import PlatformIcon from '../components/PlatformIcon';
+import ThemeToggle from '../components/ThemeToggle';
 import { platformMarks } from '../data/platformMarks';
 import dashboardPreview from '../assets/dashboard-preview-cropped.png';
 
 /* ─── Shared styles ─── */
 const btnPrimary =
-    'bg-gradient-to-b from-white to-zinc-200 text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,0,0,0.35)] hover:brightness-105 transition-all';
+    'bg-[linear-gradient(to_bottom,var(--btn-cta-from),var(--btn-cta-to))] text-[var(--btn-cta-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,0,0,0.35)] hover:brightness-105 transition-all';
 const btnGhost =
-    'text-zinc-300 border border-white/[0.08] hover:bg-white/[0.04] hover:border-white/[0.14] transition-colors';
+    'text-[var(--text-primary)] border border-[var(--border-default)] hover:bg-[var(--bg-surface-hover)] hover:border-[var(--border-strong)] transition-colors';
 
 function useSpotlight() {
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -150,7 +151,7 @@ function FeatureVisual({ type }: { type: string }) {
         return (
             <div className="mt-5 space-y-1.5">
                 {[100, 85, 60].map((w, i) => (
-                    <div key={i} className={`h-2 rounded-full bg-white/[0.06] ${i === 0 ? 'border border-green-500/30' : ''}`} style={{ width: `${w}%` }} />
+                    <div key={i} className={`h-2 rounded-full bg-[var(--bg-elevated)] ${i === 0 ? 'border border-green-500/30' : ''}`} style={{ width: `${w}%` }} />
                 ))}
             </div>
         );
@@ -159,7 +160,7 @@ function FeatureVisual({ type }: { type: string }) {
         return (
             <div className="flex flex-wrap gap-1.5 mt-5">
                 {['LeetCode', 'Codeforces', 'NeetCode', '+3'].map((c) => (
-                    <span key={c} className="px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-medium text-zinc-500">{c}</span>
+                    <span key={c} className="px-2 py-0.5 rounded-full bg-[var(--bg-surface-hover)] border border-[var(--border-default)] text-[10px] font-medium text-[var(--text-secondary)]">{c}</span>
                 ))}
             </div>
         );
@@ -169,8 +170,8 @@ function FeatureVisual({ type }: { type: string }) {
             <div className="flex items-center gap-0 mt-5">
                 {[0, 1, 2, 3].map((i) => (
                     <div key={i} className="flex items-center flex-1 last:flex-none">
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${i === 3 ? 'bg-green-500' : 'bg-white/[0.12]'}`} />
-                        {i < 3 && <div className="h-px flex-1 bg-white/[0.08]" />}
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${i === 3 ? 'bg-green-500' : 'bg-[var(--bg-elevated)]'}`} />
+                        {i < 3 && <div className="h-px flex-1 bg-[var(--bg-elevated)]" />}
                     </div>
                 ))}
             </div>
@@ -182,7 +183,7 @@ function FeatureVisual({ type }: { type: string }) {
                 {[0, 1, 2].map((i) => (
                     <div
                         key={i}
-                        className="absolute inset-x-0 h-7 rounded-md bg-white/[0.04] border border-white/[0.08]"
+                        className="absolute inset-x-0 h-7 rounded-md bg-[var(--bg-surface-hover)] border border-[var(--border-default)]"
                         style={{ top: `${i * 8}px`, left: `${i * 6}px`, right: `${-i * 6}px`, opacity: 1 - i * 0.28 }}
                     />
                 ))}
@@ -197,21 +198,21 @@ function ShowcaseMockup({ index }: { index: number }) {
     if (index === 0) {
         return (
             <div className="w-full max-w-sm space-y-3">
-                <div className="bg-white/[0.03] p-4 rounded-lg border border-white/[0.08]">
-                    <p className="text-[10px] font-medium text-zinc-500 mb-2">Paste URL</p>
+                <div className="bg-[var(--bg-surface-raised)] p-4 rounded-lg border border-[var(--border-default)]">
+                    <p className="text-[10px] font-medium text-[var(--text-secondary)] mb-2">Paste URL</p>
                     <div className="flex gap-2">
-                        <div className="h-9 flex-1 bg-white/[0.03] rounded-md border border-white/[0.08] px-3 flex items-center">
-                            <span className="text-[11px] font-mono-tabular text-zinc-600 truncate">leetcode.com/problems/lru-cache</span>
+                        <div className="h-9 flex-1 bg-[var(--bg-surface-raised)] rounded-md border border-[var(--border-default)] px-3 flex items-center">
+                            <span className="text-[11px] font-mono-tabular text-[var(--text-tertiary)] truncate">leetcode.com/problems/lru-cache</span>
                         </div>
-                        <div className="w-9 h-9 bg-zinc-100 rounded-md flex items-center justify-center flex-shrink-0">
-                            <Plus className="w-4 h-4 text-zinc-900" />
+                        <div className="w-9 h-9 bg-[var(--btn-primary-bg)] rounded-md flex items-center justify-center flex-shrink-0">
+                            <Plus className="w-4 h-4 text-[var(--btn-primary-text)]" />
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <div className="h-7 px-3 bg-white/[0.03] rounded-full border border-white/[0.08] flex items-center gap-1.5">
+                    <div className="h-7 px-3 bg-[var(--bg-surface-raised)] rounded-full border border-[var(--border-default)] flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                        <span className="text-[10px] font-medium text-zinc-400">Hard</span>
+                        <span className="text-[10px] font-medium text-[var(--text-secondary)]">Hard</span>
                     </div>
                     <div className="h-7 px-3 bg-green-500/10 rounded-full border border-green-500/20 flex items-center gap-1.5">
                         <CheckCircle2 className="w-3 h-3 text-green-400" />
@@ -223,15 +224,15 @@ function ShowcaseMockup({ index }: { index: number }) {
     }
     if (index === 1) {
         return (
-            <div className="w-full max-w-[220px] bg-zinc-900 rounded-xl shadow-xl overflow-hidden border border-white/[0.08]">
+            <div className="w-full max-w-[220px] bg-[var(--bg-surface-raised)] rounded-xl shadow-xl overflow-hidden border border-[var(--border-default)]">
                 <div className="bg-green-600 p-3 text-center">
                     <span className="text-[11px] font-semibold text-white">Today's daily recall</span>
                 </div>
                 <div className="p-4 space-y-2">
                     {['1. LRU Cache', '2. Merge K Lists', '3. 3Sum'].map((t, i) => (
-                        <div key={t} className={`p-2.5 bg-white/[0.03] rounded-md border border-white/[0.06] flex items-center justify-between ${i > 0 ? 'opacity-50' : ''}`}>
-                            <span className="text-[11px] font-medium text-zinc-200">{t}</span>
-                            <ChevronRight className="w-3 h-3 text-zinc-600" />
+                        <div key={t} className={`p-2.5 bg-[var(--bg-surface-raised)] rounded-md border border-[var(--border-subtle)] flex items-center justify-between ${i > 0 ? 'opacity-50' : ''}`}>
+                            <span className="text-[11px] font-medium text-[var(--text-primary)]">{t}</span>
+                            <ChevronRight className="w-3 h-3 text-[var(--text-tertiary)]" />
                         </div>
                     ))}
                 </div>
@@ -242,20 +243,20 @@ function ShowcaseMockup({ index }: { index: number }) {
         <div className="w-full max-w-sm">
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <p className="text-[10px] font-medium text-zinc-500 mb-1">Global retention</p>
-                    <p className="text-3xl font-mono-tabular font-semibold text-zinc-100">84%</p>
+                    <p className="text-[10px] font-medium text-[var(--text-secondary)] mb-1">Global retention</p>
+                    <p className="text-3xl font-mono-tabular font-semibold text-[var(--text-primary)]">84%</p>
                 </div>
-                <div className="w-14 h-14 rounded-full border-[3px] border-white/[0.08] border-t-green-500 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full border-[3px] border-[var(--border-default)] border-t-green-500 flex items-center justify-center">
                     <Zap className="w-5 h-5 text-green-400" />
                 </div>
             </div>
             <div className="space-y-2.5">
                 {[100, 75, 40].map((w, i) => (
                     <div key={i} className="flex items-center gap-3">
-                        <div className="h-1.5 flex-1 bg-white/[0.06] rounded-full overflow-hidden">
+                        <div className="h-1.5 flex-1 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
                             <div className="h-full bg-green-500 rounded-full" style={{ width: `${w}%` }} />
                         </div>
-                        <span className="text-[10px] font-mono-tabular text-zinc-600 w-8">{w}%</span>
+                        <span className="text-[10px] font-mono-tabular text-[var(--text-tertiary)] w-8">{w}%</span>
                     </div>
                 ))}
             </div>
@@ -267,21 +268,21 @@ function ShowcaseMockup({ index }: { index: number }) {
 function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>; q: string; a: string }) {
     const [open, setOpen] = useState(false);
     return (
-        <div className="border-b border-white/[0.06] last:border-0">
+        <div className="border-b border-[var(--border-subtle)] last:border-0">
             <button
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-center gap-4 px-6 py-5 text-left group"
             >
-                <Icon className="w-4 h-4 text-zinc-600 flex-shrink-0" />
-                <span className="flex-1 text-[14px] font-medium text-zinc-100 group-hover:text-zinc-300 transition-colors">
+                <Icon className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0" />
+                <span className="flex-1 text-[14px] font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)] transition-colors">
                     {q}
                 </span>
                 <ChevronRight
-                    className={`w-4 h-4 flex-shrink-0 text-zinc-600 transition-transform duration-300 ${open ? 'rotate-90' : ''}`}
+                    className={`w-4 h-4 flex-shrink-0 text-[var(--text-tertiary)] transition-transform duration-300 ${open ? 'rotate-90' : ''}`}
                 />
             </button>
             <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-48 pb-5' : 'max-h-0'}`}>
-                <p className="text-[13px] text-zinc-500 leading-relaxed px-6 pl-14">{a}</p>
+                <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed px-6 pl-14">{a}</p>
             </div>
         </div>
     );
@@ -304,25 +305,26 @@ export default function LandingPage() {
     }, [activeTab]);
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-primary)]">
 
             {/* ═══ Navbar ═══ */}
-            <nav className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-white/[0.06]">
+            <nav className="sticky top-0 z-50 bg-[var(--bg-app)]/80 backdrop-blur-md border-b border-[var(--border-subtle)]">
                 <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
                     <div className="flex items-center gap-4 md:gap-10">
                         <Logo textSize="text-[15px]" iconSize="w-6 h-6" variant="light" />
 
-                        <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-zinc-500">
-                            <a href="#features" className="hover:text-zinc-100 transition-colors">Features</a>
-                            <a href="#how-it-works" className="hover:text-zinc-100 transition-colors">How it works</a>
-                            <a href="#faq" className="hover:text-zinc-100 transition-colors">FAQ</a>
+                        <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-[var(--text-secondary)]">
+                            <a href="#features" className="hover:text-[var(--text-primary)] transition-colors">Features</a>
+                            <a href="#how-it-works" className="hover:text-[var(--text-primary)] transition-colors">How it works</a>
+                            <a href="#faq" className="hover:text-[var(--text-primary)] transition-colors">FAQ</a>
                         </div>
                     </div>
 
                     {/* Desktop Auth */}
                     <div className="hidden md:flex items-center gap-1">
+                        <ThemeToggle className="p-2 mr-1" iconSize={16} />
                         <SignInButton mode="modal">
-                            <button className="text-[13px] font-medium text-zinc-400 hover:text-zinc-100 transition-colors px-3 py-1.5">
+                            <button className="text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-3 py-1.5">
                                 Sign in
                             </button>
                         </SignInButton>
@@ -334,18 +336,21 @@ export default function LandingPage() {
                     </div>
 
                     {/* Mobile Toggle */}
-                    <button
-                        className="md:hidden p-2 text-zinc-100 hover:bg-white/[0.06] rounded-md transition-colors"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        aria-label="Toggle Menu"
-                    >
-                        {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                    </button>
+                    <div className="md:hidden flex items-center gap-1">
+                        <ThemeToggle className="p-2" iconSize={16} />
+                        <button
+                            className="p-2 text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-md transition-colors"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            aria-label="Toggle Menu"
+                        >
+                            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile Overlay */}
                 <div className={`
-                    absolute top-full left-0 w-full bg-zinc-950 border-b border-white/[0.06] overflow-hidden transition-all duration-300 md:hidden
+                    absolute top-full left-0 w-full bg-[var(--bg-app)] border-b border-[var(--border-subtle)] overflow-hidden transition-all duration-300 md:hidden
                     ${isMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}
                 `}>
                     <div className="p-6 space-y-6">
@@ -353,26 +358,26 @@ export default function LandingPage() {
                             <a
                                 href="#features"
                                 onClick={() => setIsMenuOpen(false)}
-                                className="text-[15px] font-medium text-zinc-300 hover:text-zinc-100 transition-colors"
+                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
                             >
                                 Features
                             </a>
                             <a
                                 href="#how-it-works"
                                 onClick={() => setIsMenuOpen(false)}
-                                className="text-[15px] font-medium text-zinc-300 hover:text-zinc-100 transition-colors"
+                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
                             >
                                 How it works
                             </a>
                             <a
                                 href="#faq"
                                 onClick={() => setIsMenuOpen(false)}
-                                className="text-[15px] font-medium text-zinc-300 hover:text-zinc-100 transition-colors"
+                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
                             >
                                 FAQ
                             </a>
                         </div>
-                        <div className="pt-6 border-t border-white/[0.06] flex flex-col gap-3">
+                        <div className="pt-6 border-t border-[var(--border-subtle)] flex flex-col gap-3">
                             <SignInButton mode="modal">
                                 <button className={`w-full py-3 font-medium text-[13px] rounded-md ${btnGhost}`}>
                                     Sign in
@@ -395,11 +400,11 @@ export default function LandingPage() {
 
                 <div className="max-w-5xl mx-auto flex flex-col items-center relative">
                     <div className="text-center max-w-2xl mb-14">
-                        <h1 className="text-4xl md:text-6xl font-semibold text-zinc-50 leading-[1.05] tracking-tight mb-6 animate-slideUp text-balance">
+                        <h1 className="text-4xl md:text-6xl font-semibold text-[var(--text-primary)] leading-[1.05] tracking-tight mb-6 animate-slideUp text-balance">
                             Stop forgetting the<br />problems you've solved.
                         </h1>
 
-                        <p className="text-lg text-zinc-400 mb-9 animate-slideUp delay-100 max-w-xl mx-auto leading-relaxed">
+                        <p className="text-lg text-[var(--text-secondary)] mb-9 animate-slideUp delay-100 max-w-xl mx-auto leading-relaxed">
                             ReStack resurfaces what you've practiced right before you'd forget it, delivered
                             daily to your dashboard and inbox.
                         </p>
@@ -417,14 +422,14 @@ export default function LandingPage() {
 
                 {/* ═══ App Screenshot — wider than every other section on the page, but not full-bleed ═══ */}
                 <div className="w-full max-w-7xl mx-auto relative animate-slideUp delay-300">
-                    <div className="bg-zinc-900 rounded-xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)] border border-white/[0.08] overflow-hidden">
-                        <div className="h-10 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-5 justify-between">
+                    <div className="bg-[var(--bg-surface-raised)] rounded-xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)] border border-[var(--border-default)] overflow-hidden">
+                        <div className="h-10 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center px-5 justify-between">
                             <div className="flex gap-1.5">
-                                <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
-                                <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
-                                <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
                             </div>
-                            <div className="bg-white/[0.03] border border-white/[0.06] px-4 py-1 rounded text-[11px] font-mono-tabular text-zinc-500">
+                            <div className="bg-[var(--bg-surface-raised)] border border-[var(--border-subtle)] px-4 py-1 rounded text-[11px] font-mono-tabular text-[var(--text-secondary)]">
                                 app.restack.dev/dashboard
                             </div>
                             <div className="w-14" />
@@ -439,14 +444,14 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Tabbed Feature Showcase ═══ */}
-            <section id="how-it-works" className="py-24 px-6 border-t border-white/[0.06]">
+            <section id="how-it-works" className="py-24 px-6 border-t border-[var(--border-subtle)]">
                 <div className="max-w-6xl mx-auto">
                     <div className="max-w-xl mb-16">
                         <p className="text-[12px] font-medium text-green-400 mb-3">How it works</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight mb-3 leading-tight">
+                        <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
                             Purpose-built for one loop: practice, track, revisit.
                         </h2>
-                        <p className="text-[15px] text-zinc-500 leading-relaxed">
+                        <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed">
                             No planning, no spreadsheets, just a rotation that keeps itself fresh.
                         </p>
                     </div>
@@ -459,23 +464,23 @@ export default function LandingPage() {
                                     key={tab.label}
                                     onClick={() => setActiveTab(i)}
                                     className={`w-full text-left p-4 rounded-lg border transition-colors relative overflow-hidden ${activeTab === i
-                                        ? 'bg-white/[0.03] border-white/[0.1]'
-                                        : 'bg-transparent border-transparent hover:bg-white/[0.02]'
+                                        ? 'bg-[var(--bg-surface-raised)] border-[var(--border-default)]'
+                                        : 'bg-transparent border-transparent hover:bg-[var(--bg-surface)]'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3 mb-1.5">
-                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${activeTab === i ? 'bg-green-500/10' : 'bg-white/[0.03]'}`}>
-                                            <tab.icon className={`w-3.5 h-3.5 ${activeTab === i ? 'text-green-400' : 'text-zinc-500'}`} strokeWidth={1.75} />
+                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${activeTab === i ? 'bg-green-500/10' : 'bg-[var(--bg-surface-raised)]'}`}>
+                                            <tab.icon className={`w-3.5 h-3.5 ${activeTab === i ? 'text-green-400' : 'text-[var(--text-secondary)]'}`} strokeWidth={1.75} />
                                         </div>
-                                        <span className={`text-[14px] font-semibold ${activeTab === i ? 'text-zinc-100' : 'text-zinc-500'}`}>
+                                        <span className={`text-[14px] font-semibold ${activeTab === i ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                                             {tab.label}
                                         </span>
                                     </div>
                                     {activeTab === i && (
-                                        <p className="text-[13px] text-zinc-500 leading-relaxed pl-10 pr-2">{tab.desc}</p>
+                                        <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed pl-10 pr-2">{tab.desc}</p>
                                     )}
                                     {activeTab === i && (
-                                        <div className="mt-3 ml-10 h-[2px] bg-white/[0.06] rounded-full overflow-hidden">
+                                        <div className="mt-3 ml-10 h-[2px] bg-[var(--bg-elevated)] rounded-full overflow-hidden">
                                             <div key={activeTab} className="h-full bg-green-500 animate-fillBar" />
                                         </div>
                                     )}
@@ -485,13 +490,13 @@ export default function LandingPage() {
 
                         {/* Mockup panel */}
                         <div className="md:col-span-7">
-                            <div className="bg-zinc-900 rounded-xl border border-white/[0.08] overflow-hidden shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)]">
-                                <div className="h-10 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-5 gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
-                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
-                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                            <div className="bg-[var(--bg-surface-raised)] rounded-xl border border-[var(--border-default)] overflow-hidden shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)]">
+                                <div className="h-10 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center px-5 gap-1.5">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
                                 </div>
-                                <div className="bg-zinc-950 p-8 md:p-10 min-h-[280px] flex items-center justify-center">
+                                <div className="bg-[var(--bg-app)] p-8 md:p-10 min-h-[280px] flex items-center justify-center">
                                     <ShowcaseMockup index={activeTab} />
                                 </div>
                             </div>
@@ -501,21 +506,21 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Under the hood: real algorithm, not vibes ═══ */}
-            <section className="py-20 px-6 border-t border-white/[0.06] relative overflow-hidden">
+            <section className="py-20 px-6 border-t border-[var(--border-subtle)] relative overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[300px] pointer-events-none bg-dot-grid opacity-60" />
                 <div className="max-w-6xl mx-auto relative">
                     <div className="max-w-xl mb-10">
                         <p className="text-[12px] font-medium text-green-400 mb-3">Under the hood</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight leading-tight">
+                        <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight leading-tight">
                             Real math, not vibes.
                         </h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-white/[0.06] bg-white/[0.02] divide-x divide-y md:divide-y-0 divide-white/[0.06]">
+                    <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] divide-x divide-y md:divide-y-0 divide-[var(--border-subtle)]">
                         {stats.map((s) => (
                             <div key={s.label} className="p-6">
-                                <p className="text-[11px] font-medium text-zinc-500 mb-2">{s.label}</p>
-                                <p className="text-2xl font-mono-tabular font-semibold text-zinc-100 mb-1.5">{s.value}</p>
-                                <p className="text-[12px] text-zinc-600 leading-relaxed">{s.hint}</p>
+                                <p className="text-[11px] font-medium text-[var(--text-secondary)] mb-2">{s.label}</p>
+                                <p className="text-2xl font-mono-tabular font-semibold text-[var(--text-primary)] mb-1.5">{s.value}</p>
+                                <p className="text-[12px] text-[var(--text-tertiary)] leading-relaxed">{s.hint}</p>
                             </div>
                         ))}
                     </div>
@@ -523,14 +528,14 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Features Grid ═══ */}
-            <section id="features" className="py-24 px-6 border-t border-white/[0.06]">
+            <section id="features" className="py-24 px-6 border-t border-[var(--border-subtle)]">
                 <div className="max-w-6xl mx-auto">
                     <div className="max-w-xl mb-14">
                         <p className="text-[12px] font-medium text-green-400 mb-3">Features</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight mb-3 leading-tight">
+                        <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
                             Everything you need to stay sharp.
                         </h2>
-                        <p className="text-[15px] text-zinc-500 leading-relaxed">
+                        <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed">
                             Built around one core loop: practice, track, revisit.
                         </p>
                     </div>
@@ -540,13 +545,13 @@ export default function LandingPage() {
                             <div
                                 key={f.title}
                                 onMouseMove={spotlight}
-                                className={`${f.span} spotlight-card bg-white/[0.02] rounded-xl border border-white/[0.06] p-6 hover:border-white/[0.14] transition-colors`}
+                                className={`${f.span} spotlight-card bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-6 hover:border-[var(--border-strong)] transition-colors`}
                             >
                                 <div className="w-8 h-8 rounded-md bg-green-500/10 flex items-center justify-center">
                                     <f.icon className="w-3.5 h-3.5 text-green-400" strokeWidth={1.75} />
                                 </div>
-                                <h3 className="text-[14px] font-semibold text-zinc-100 mt-5 mb-1.5">{f.title}</h3>
-                                <p className="text-[13px] text-zinc-500 leading-relaxed">{f.desc}</p>
+                                <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mt-5 mb-1.5">{f.title}</h3>
+                                <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed">{f.desc}</p>
                                 <FeatureVisual type={f.visual} />
                             </div>
                         ))}
@@ -555,8 +560,8 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Platform strip ═══ */}
-            <section className="py-16 px-6 border-t border-white/[0.06]">
-                <p className="text-center text-[12px] font-medium text-zinc-600 mb-9">Works with problems from any platform</p>
+            <section className="py-16 px-6 border-t border-[var(--border-subtle)]">
+                <p className="text-center text-[12px] font-medium text-[var(--text-tertiary)] mb-9">Works with problems from any platform</p>
                 <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
                     {platformMarks.map((mark) => (
                         <div
@@ -564,8 +569,8 @@ export default function LandingPage() {
                             className="platform-mark group flex items-center gap-2.5"
                             style={{ '--brand-hex': mark.hex } as React.CSSProperties}
                         >
-                            <PlatformIcon mark={mark} className="w-5 h-5 text-zinc-600 transition-colors duration-200" />
-                            <span className="text-[14px] font-medium text-zinc-600 group-hover:text-zinc-300 transition-colors duration-200">
+                            <PlatformIcon mark={mark} className="w-5 h-5 text-[var(--text-tertiary)] transition-colors duration-200" />
+                            <span className="text-[14px] font-medium text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors duration-200">
                                 {mark.name}
                             </span>
                         </div>
@@ -574,23 +579,23 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ FAQ Section ═══ */}
-            <section id="faq" className="py-24 px-6 border-t border-white/[0.06]">
+            <section id="faq" className="py-24 px-6 border-t border-[var(--border-subtle)]">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex flex-col md:flex-row items-start gap-12">
                         <div className="w-full md:w-1/3">
                             <p className="text-[12px] font-medium text-green-400 mb-3">Support</p>
-                            <h2 className="text-2xl font-semibold text-zinc-50 tracking-tight mb-3">FAQ</h2>
-                            <p className="text-[13px] text-zinc-500 leading-relaxed">
+                            <h2 className="text-2xl font-semibold text-[var(--text-primary)] tracking-tight mb-3">FAQ</h2>
+                            <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed">
                                 Quick answers to common questions about the system.
                             </p>
                             <div className="mt-7">
-                                <a href="mailto:support@restack.engineering" className="text-[13px] font-medium text-zinc-100 hover:text-green-400 transition-colors">
+                                <a href="mailto:support@restack.engineering" className="text-[13px] font-medium text-[var(--text-primary)] hover:text-green-400 transition-colors">
                                     Ask a question →
                                 </a>
                             </div>
                         </div>
 
-                        <div className="w-full md:w-2/3 bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
+                        <div className="w-full md:w-2/3 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
                             {faqs.map((faq, i) => (
                                 <FaqItem key={i} icon={faq.icon} q={faq.q} a={faq.a} />
                             ))}
@@ -600,16 +605,16 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Call to Action ═══ */}
-            <section className="relative py-24 px-6 border-t border-white/[0.06] overflow-hidden">
+            <section className="relative py-24 px-6 border-t border-[var(--border-subtle)] overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] pointer-events-none bg-glow" />
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] pointer-events-none bg-dot-grid" />
                 <div className="relative max-w-6xl mx-auto text-center">
-                    <h2 className="text-3xl md:text-5xl font-semibold text-zinc-50 leading-[1.05] tracking-tight mb-6 text-balance">
+                    <h2 className="text-3xl md:text-5xl font-semibold text-[var(--text-primary)] leading-[1.05] tracking-tight mb-6 text-balance">
                         Ready to build your<br />
                         <span className="text-green-400">mastery ritual?</span>
                     </h2>
 
-                    <p className="text-lg text-zinc-400 mb-9 max-w-lg mx-auto leading-relaxed">
+                    <p className="text-lg text-[var(--text-secondary)] mb-9 max-w-lg mx-auto leading-relaxed">
                         Stop guessing what to solve next. Add your first problem and let the rotation take it from here.
                     </p>
 
@@ -623,46 +628,46 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Footer ═══ */}
-            <footer className="border-t border-white/[0.06] pt-16 pb-10 px-6">
+            <footer className="border-t border-[var(--border-subtle)] pt-16 pb-10 px-6">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
                         <div className="col-span-1 md:col-span-1">
                             <Logo className="mb-4" iconSize="w-6 h-6" textSize="text-[15px]" variant="light" />
-                            <p className="text-[13px] text-zinc-500 leading-relaxed max-w-xs">
+                            <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed max-w-xs">
                                 A spaced repetition system for DSA interview preparation.
                             </p>
                         </div>
 
                         <div>
-                            <h4 className="text-[12px] font-medium text-zinc-100 mb-4">Product</h4>
+                            <h4 className="text-[12px] font-medium text-[var(--text-primary)] mb-4">Product</h4>
                             <ul className="space-y-2.5">
-                                <li><a href="#features" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">Features</a></li>
-                                <li><a href="#how-it-works" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">How it works</a></li>
-                                <li><a href="#faq" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">FAQ</a></li>
+                                <li><a href="#features" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</a></li>
+                                <li><a href="#how-it-works" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it works</a></li>
+                                <li><a href="#faq" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">FAQ</a></li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="text-[12px] font-medium text-zinc-100 mb-4">Social</h4>
+                            <h4 className="text-[12px] font-medium text-[var(--text-primary)] mb-4">Social</h4>
                             <ul className="space-y-2.5">
-                                <li><a href="#" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">Twitter (X)</a></li>
-                                <li><a href="#" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">LinkedIn</a></li>
-                                <li><a href="#" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">Instagram</a></li>
+                                <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Twitter (X)</a></li>
+                                <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">LinkedIn</a></li>
+                                <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Instagram</a></li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="text-[12px] font-medium text-zinc-100 mb-4">Platform</h4>
+                            <h4 className="text-[12px] font-medium text-[var(--text-primary)] mb-4">Platform</h4>
                             <ul className="space-y-2.5">
-                                <li><a href="#" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">Status</a></li>
-                                <li><a href="#" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">Terms</a></li>
-                                <li><a href="#" className="text-[13px] text-zinc-500 hover:text-zinc-100 transition-colors">Privacy</a></li>
+                                <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Status</a></li>
+                                <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Terms</a></li>
+                                <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Privacy</a></li>
                             </ul>
                         </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-white/[0.06]">
-                        <p className="text-[12px] text-zinc-600">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-[var(--border-subtle)]">
+                        <p className="text-[12px] text-[var(--text-tertiary)]">
                             © {new Date().getFullYear()} ReStack. All rights reserved.
                         </p>
                     </div>

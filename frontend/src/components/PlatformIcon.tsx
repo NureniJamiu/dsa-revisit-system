@@ -5,7 +5,7 @@ const PlatformIcon: React.FC<{ mark: PlatformMark; className?: string }> = ({ ma
     if (!mark.path) {
         return (
             <span
-                className={`platform-monogram flex items-center justify-center rounded-[5px] bg-white/[0.06] border border-white/[0.08] text-[9px] font-mono-tabular font-semibold text-zinc-500 transition-colors duration-200 ${className ?? ''}`}
+                className={`platform-monogram flex items-center justify-center rounded-[5px] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[9px] font-mono-tabular font-semibold text-[var(--text-secondary)] transition-colors duration-200 ${className ?? ''}`}
             >
                 {mark.name.charAt(0)}
             </span>

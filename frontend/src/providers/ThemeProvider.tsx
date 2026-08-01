@@ -1,16 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-
-type Theme = 'dark' | 'light';
+import { useEffect, useState, type ReactNode } from 'react';
+import { ThemeContext, type Theme } from './ThemeContext';
 
 const STORAGE_KEY = 'restack-theme';
-
-interface ThemeContextValue {
-    theme: Theme;
-    toggleTheme: () => void;
-    setTheme: (theme: Theme) => void;
-}
-
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function readStoredTheme(): Theme {
     if (typeof window === 'undefined') return 'dark';
@@ -38,10 +29,4 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             {children}
         </ThemeContext.Provider>
     );
-}
-
-export function useTheme() {
-    const ctx = useContext(ThemeContext);
-    if (!ctx) throw new Error('useTheme must be used within a ThemeProvider');
-    return ctx;
 }

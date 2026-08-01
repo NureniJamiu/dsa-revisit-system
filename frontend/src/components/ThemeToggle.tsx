@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sun, Moon } from 'lucide-react';
-import { useTheme } from '../providers/ThemeProvider';
+import { useTheme } from '../providers/ThemeContext';
 
 interface ThemeToggleProps {
     /** Structural classes (size/padding/rounding). Color classes default to the

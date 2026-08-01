@@ -73,7 +73,7 @@ const CustomLoader: React.FC<CustomLoaderProps> = ({
                 </svg>
             </div>
             {text && (
-                <span className="text-[13px] font-medium text-zinc-500 animate-pulse">
+                <span className="text-[13px] font-medium text-[var(--text-secondary)] animate-pulse">
                     {text}
                 </span>
             )}

@@ -28,17 +28,17 @@ const variantStyles: Record<ConfirmDialogVariant, {
     info: {
         iconBg: 'bg-green-500/10',
         iconColor: 'text-green-400',
-        buttonBg: 'bg-zinc-100',
-        buttonText: 'text-zinc-900',
-        buttonHover: 'hover:bg-white',
+        buttonBg: 'bg-[var(--btn-primary-bg)]',
+        buttonText: 'text-[var(--btn-primary-text)]',
+        buttonHover: 'hover:bg-[var(--btn-primary-hover-bg)]',
         DefaultIcon: Info,
     },
     success: {
         iconBg: 'bg-green-500/10',
         iconColor: 'text-green-400',
-        buttonBg: 'bg-zinc-100',
-        buttonText: 'text-zinc-900',
-        buttonHover: 'hover:bg-white',
+        buttonBg: 'bg-[var(--btn-primary-bg)]',
+        buttonText: 'text-[var(--btn-primary-text)]',
+        buttonHover: 'hover:bg-[var(--btn-primary-hover-bg)]',
         DefaultIcon: CheckCircle,
     },
     danger: {
@@ -83,11 +83,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fadeIn"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-[var(--overlay)] backdrop-blur-sm animate-fadeIn"
             onClick={handleBackdropClick}
         >
             <div
-                className="bg-zinc-900 border border-white/[0.08] rounded-xl shadow-2xl w-full max-w-[380px] transform transition-all animate-scaleIn overflow-hidden"
+                className="bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-xl shadow-2xl w-full max-w-[380px] transform transition-all animate-scaleIn overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Content */}
@@ -100,11 +100,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-[17px] font-semibold text-zinc-100 tracking-tight mb-2 px-2">{title}</h3>
+                    <h3 className="text-[17px] font-semibold text-[var(--text-primary)] tracking-tight mb-2 px-2">{title}</h3>
 
                     {/* Description */}
                     {description && (
-                        <p className="text-[13px] text-zinc-500 mb-6 leading-relaxed px-2">{description}</p>
+                        <p className="text-[13px] text-[var(--text-secondary)] mb-6 leading-relaxed px-2">{description}</p>
                     )}
 
                     {/* Children for custom content e.g. inputs */}
@@ -136,7 +136,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         <button
                             onClick={onClose}
                             disabled={loading}
-                            className="w-full py-2.5 text-[12px] font-medium text-zinc-500 hover:text-zinc-200 transition-colors disabled:opacity-50"
+                            className="w-full py-2.5 text-[12px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
                         >
                             {cancelLabel}
                         </button>
