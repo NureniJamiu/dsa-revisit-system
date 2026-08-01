@@ -7,6 +7,7 @@ import AddProblemModal from '../components/AddProblemModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import CustomLoader from '../components/CustomLoader';
 import { topicBadgeStyle } from '../lib/topicColors';
+import WeightBreakdown from '../components/WeightBreakdown';
 
 const Dashboard: React.FC = () => {
     const { data: problems = [], isLoading: loading, isError: problemsError } = useProblems('active');
@@ -235,6 +236,7 @@ const Dashboard: React.FC = () => {
                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${priorityStyle.badge} ${priorityStyle.text}`}>
                                                 {item.weight.priority}
                                             </span>
+                                            <WeightBreakdown weight={item.weight} lastRevisitedAt={item.problem.last_revisited_at} className="w-4 h-4" />
                                             {item.problem.difficulty && (
                                                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getDifficultyStyle(item.problem.difficulty)}`}>
                                                     {item.problem.difficulty}
