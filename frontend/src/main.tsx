@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
 import './index.css';
 import App from './App.tsx';
+import { ThemeProvider } from './providers/ThemeProvider.tsx';
 import { registerSW } from 'virtual:pwa-register';
 
 // Register service worker for PWA
@@ -17,10 +18,12 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ClerkProvider>
+    <ThemeProvider>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ClerkProvider>
+    </ThemeProvider>
   </StrictMode>,
 );
