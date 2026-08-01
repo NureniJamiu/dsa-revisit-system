@@ -100,7 +100,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
                         <UserButton />
                     </div>
                 </header>
-                <div className="p-6 md:p-10 max-w-6xl mx-auto pb-24 md:pb-10">
+                <div className="p-6 md:p-10 pb-24 md:pb-10">
                     {children}
                 </div>
 
