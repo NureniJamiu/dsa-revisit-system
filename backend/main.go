@@ -90,7 +90,7 @@ func main() {
 			r.Put("/settings", UpdateSettings)
 			// Testing / Debugging
 			r.Post("/test-email", TestEmail)
-			r.Post("/admin/run-cron", RunCronAllUsers)
+			r.With(RequireAdminSecret).Post("/admin/run-cron", RunCronAllUsers)
 		})
 	})
 

@@ -174,29 +174,12 @@ The cron job reads from the `users` table. Each user has a `preferences` JSONB c
 |----------------------|-----------------------------------------------------------|---------|
 | `problems_per_day`   | How many problems to include in each daily email          | `3`     |
 | `min_revisit_days`   | Minimum days between a problem appearing in emails        | `2`     |
-| `email_time`         | Desired delivery time (**not yet enforced in code**)      | `05:00` |
+| `email_time`         | Desired delivery time, enforced via `timeToSend()` in `cron.go` | `05:00` |
 | `skip_weekends`      | Skip emails on weekends (**not yet enforced in code**)    | `false` |
 
-### Updating the default user's email
+### Where the user's email and preferences come from
 
-The seeded default user (`db.go`) has the email `test@example.com`. You **must** change this to your real email:
-
-```sql
-UPDATE users
-SET email = 'your.real@email.com'
-WHERE id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-```
-
-Or update `SeedDB()` in `backend/db.go` before first run:
-
-```go
-_, err := db.Exec(`
-    INSERT INTO users (id, email, name, preferences)
-    VALUES ($1, $2, $3, $4)
-`, "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "your.real@email.com", "Your Name", "{}")
-```
-
-### Updating user preferences
+There's no seed script — a `users` row is auto-provisioned the first time someone signs in via Clerk (`FindOrCreateUserByClerkID` in `backend/db.go`), using the real email from their Clerk account and the sensible defaults above (not `{}`/zero-values). To test with a specific email or preferences, update the row for your own Clerk-provisioned user:
 
 ```sql
 UPDATE users
@@ -208,10 +191,8 @@ SET preferences = '{
   "skip_weekends": true,
   "ai_encouragement": true
 }'
-WHERE id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+WHERE email = 'your.real@email.com';
 ```
-
-> **Note:** The default seeded user has `preferences = '{}'`, which means the Go struct will use zero-values (`problems_per_day = 0`, `min_revisit_days = 0`). This could result in **0 problems selected**. Fix by updating preferences to sensible defaults.
 
 ---
 
@@ -333,22 +314,22 @@ Set your real provider's SMTP credentials and make sure the user's `email` colum
 
 ## 8. Known Issues & TODOs
 
-These are items in the current code that need attention for production readiness:
+These are items in the current code that need attention for production readiness.
+
+> **Note:** `email.go` (the SMTP delivery step referenced throughout sections 2–7) is currently being migrated to the Resend HTTP API in a separate branch of work. The provider-setup instructions above will need a follow-up rewrite once that lands — treat them as accurate for the SMTP-based delivery path only until then.
 
 ### 🔴 Critical
 
 | Issue | File | Description |
 |---|---|---|
-| **Cron fires every minute** | `cron.go:10` | The ticker is set to `time.Minute * 1` for testing. In production, this should be a once-daily schedule (e.g., using a proper cron library like `robfig/cron`). Currently, you'll get **an email every minute**. |
-| **No "already sent today" guard** | `cron.go:40-42` | There's a comment about checking if an email was already sent today, but no implementation. Without this, the system sends duplicate emails on every tick. |
-| **Seeded user has empty preferences** | `db.go:46` | The default user is seeded with `preferences = '{}'`, which means `problems_per_day` defaults to `0` in Go. This silently selects 0 problems. |
-| **User email is test@example.com** | `db.go:46` | The seeded user email must be changed to a real address. |
+| **Cron fires every minute** | `cron.go:10` | The ticker is set to `time.Minute * 1` for testing. In production, this should be a once-daily schedule (e.g., using a proper cron library like `robfig/cron`). Currently, you'll get **an email every minute** (mitigated by the "already sent today" guard below). |
+
+There is no separate seed script anymore — users are auto-provisioned on first authenticated request (`FindOrCreateUserByClerkID` in `backend/db.go`), using their real Clerk account email and the schema's default preferences (`problems_per_day: 3`, `min_revisit_days: 2`, etc. — see `database/schema.sql`). The old "seeded `test@example.com` user with empty `{}` preferences" workflow this section used to describe no longer exists.
 
 ### 🟡 Important
 
 | Issue | File | Description |
 |---|---|---|
-| **`email_time` preference not enforced** | `cron.go:40` | The user's preferred email time (e.g., `"05:00"`) is stored but never checked. Emails are sent whenever the cron ticks. |
 | **`skip_weekends` preference not enforced** | `cron.go` | The weekend skipping preference exists in the schema but is not implemented. |
 | **`max_revisit_days` not used** | `cron.go` | Only `min_revisit_days` is used for eligibility. `max_revisit_days` could be used to force-include problems that haven't been seen in too long. |
 | **No `From:` header in email** | `email.go:27` | The email message is missing a `From:` header, which may cause delivery issues with some providers. |
@@ -368,7 +349,7 @@ These are items in the current code that need attention for production readiness
 
 ### "No eligible problems for user"
 - **Cause:** Either (a) no active problems exist, or (b) all problems were revisited within the `min_revisit_days` window.
-- **Fix:** Add some problems, or check the `min_revisit_days` preference value. If preferences are `'{}'`, the Go zero-value for `min_revisit_days` is `0`, which actually means all problems are always eligible.
+- **Fix:** Add some problems, or check the `min_revisit_days` preference value: `SELECT preferences FROM users WHERE email = '...';`
 
 ### "Error scanning user"
 - **Cause:** The `preferences` column has invalid JSON, or the schema doesn't match the Go struct.
@@ -394,11 +375,11 @@ These are items in the current code that need attention for production readiness
 ## Quick Start Checklist
 
 ```
-[ ] 1. Update the seeded user's email to your real email
-       → Edit db.go:46 or run SQL UPDATE on users table
+[ ] 1. Sign in via Clerk once so your user row is auto-provisioned
+       → Confirm with: SELECT email, preferences FROM users;
 
-[ ] 2. Set user preferences with sensible defaults
-       → Run SQL: UPDATE users SET preferences = '{"problems_per_day": 2, "min_revisit_days": 2, ...}'
+[ ] 2. Adjust preferences if the defaults don't suit you
+       → Run SQL: UPDATE users SET preferences = '{"problems_per_day": 2, ...}' WHERE email = '...';
 
 [ ] 3. Add at least 1 problem to the database
        → Use the frontend's "Add Problem" button

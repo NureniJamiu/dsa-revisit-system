@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -62,11 +63,17 @@ func (p UserPreferences) Value() (interface{}, error) {
 
 // Scan implements sql.Scanner for JSONB
 func (p *UserPreferences) Scan(value interface{}) error {
-	b, ok := value.([]byte)
-	if !ok {
-		return nil // or error
+	if value == nil {
+		return nil
 	}
-	return json.Unmarshal(b, &p)
+	switch v := value.(type) {
+	case []byte:
+		return json.Unmarshal(v, p)
+	case string:
+		return json.Unmarshal([]byte(v), p)
+	default:
+		return fmt.Errorf("UserPreferences.Scan: unsupported type %T", value)
+	}
 }
 
 // RevisitEntry represents a single revisit record

@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -22,6 +24,25 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(response)
+}
+
+// internalError logs the real error server-side and returns a generic message
+// to the client, so DB internals (table/column names, query fragments, driver
+// errors) never leak into API responses.
+func internalError(w http.ResponseWriter, context string, err error, message string) {
+	log.Printf("[API] %s: %v", context, err)
+	http.Error(w, message, http.StatusInternalServerError)
+}
+
+// validateProblemInput enforces the minimum fields a problem needs to be usable.
+func validateProblemInput(title, link string) error {
+	if strings.TrimSpace(title) == "" {
+		return errors.New("title is required")
+	}
+	if strings.TrimSpace(link) == "" {
+		return errors.New("link is required")
+	}
+	return nil
 }
 
 // GetProblems returns list of problems for the authenticated user
@@ -46,7 +67,7 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "GetProblems query", err, "Failed to load problems")
 		return
 	}
 	defer rows.Close()
@@ -57,7 +78,7 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded,
 			&p.LastRevisitedAt, &p.TimesRevisited, &p.Status,
 			&p.Topic, &p.Difficulty, &p.Source, &p.Notes); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			internalError(w, "GetProblems scan", err, "Failed to load problems")
 			return
 		}
 		problems = append(problems, p)
@@ -151,6 +172,11 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 
 	var p Problem
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := validateProblemInput(p.Title, p.Link); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -170,7 +196,7 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 
 	err := db.QueryRow(sqlStatement, p.UserID, p.Title, p.Link, p.Difficulty, p.Source, p.Notes).Scan(&p.ID, &p.DateAdded, &p.Status)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "CreateProblem insert", err, "Failed to create problem")
 		return
 	}
 
@@ -211,7 +237,7 @@ func MarkRevisited(w http.ResponseWriter, r *http.Request) {
 		SELECT COUNT(*) FROM revisit_history
 		WHERE problem_id = $1 AND revisited_at::date = CURRENT_DATE`, id).Scan(&todayCount)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "MarkRevisited today-count check", err, "Failed to record revisit")
 		return
 	}
 	if todayCount > 0 {
@@ -225,7 +251,7 @@ func MarkRevisited(w http.ResponseWriter, r *http.Request) {
 	// Start a transaction to ensure both operations succeed
 	tx, err := db.Begin()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "MarkRevisited begin tx", err, "Failed to record revisit")
 		return
 	}
 	defer tx.Rollback()
@@ -239,22 +265,22 @@ func MarkRevisited(w http.ResponseWriter, r *http.Request) {
 		INSERT INTO revisit_history (problem_id, revisited_at, notes)
 		VALUES ($1, NOW(), $2)`, id, notes)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "MarkRevisited insert history", err, "Failed to record revisit")
 		return
 	}
 
 	// 2. Update the problem's aggregate counters
 	_, err = tx.Exec(`
-		UPDATE problems 
+		UPDATE problems
 		SET times_revisited = times_revisited + 1, last_revisited_at = NOW()
 		WHERE id = $1`, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "MarkRevisited update counters", err, "Failed to record revisit")
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "MarkRevisited commit", err, "Failed to record revisit")
 		return
 	}
 
@@ -272,12 +298,12 @@ func ArchiveProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := db.Exec(`
-		UPDATE problems 
+		UPDATE problems
 		SET status = 'retired'
 		WHERE id = $1 AND user_id = $2`, id, userID)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "ArchiveProblem update", err, "Failed to archive problem")
 		return
 	}
 
@@ -302,18 +328,23 @@ func UpdateProblem(w http.ResponseWriter, r *http.Request) {
 
 	var p Problem
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := validateProblemInput(p.Title, p.Link); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	result, err := db.Exec(`
-		UPDATE problems 
+		UPDATE problems
 		SET title = $1, link = $2, difficulty = $3, source = $4, notes = $5
 		WHERE id = $6 AND user_id = $7`,
 		p.Title, p.Link, p.Difficulty, p.Source, p.Notes, id, userID)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "UpdateProblem update", err, "Failed to update problem")
 		return
 	}
 
@@ -339,7 +370,7 @@ func DeleteProblem(w http.ResponseWriter, r *http.Request) {
 	// Start a transaction to delete history and problem
 	tx, err := db.Begin()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "DeleteProblem begin tx", err, "Failed to delete problem")
 		return
 	}
 	defer tx.Rollback()
@@ -347,14 +378,14 @@ func DeleteProblem(w http.ResponseWriter, r *http.Request) {
 	// 1. Delete history
 	_, err = tx.Exec(`DELETE FROM revisit_history WHERE problem_id = $1`, id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "DeleteProblem delete history", err, "Failed to delete problem")
 		return
 	}
 
 	// 2. Delete problem (with ownership check)
 	result, err := tx.Exec(`DELETE FROM problems WHERE id = $1 AND user_id = $2`, id, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "DeleteProblem delete problem", err, "Failed to delete problem")
 		return
 	}
 
@@ -365,7 +396,7 @@ func DeleteProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := tx.Commit(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "DeleteProblem commit", err, "Failed to delete problem")
 		return
 	}
 
@@ -412,7 +443,7 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 		WHERE status = 'active' AND user_id = $1
 		ORDER BY date_added DESC`, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "GetAllWeights query", err, "Failed to load problems")
 		return
 	}
 	defer rows.Close()
@@ -479,7 +510,7 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 		GROUP BY p.id
 		ORDER BY p.date_added ASC`, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "GetTodaysFocus query", err, "Failed to load today's focus")
 		return
 	}
 	defer rows.Close()
@@ -538,17 +569,9 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 		revisitedToday := revisitedTodayMap[p.ID]
 		if revisitedToday {
 			completedCount++
-			// For the response, we might want to show the ACTUAL current state (incremented count)
-			// but wait, if we do that, the UI might flicker or change.
-			// Actually, ProblemDetail (which the dashboard uses to show weight) might expect current state.
-			// Let's stick to the current state for the Problem object itself if it was revisited today,
-			// BUT the selection was based on prev state.
-			if revisitedToday {
-				p.TimesRevisited++
-				// We don't have the exact latest timestamp here without another query or keeping it from join,
-				// but p.LastRevisitedAt for selection was the previous one.
-				// Let's just update the count for the UI.
-			}
+			// Selection/weight above used the start-of-day count so today's roll stays
+			// stable; bump it here just for display so the UI reflects today's revisit.
+			p.TimesRevisited++
 		}
 
 		items = append(items, TodaysFocusItem{
@@ -580,14 +603,39 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, response)
 }
 
-// GetSettings fetches user preferences
+// GetSettings fetches the authenticated user's preferences
 func GetSettings(w http.ResponseWriter, r *http.Request) {
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Settings endpoint"})
+	userID := GetUserIDFromContext(r)
+
+	var prefs UserPreferences
+	err := db.QueryRow(`SELECT preferences FROM users WHERE id = $1`, userID).Scan(&prefs)
+	if err != nil {
+		log.Printf("[API] Error fetching settings for user %s: %v", userID, err)
+		http.Error(w, "Failed to load settings", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, prefs)
 }
 
-// UpdateSettings updates user preferences
+// UpdateSettings replaces the authenticated user's preferences
 func UpdateSettings(w http.ResponseWriter, r *http.Request) {
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Settings updated"})
+	userID := GetUserIDFromContext(r)
+
+	var prefs UserPreferences
+	if err := json.NewDecoder(r.Body).Decode(&prefs); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Exec(`UPDATE users SET preferences = $1, updated_at = NOW() WHERE id = $2`, prefs, userID)
+	if err != nil {
+		log.Printf("[API] Error updating settings for user %s: %v", userID, err)
+		http.Error(w, "Failed to update settings", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, prefs)
 }
 
 // TestEmail triggers the full email pipeline on-demand for the authenticated user.
@@ -614,7 +662,8 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 		FROM problems
 		WHERE user_id = $1 AND status = 'active'`, userID)
 	if err != nil {
-		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		log.Printf("[API] TestEmail query: %v", err)
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to load problems"})
 		return
 	}
 	defer rows.Close()
@@ -752,7 +801,7 @@ func GetRevisitHistory(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, "GetRevisitHistory query", err, "Failed to load revisit history")
 		return
 	}
 	defer rows.Close()

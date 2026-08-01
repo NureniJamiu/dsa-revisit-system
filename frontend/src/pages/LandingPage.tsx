@@ -20,6 +20,7 @@ import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import Logo from '../components/Logo';
 import PlatformIcon from '../components/PlatformIcon';
 import { platformMarks } from '../data/platformMarks';
+import dashboardPreview from '../assets/dashboard-preview-cropped.png';
 
 /* ─── Shared styles ─── */
 const btnPrimary =
@@ -46,7 +47,7 @@ const showcaseTabs = [
     {
         label: 'Get a daily focus set',
         icon: Mail,
-        desc: 'Each morning we surface a handful of problems chosen by a weighted spaced-repetition algorithm — right before you\'d start forgetting them.',
+        desc: 'Each morning we surface a handful of problems chosen by a weighted spaced-repetition algorithm, right before you\'d start forgetting them.',
     },
     {
         label: 'Track your mastery',
@@ -59,7 +60,7 @@ const features = [
     {
         icon: Brain,
         title: 'Weighted spaced repetition',
-        desc: 'Problems resurface based on age, days since your last revisit, and how many times you\'ve solved them — never fully random, never forgotten.',
+        desc: 'Problems resurface based on age, days since your last revisit, and how many times you\'ve solved them: never fully random, never forgotten.',
         span: 'md:col-span-7',
         visual: 'weights',
     },
@@ -73,7 +74,7 @@ const features = [
     {
         icon: Search,
         title: 'Practice anywhere',
-        desc: 'LeetCode, HackerRank, Codeforces, or any custom URL — one place to track it all.',
+        desc: 'LeetCode, HackerRank, Codeforces, or any custom URL: one place to track it all.',
         span: 'md:col-span-4',
         visual: 'chips',
     },
@@ -109,7 +110,7 @@ const faqs = [
     {
         icon: Search,
         q: 'What platforms can I add problems from?',
-        a: "Any platform with a URL! LeetCode, HackerRank, Codeforces, NeetCode, AlgoExpert — just paste the problem link and we'll track it for you.",
+        a: "Any platform with a URL! LeetCode, HackerRank, Codeforces, NeetCode, AlgoExpert. Just paste the problem link and we'll track it for you.",
     },
     {
         icon: Shield,
@@ -129,7 +130,7 @@ const faqs = [
     {
         icon: BarChart3,
         q: 'What does "retire" a problem mean?',
-        a: 'When you feel confident about a problem, you can retire it. It moves to your archive — out of the daily rotation but always accessible if you want to bring it back.',
+        a: 'When you feel confident about a problem, you can retire it. It moves to your archive, out of the daily rotation but always accessible if you want to bring it back.',
     },
 ];
 
@@ -394,111 +395,59 @@ export default function LandingPage() {
 
                 <div className="max-w-5xl mx-auto flex flex-col items-center relative">
                     <div className="text-center max-w-2xl mb-14">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.02] mb-7 animate-slideDown">
-                            <span className="flex w-1.5 h-1.5 rounded-full bg-green-500" />
-                            <span className="text-[12px] font-medium text-zinc-400">Spaced repetition for DSA practice</span>
-                        </div>
-
                         <h1 className="text-4xl md:text-6xl font-semibold text-zinc-50 leading-[1.05] tracking-tight mb-6 animate-slideUp text-balance">
                             Stop forgetting the<br />problems you've solved.
                         </h1>
 
                         <p className="text-lg text-zinc-400 mb-9 animate-slideUp delay-100 max-w-xl mx-auto leading-relaxed">
-                            ReStack tracks every DSA problem you practice and resurfaces it right before you'd
-                            start to forget — with a daily focus set on your dashboard and in your inbox.
+                            ReStack resurfaces what you've practiced right before you'd forget it, delivered
+                            daily to your dashboard and inbox.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-slideUp delay-200">
+                        <div className="flex items-center justify-center animate-slideUp delay-200">
                             <SignUpButton mode="modal">
                                 <button className={`w-full sm:w-auto px-5 py-2.5 text-[13px] font-medium rounded-md flex items-center justify-center gap-2 ${btnPrimary}`}>
                                     Get started for free
                                     <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                             </SignUpButton>
-                            <a href="#how-it-works" className={`w-full sm:w-auto px-5 py-2.5 text-[13px] font-medium rounded-md text-center ${btnGhost}`}>
-                                See how it works
-                            </a>
                         </div>
                     </div>
+                </div>
 
-                    {/* ═══ App Mockup Visual ═══ */}
-                    <div className="relative w-full max-w-4xl animate-slideUp delay-300">
-                        <div className="bg-zinc-900 rounded-xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)] border border-white/[0.08] overflow-hidden">
-                            <div className="h-10 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-5 justify-between">
-                                <div className="flex gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
-                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
-                                    <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
-                                </div>
-                                <div className="bg-white/[0.03] border border-white/[0.06] px-4 py-1 rounded text-[11px] font-mono-tabular text-zinc-500">
-                                    app.restack.dev/dashboard
-                                </div>
-                                <div className="w-14" />
+                {/* ═══ App Screenshot — wider than every other section on the page, but not full-bleed ═══ */}
+                <div className="w-full max-w-7xl mx-auto relative animate-slideUp delay-300">
+                    <div className="bg-zinc-900 rounded-xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)] border border-white/[0.08] overflow-hidden">
+                        <div className="h-10 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-5 justify-between">
+                            <div className="flex gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-white/[0.08]" />
                             </div>
-
-                            <div className="bg-zinc-950 p-6 md:p-10">
-                                <div className="max-w-3xl mx-auto">
-                                    <div className="flex items-end justify-between mb-7">
-                                        <div>
-                                            <h3 className="text-xl font-semibold text-zinc-100 tracking-tight mb-1">Today's focus</h3>
-                                            <p className="text-[13px] text-zinc-500">3 problems prioritized for you today.</p>
-                                        </div>
-                                        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06]">
-                                            <span className="text-[12px] font-mono-tabular font-medium text-zinc-400">14 day streak</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-                                        {[
-                                            { title: 'Merge K Lists', diff: 'Hard' },
-                                            { title: '3Sum', diff: 'Medium' },
-                                            { title: 'Max Path Sum', diff: 'Hard' }
-                                        ].map((p, i) => (
-                                            <div key={i} className={`p-4 rounded-lg bg-white/[0.02] border ${i === 0 ? 'border-green-500/30' : 'border-white/[0.06]'}`}>
-                                                <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded mb-3 ${p.diff === 'Hard' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                                                    {p.diff}
-                                                </span>
-                                                <h4 className="text-[13px] font-semibold text-zinc-100 mb-4 truncate">{p.title}</h4>
-                                                <button className={`w-full py-2 rounded-md text-[11px] font-medium transition-colors ${i === 0 ? 'bg-zinc-100 text-zinc-900' : 'bg-white/[0.03] text-zinc-600'}`}>
-                                                    {i === 0 ? 'Revisit now' : 'Pending'}
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="bg-white/[0.02] rounded-lg border border-white/[0.06] flex items-center p-4 gap-8">
-                                        <div className="flex-1 flex items-center gap-6">
-                                            <div>
-                                                <p className="text-[11px] font-medium text-zinc-500 mb-1">Consistency</p>
-                                                <p className="text-[15px] font-mono-tabular font-semibold text-zinc-100">14 days</p>
-                                            </div>
-                                            <div className="h-7 w-px bg-white/[0.06]" />
-                                            <div>
-                                                <p className="text-[11px] font-medium text-zinc-500 mb-1">Mastered</p>
-                                                <p className="text-[15px] font-mono-tabular font-semibold text-zinc-100">128</p>
-                                            </div>
-                                        </div>
-                                        <div className="w-28 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                                            <div className="w-2/3 h-full bg-green-500 rounded-full" />
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="bg-white/[0.03] border border-white/[0.06] px-4 py-1 rounded text-[11px] font-mono-tabular text-zinc-500">
+                                app.restack.dev/dashboard
                             </div>
+                            <div className="w-14" />
                         </div>
+                        <img
+                            src={dashboardPreview}
+                            alt="ReStack dashboard showing today's focus and all tracked problems"
+                            className="w-full h-auto block"
+                        />
                     </div>
                 </div>
             </section>
 
             {/* ═══ Tabbed Feature Showcase ═══ */}
             <section id="how-it-works" className="py-24 px-6 border-t border-white/[0.06]">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     <div className="max-w-xl mb-16">
                         <p className="text-[12px] font-medium text-green-400 mb-3">How it works</p>
                         <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight mb-3 leading-tight">
                             Purpose-built for one loop: practice, track, revisit.
                         </h2>
                         <p className="text-[15px] text-zinc-500 leading-relaxed">
-                            No planning, no spreadsheets — just a rotation that keeps itself fresh.
+                            No planning, no spreadsheets, just a rotation that keeps itself fresh.
                         </p>
                     </div>
 
@@ -554,7 +503,7 @@ export default function LandingPage() {
             {/* ═══ Under the hood: real algorithm, not vibes ═══ */}
             <section className="py-20 px-6 border-t border-white/[0.06] relative overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[300px] pointer-events-none bg-dot-grid opacity-60" />
-                <div className="max-w-5xl mx-auto relative">
+                <div className="max-w-6xl mx-auto relative">
                     <div className="max-w-xl mb-10">
                         <p className="text-[12px] font-medium text-green-400 mb-3">Under the hood</p>
                         <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight leading-tight">
@@ -575,7 +524,7 @@ export default function LandingPage() {
 
             {/* ═══ Features Grid ═══ */}
             <section id="features" className="py-24 px-6 border-t border-white/[0.06]">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     <div className="max-w-xl mb-14">
                         <p className="text-[12px] font-medium text-green-400 mb-3">Features</p>
                         <h2 className="text-2xl md:text-3xl font-semibold text-zinc-50 tracking-tight mb-3 leading-tight">
@@ -608,7 +557,7 @@ export default function LandingPage() {
             {/* ═══ Platform strip ═══ */}
             <section className="py-16 px-6 border-t border-white/[0.06]">
                 <p className="text-center text-[12px] font-medium text-zinc-600 mb-9">Works with problems from any platform</p>
-                <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
+                <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
                     {platformMarks.map((mark) => (
                         <div
                             key={mark.name}
@@ -626,7 +575,7 @@ export default function LandingPage() {
 
             {/* ═══ FAQ Section ═══ */}
             <section id="faq" className="py-24 px-6 border-t border-white/[0.06]">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     <div className="flex flex-col md:flex-row items-start gap-12">
                         <div className="w-full md:w-1/3">
                             <p className="text-[12px] font-medium text-green-400 mb-3">Support</p>
@@ -654,7 +603,7 @@ export default function LandingPage() {
             <section className="relative py-24 px-6 border-t border-white/[0.06] overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] pointer-events-none bg-glow" />
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] pointer-events-none bg-dot-grid" />
-                <div className="relative max-w-3xl mx-auto text-center">
+                <div className="relative max-w-6xl mx-auto text-center">
                     <h2 className="text-3xl md:text-5xl font-semibold text-zinc-50 leading-[1.05] tracking-tight mb-6 text-balance">
                         Ready to build your<br />
                         <span className="text-green-400">mastery ritual?</span>
@@ -675,7 +624,7 @@ export default function LandingPage() {
 
             {/* ═══ Footer ═══ */}
             <footer className="border-t border-white/[0.06] pt-16 pb-10 px-6">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
                         <div className="col-span-1 md:col-span-1">
                             <Logo className="mb-4" iconSize="w-6 h-6" textSize="text-[15px]" variant="light" />

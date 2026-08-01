@@ -17,6 +17,26 @@ func StartCron() {
 	}()
 }
 
+// timeToSend reports whether now is at or after the user's preferred send
+// time ("HH:MM", 24h — matches the format stored by the frontend's Settings
+// page, not the "HH:MM AM/PM" display format used in the UI). An empty
+// emailTime is treated as "always ready".
+func timeToSend(now time.Time, emailTime string) (bool, error) {
+	preferredTime, err := time.Parse("15:04", emailTime)
+	if err != nil {
+		return false, err
+	}
+
+	currentHour, currentMinute, _ := now.Clock()
+	prefHour := preferredTime.Hour()
+	prefMin := preferredTime.Minute()
+
+	if currentHour < prefHour || (currentHour == prefHour && currentMinute < prefMin) {
+		return false, nil
+	}
+	return true, nil
+}
+
 // RunDailyJob is the main logic for the cron.
 // If force is true, it skips the check for last_email_sent_at.
 func RunDailyJob(force bool) {
@@ -50,20 +70,12 @@ func RunDailyJob(force bool) {
 		// 2. Check if it's time to send (e.g. "05:00")
 		// If force is true, we bypass this check (useful for Heroku Scheduler / manual trigger)
 		if !force && u.Preferences.EmailTime != "" {
-			preferredTime, err := time.Parse("15:04", u.Preferences.EmailTime)
+			ready, err := timeToSend(now, u.Preferences.EmailTime)
 			if err != nil {
 				log.Printf("[Cron] Invalid EmailTime for user %s: %s", u.Email, u.Preferences.EmailTime)
-				// Continue anyway or skip? Let's skip and log error
 				continue
 			}
-
-			// Current hour and minute
-			currentHour, currentMinute, _ := now.Clock()
-			prefHour := preferredTime.Hour()
-			prefMin := preferredTime.Minute()
-
-			// Only send if current time is at or after preferred time
-			if currentHour < prefHour || (currentHour == prefHour && currentMinute < prefMin) {
+			if !ready {
 				log.Printf("[Cron] Skipping user %s: Too early for preferred time %s", u.Email, u.Preferences.EmailTime)
 				continue
 			}

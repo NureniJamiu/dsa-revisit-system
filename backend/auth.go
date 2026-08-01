@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"crypto/rsa"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -213,5 +215,27 @@ func ClerkAuthMiddleware(next http.Handler) http.Handler {
 		// Inject into context
 		ctx := context.WithValue(r.Context(), userIDKey, internalID)
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// RequireAdminSecret gates operational endpoints (e.g. manually triggering the
+// daily job for all users) behind a shared secret, independent of the caller's
+// Clerk identity — there is no admin/role concept in this app otherwise.
+// Fails closed: if ADMIN_SECRET isn't configured, the route is unusable.
+func RequireAdminSecret(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		adminSecret := os.Getenv("ADMIN_SECRET")
+		if adminSecret == "" {
+			http.Error(w, `{"error":"admin endpoint not configured"}`, http.StatusServiceUnavailable)
+			return
+		}
+
+		provided := r.Header.Get("X-Admin-Secret")
+		if provided == "" || subtle.ConstantTimeCompare([]byte(provided), []byte(adminSecret)) != 1 {
+			http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }

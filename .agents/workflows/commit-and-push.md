@@ -1,5 +1,5 @@
 ---
-description: Always remember to commit and push your changes to ensure the remote repository and deployment platforms (Vercel, Render) are up to date.
+description: Always remember to commit and push your changes to ensure the remote repository and deployment platforms (Vercel, Heroku) are up to date.
 ---
 
 1. Check current changes

@@ -1,14 +1,26 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
-	"net/smtp"
+	"net/http"
 	"os"
 	"strings"
 )
 
-// SendEmail sends the daily reminder using SMTP
+const resendAPIURL = "https://api.resend.com/emails"
+
+type resendEmailRequest struct {
+	From    string   `json:"from"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	Text    string   `json:"text"`
+}
+
+// SendEmail sends the daily reminder via the Resend API
 func SendEmail(to string, problems []Problem) error {
 	subject := "DSA Reminder: Problem(s) for today"
 
@@ -21,13 +33,10 @@ func SendEmail(to string, problems []Problem) error {
 
 	bodyBuilder.WriteString("\nKeep going!\n")
 
-	smtpHost := os.Getenv("SMTP_HOST")
-	smtpPort := os.Getenv("SMTP_PORT")
-	smtpUser := os.Getenv("SMTP_USER")
-	smtpPass := os.Getenv("SMTP_PASS")
+	apiKey := os.Getenv("RESEND_API_KEY")
 	emailFrom := os.Getenv("EMAIL_FROM")
 
-	if smtpHost == "" {
+	if apiKey == "" {
 		// Development mode: Log email
 		log.Println("=== EMAIL SIMULATION ===")
 		log.Printf("To: %s\n", to)
@@ -38,22 +47,35 @@ func SendEmail(to string, problems []Problem) error {
 	}
 
 	if emailFrom == "" {
-		emailFrom = smtpUser
+		return fmt.Errorf("EMAIL_FROM must be set when RESEND_API_KEY is configured")
 	}
 
-	// Build RFC 2822 compliant message with proper headers
-	msg := []byte("From: " + emailFrom + "\r\n" +
-		"To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"MIME-Version: 1.0\r\n" +
-		"Content-Type: text/plain; charset=\"utf-8\"\r\n" +
-		"\r\n" +
-		bodyBuilder.String())
-
-	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, emailFrom, []string{to}, msg)
+	payload, err := json.Marshal(resendEmailRequest{
+		From:    emailFrom,
+		To:      []string{to},
+		Subject: subject,
+		Text:    bodyBuilder.String(),
+	})
 	if err != nil {
 		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, resendAPIURL, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("resend API error (status %d): %s", resp.StatusCode, string(respBody))
 	}
 
 	return nil
