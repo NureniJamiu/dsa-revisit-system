@@ -115,6 +115,10 @@ func RunDailyJob(force bool) {
 			continue
 		}
 
+		// Attach topics so the topic-balancing discount in the weighted draw
+		// below has real data to work with instead of zero values.
+		attachTopics(eligibleProblems)
+
 		// 4. Select problems (deterministic per day), guaranteeing overdue ones a slot
 		toSend := SelectProblemsWithOverdue(eligibleProblems, u.Preferences.ProblemsPerDay, DaySeed(), u.Preferences.MaxRevisitDays)
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"math/rand"
 	"testing"
 	"time"
 )
@@ -254,6 +255,122 @@ func TestSelectProblemsWithOverdue_ZeroMeansDisabled(t *testing.T) {
 		if !withOverdue[i].DateAdded.Equal(plain[i].DateAdded) {
 			t.Errorf("disabled max_revisit_days should match plain selection at index %d", i)
 		}
+	}
+}
+
+// ── Topic-balancing tests ──────────────────────────────────────────────
+
+// makeTopicProblem is like makeProblem but lets a test assign topics, since
+// makeProblem alone can't express the multi-topic membership these tests
+// need to exercise.
+func makeTopicProblem(daysAgo float64, lastRevisitDaysAgo float64, timesRevisited int, topics ...string) Problem {
+	p := makeProblem(daysAgo, lastRevisitDaysAgo, timesRevisited)
+	p.Topics = topics
+	return p
+}
+
+func countByTopic(problems []Problem, topic string) int {
+	count := 0
+	for _, p := range problems {
+		for _, t := range p.Topics {
+			if t == topic {
+				count++
+				break
+			}
+		}
+	}
+	return count
+}
+
+func TestSelectProblemsSeeded_TopicBalancing(t *testing.T) {
+	// 8 "DP" problems (all similar, mid-range weight) vs. one each of two
+	// other topics. Without topic balancing, a flat weighted draw over this
+	// pool would very likely fill every slot with DP. With it, the discount
+	// on additional same-topic picks should make room for the others.
+	var problems []Problem
+	for i := 0; i < 8; i++ {
+		problems = append(problems, makeTopicProblem(20, 5, 1, "DP"))
+	}
+	problems = append(problems, makeTopicProblem(20, 5, 1, "Graphs"))
+	problems = append(problems, makeTopicProblem(20, 5, 1, "Arrays"))
+
+	// Try a spread of seeds -- the discount is probabilistic (it changes the
+	// odds, not a hard cap), so assert the general trend across seeds rather
+	// than a single deterministic outcome. Without balancing, picking 3 of 3
+	// from 8-of-10-DP problems by flat weighted draw would happen roughly
+	// 47% of the time (~C(8,3)/C(10,3)); with the discount applied it drops
+	// to roughly 19%. Assert it stays a minority outcome, with a wide margin
+	// so the test isn't sensitive to the exact discount curve.
+	allDP := 0
+	const trials = 30
+	for seed := int64(0); seed < trials; seed++ {
+		selected := SelectProblemsSeeded(problems, 3, seed)
+		if countByTopic(selected, "DP") == 3 {
+			allDP++
+		}
+	}
+	if allDP > trials/2 {
+		t.Errorf("expected topic balancing to make an all-DP selection a minority outcome, but it happened %d/%d times", allDP, trials)
+	}
+}
+
+func TestSelectProblemsSeeded_MultiTopicCountsAgainstBothTopics(t *testing.T) {
+	// A problem tagged with two topics should have its weight discounted once
+	// either of those topics has already been picked, not just when both have.
+	shared := makeTopicProblem(20, 5, 1, "DP", "Arrays")
+	otherDP := makeTopicProblem(20, 5, 1, "DP")
+	// Pretend "DP" was already covered by a prior pick this round.
+	coverage := map[string]int{"DP": 1}
+
+	// Both candidates share the same "DP" discount, so neither should be
+	// picked 100% of the time -- that would suggest the discount isn't
+	// applying to "shared" via its second topic. This mainly guards against
+	// a panic/regression when a problem's topics overlap coverage from more
+	// than one topic at once.
+	sharedWins, otherWins := 0, 0
+	for seed := int64(0); seed < 40; seed++ {
+		r := rand.New(rand.NewSource(seed))
+		sel := selectWeighted([]Problem{shared, otherDP}, 1, r, coverage)
+		if len(sel) == 1 && sel[0].DateAdded.Equal(shared.DateAdded) {
+			sharedWins++
+		} else {
+			otherWins++
+		}
+	}
+	if sharedWins == 0 || otherWins == 0 {
+		t.Errorf("expected both candidates to win at least once across 40 seeds (shared=%d, other=%d)", sharedWins, otherWins)
+	}
+}
+
+func TestSelectProblemsSeeded_UntaggedProblemsExemptFromPenalty(t *testing.T) {
+	// An untagged problem should never be discounted for topic coverage,
+	// even when its one competitor's only topic is already fully covered.
+	// Same base weight otherwise (same age/revisit history), so with the
+	// penalty applied to "tagged" but not "untagged", untagged should win
+	// the draw noticeably more often than a 50/50 split.
+	untagged := makeProblem(20, 5, 1)
+	tagged := makeTopicProblem(20, 5, 1, "DP")
+	coverage := map[string]int{"DP": 1} // "DP" already fully covered this round
+
+	untaggedWins, taggedWins := 0, 0
+	for seed := int64(0); seed < 40; seed++ {
+		r := rand.New(rand.NewSource(seed))
+		selected := selectWeighted([]Problem{untagged, tagged}, 1, r, coverage)
+		if len(selected) != 1 {
+			t.Fatalf("seed %d: expected 1 problem, got %d", seed, len(selected))
+		}
+		if selected[0].DateAdded.Equal(untagged.DateAdded) {
+			untaggedWins++
+		} else {
+			taggedWins++
+		}
+	}
+
+	// Discounted weight is 0.3x, so untagged should win roughly 1/1.3 (~77%)
+	// of draws -- assert it's clearly ahead rather than pinning the exact
+	// ratio, so the test isn't brittle to small tuning changes.
+	if untaggedWins <= taggedWins {
+		t.Errorf("expected untagged problem (no penalty) to win more often than the fully-covered tagged one, got untagged=%d tagged=%d", untaggedWins, taggedWins)
 	}
 }
 

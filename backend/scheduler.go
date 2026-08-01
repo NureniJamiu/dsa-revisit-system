@@ -115,39 +115,93 @@ func SelectProblems(problems []Problem, n int) []Problem {
 // Using the same seed with the same input always produces the same selection.
 // This is used for "Today's Focus" so the dashboard is stable across page refreshes.
 func SelectProblemsSeeded(problems []Problem, n int, seed int64) []Problem {
+	return selectWeighted(problems, n, rand.New(rand.NewSource(seed)), nil)
+}
+
+// selectWeighted is the actual weighted-random draw shared by
+// SelectProblemsSeeded and SelectProblemsWithOverdue. Beyond CalculateWeight,
+// it discounts a problem's weight based on how many of its topics are
+// already represented among initialCoverage plus this round's own picks so
+// far -- this is what keeps Today's Focus from handing every slot to the
+// same topic.
+//
+// A problem can belong to more than one topic (see Problem.Topics), so this
+// can't be a simple "group by topic and round-robin": there's no single
+// bucket to put a 2-topic problem in. Tracking coverage as a per-topic count
+// and discounting by how much of *each individual problem's* topic set is
+// already covered handles single-topic, multi-topic, and untagged problems
+// without bucketing, and slots into the existing per-draw weight
+// recomputation loop as one more multiplier rather than a new loop shape.
+// Untagged problems (nil/empty Topics) are exempt from the discount --
+// penalizing them would punish missing data, which matters in practice right
+// after topics ship, when most problems won't have any yet.
+func selectWeighted(problems []Problem, n int, r *rand.Rand, initialCoverage map[string]int) []Problem {
 	if len(problems) <= n {
 		return problems
+	}
+
+	coverage := make(map[string]int, len(initialCoverage))
+	for topic, count := range initialCoverage {
+		coverage[topic] = count
+	}
+
+	topicAwareWeight := func(p Problem) float64 {
+		w := CalculateWeight(p)
+		if len(p.Topics) == 0 {
+			return w
+		}
+		covered := 0
+		for _, t := range p.Topics {
+			if coverage[t] > 0 {
+				covered++
+			}
+		}
+		if covered == 0 {
+			return w
+		}
+		// Discount scales with how much of this problem's topic set is
+		// already represented -- e.g. a single-topic problem in an
+		// already-picked topic is discounted harder than a problem that has
+		// only one of several topics covered. Floored at 0.3x so topic
+		// overlap alone never fully excludes a problem, matching
+		// CalculateWeight's own "never fully silenced" floor.
+		fraction := float64(covered) / float64(len(p.Topics))
+		discount := 1.0 - 0.7*fraction
+		return w * discount
 	}
 
 	var selected []Problem
 	remaining := make([]Problem, len(problems))
 	copy(remaining, problems)
 
-	r := rand.New(rand.NewSource(seed))
-
 	for i := 0; i < n && len(remaining) > 0; i++ {
 		totalWeight := 0.0
 		for _, p := range remaining {
-			totalWeight += CalculateWeight(p)
+			totalWeight += topicAwareWeight(p)
 		}
 
+		var pickIdx int
 		if totalWeight == 0 {
 			// Fallback: pick random
-			idx := r.Intn(len(remaining))
-			selected = append(selected, remaining[idx])
-			remaining = append(remaining[:idx], remaining[idx+1:]...)
-			continue
+			pickIdx = r.Intn(len(remaining))
+		} else {
+			value := r.Float64() * totalWeight
+			cumulative := 0.0
+			pickIdx = len(remaining) - 1
+			for j, p := range remaining {
+				cumulative += topicAwareWeight(p)
+				if cumulative >= value {
+					pickIdx = j
+					break
+				}
+			}
 		}
 
-		value := r.Float64() * totalWeight
-		cumulative := 0.0
-		for j, p := range remaining {
-			cumulative += CalculateWeight(p)
-			if cumulative >= value {
-				selected = append(selected, p)
-				remaining = append(remaining[:j], remaining[j+1:]...)
-				break
-			}
+		chosen := remaining[pickIdx]
+		selected = append(selected, chosen)
+		remaining = append(remaining[:pickIdx], remaining[pickIdx+1:]...)
+		for _, t := range chosen.Topics {
+			coverage[t]++
 		}
 	}
 
@@ -220,7 +274,17 @@ func SelectProblemsWithOverdue(problems []Problem, n int, seed int64, maxRevisit
 		return guaranteed
 	}
 
-	drawn := SelectProblemsSeeded(rest, remaining, seed)
+	// Seed topic coverage from the guaranteed picks so the weighted draw that
+	// fills the rest still discounts topics the overdue slots already cover,
+	// instead of treating them as if they hadn't been picked at all.
+	coverage := make(map[string]int)
+	for _, p := range guaranteed {
+		for _, t := range p.Topics {
+			coverage[t]++
+		}
+	}
+
+	drawn := selectWeighted(rest, remaining, rand.New(rand.NewSource(seed)), coverage)
 	result := make([]Problem, 0, len(guaranteed)+len(drawn))
 	result = append(result, guaranteed...)
 	result = append(result, drawn...)

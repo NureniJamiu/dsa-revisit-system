@@ -598,8 +598,8 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultProblems := make([]Problem, len(results))
-	for i, r := range results {
-		resultProblems[i] = r.Problem
+	for i, rw := range results {
+		resultProblems[i] = rw.Problem
 	}
 	attachTopics(resultProblems)
 	for i := range results {
@@ -830,7 +830,14 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		allProblems = append(allProblems, p)
+	}
 
+	// Attach topics before building eligible/allDetails so both carry them
+	// through -- SelectProblemsWithOverdue's topic-balancing discount reads
+	// Problem.Topics, and it needs to see the real values, not zero values.
+	attachTopics(allProblems)
+
+	for _, p := range allProblems {
 		daysSinceLast := 9999.0
 		if p.LastRevisitedAt.Valid {
 			daysSinceLast = time.Since(p.LastRevisitedAt.Time).Hours() / 24
