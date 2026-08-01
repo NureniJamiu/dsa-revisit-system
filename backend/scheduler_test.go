@@ -181,3 +181,100 @@ func TestSelectProblems_ReturnsExactN(t *testing.T) {
 		t.Errorf("should return exactly 3 problems, got %d", len(selected))
 	}
 }
+
+// ── SelectProblemsWithOverdue (max_revisit_days) tests ────────────────
+
+func containsProblem(problems []Problem, target Problem) bool {
+	for _, p := range problems {
+		if p.DateAdded.Equal(target.DateAdded) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestSelectProblemsWithOverdue_ForcesOverdueProblemRegardlessOfSeed(t *testing.T) {
+	// Heavily revisited (naturally low weight) but 60 days since its last
+	// revisit -- with maxRevisitDays=30 it must be forced in even though the
+	// weighted draw would rarely pick it on its own.
+	overdue := makeProblem(90, 60, 15)
+	fresh := []Problem{
+		makeProblem(5, 1, 0),
+		makeProblem(5, 1, 0),
+		makeProblem(5, 1, 0),
+		makeProblem(5, 1, 0),
+	}
+	problems := append([]Problem{overdue}, fresh...)
+
+	for seed := int64(0); seed < 20; seed++ {
+		selected := SelectProblemsWithOverdue(problems, 1, seed, 30)
+		if len(selected) != 1 {
+			t.Fatalf("seed %d: expected 1 problem, got %d", seed, len(selected))
+		}
+		if !containsProblem(selected, overdue) {
+			t.Errorf("seed %d: overdue problem should always be forced into the selection, got %+v", seed, selected)
+		}
+	}
+}
+
+func TestSelectProblemsWithOverdue_CapsAtRequestedCount(t *testing.T) {
+	// 5 overdue problems but only 2 slots requested -- the cap must still hold.
+	problems := []Problem{
+		makeProblem(90, 60, 0),
+		makeProblem(90, 61, 0),
+		makeProblem(90, 62, 0),
+		makeProblem(90, 63, 0),
+		makeProblem(90, 64, 0),
+	}
+
+	selected := SelectProblemsWithOverdue(problems, 2, 42, 30)
+	if len(selected) != 2 {
+		t.Errorf("expected exactly 2 problems despite 5 being overdue, got %d", len(selected))
+	}
+}
+
+func TestSelectProblemsWithOverdue_ZeroMeansDisabled(t *testing.T) {
+	// maxRevisitDays <= 0 should behave exactly like SelectProblemsSeeded --
+	// important because a preferences row with an unset/zero max_revisit_days
+	// (e.g. a stale settings write) must not force every problem as "overdue".
+	problems := []Problem{
+		makeProblem(90, 60, 0),
+		makeProblem(5, 1, 0),
+		makeProblem(5, 1, 0),
+	}
+	seed := int64(7)
+
+	withOverdue := SelectProblemsWithOverdue(problems, 2, seed, 0)
+	plain := SelectProblemsSeeded(problems, 2, seed)
+
+	if len(withOverdue) != len(plain) {
+		t.Fatalf("disabled max_revisit_days should match plain selection length: %d vs %d", len(withOverdue), len(plain))
+	}
+	for i := range withOverdue {
+		if !withOverdue[i].DateAdded.Equal(plain[i].DateAdded) {
+			t.Errorf("disabled max_revisit_days should match plain selection at index %d", i)
+		}
+	}
+}
+
+func TestSelectProblemsWithOverdue_NoOverdueMatchesPlainSelection(t *testing.T) {
+	// Nobody's overdue -- should fall back to the same result as a plain weighted draw.
+	problems := []Problem{
+		makeProblem(10, 1, 0),
+		makeProblem(20, 2, 1),
+		makeProblem(30, 3, 2),
+	}
+	seed := int64(99)
+
+	withOverdue := SelectProblemsWithOverdue(problems, 2, seed, 30)
+	plain := SelectProblemsSeeded(problems, 2, seed)
+
+	if len(withOverdue) != len(plain) {
+		t.Fatalf("expected same length when nothing is overdue: %d vs %d", len(withOverdue), len(plain))
+	}
+	for i := range withOverdue {
+		if !withOverdue[i].DateAdded.Equal(plain[i].DateAdded) {
+			t.Errorf("expected same picks as plain selection at index %d when nothing is overdue", i)
+		}
+	}
+}

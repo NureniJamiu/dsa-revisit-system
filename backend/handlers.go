@@ -571,7 +571,7 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	if len(eligible) < focusCount {
 		focusCount = len(eligible)
 	}
-	selected := SelectProblemsSeeded(eligible, focusCount, DaySeed())
+	selected := SelectProblemsWithOverdue(eligible, focusCount, DaySeed(), user.Preferences.MaxRevisitDays)
 
 	// 4. Return the selected problems with their actual "revisited today" status
 	type TodaysFocusItem struct {
@@ -727,8 +727,8 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 3. Select problems using weighted random
-	toSend := SelectProblems(eligible, u.Preferences.ProblemsPerDay)
+	// 3. Select problems using weighted random, guaranteeing overdue ones a slot
+	toSend := SelectProblemsWithOverdue(eligible, u.Preferences.ProblemsPerDay, time.Now().UnixNano(), u.Preferences.MaxRevisitDays)
 
 	// Mark selected in the details list
 	selectedSet := make(map[string]bool)

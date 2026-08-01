@@ -115,8 +115,8 @@ func RunDailyJob(force bool) {
 			continue
 		}
 
-		// 4. Select problems (Deterministic per day)
-		toSend := SelectProblemsSeeded(eligibleProblems, u.Preferences.ProblemsPerDay, DaySeed())
+		// 4. Select problems (deterministic per day), guaranteeing overdue ones a slot
+		toSend := SelectProblemsWithOverdue(eligibleProblems, u.Preferences.ProblemsPerDay, DaySeed(), u.Preferences.MaxRevisitDays)
 
 		// 5. Send Email
 		if len(toSend) > 0 {

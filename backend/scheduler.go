@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 	"math/rand"
+	"sort"
 	"time"
 )
 
@@ -151,6 +152,79 @@ func SelectProblemsSeeded(problems []Problem, n int, seed int64) []Problem {
 	}
 
 	return selected
+}
+
+// daysSinceRevisit returns how long it's been since a problem was last
+// touched: since its last revisit if it has one, otherwise since it was
+// added. Used to determine max_revisit_days overdue status.
+func daysSinceRevisit(p Problem) float64 {
+	if p.LastRevisitedAt.Valid {
+		return time.Since(p.LastRevisitedAt.Time).Hours() / 24
+	}
+	return time.Since(p.DateAdded).Hours() / 24
+}
+
+// SelectProblemsWithOverdue behaves like SelectProblemsSeeded, but first
+// guarantees a slot to any problem that has gone at least maxRevisitDays
+// since it was last touched, regardless of what the weighted draw would have
+// done. This is what makes max_revisit_days an actual ceiling: CalculateWeight's
+// 1.0 floor makes a problem unlikely to be silenced forever, but never
+// guarantees it resurfaces by any specific day, so a problem can in theory go
+// arbitrarily long without being picked.
+//
+// maxRevisitDays <= 0 disables this entirely and falls back to plain
+// SelectProblemsSeeded — this matches how an empty EmailTime means "always
+// ready" elsewhere in this codebase, and matters in practice because a
+// preferences row with max_revisit_days left at its zero value (e.g. a
+// partial/legacy settings write) should not suddenly force every problem into
+// "overdue" at once.
+//
+// Guaranteed slots are capped at n (oldest/most-overdue first) so the
+// caller's requested count is never exceeded even with a large overdue
+// backlog; anything bumped out of the guaranteed set still competes normally
+// in the weighted draw that fills the remaining slots.
+func SelectProblemsWithOverdue(problems []Problem, n int, seed int64, maxRevisitDays int) []Problem {
+	if maxRevisitDays <= 0 || n <= 0 || len(problems) == 0 {
+		return SelectProblemsSeeded(problems, n, seed)
+	}
+
+	var overdue []Problem
+	var rest []Problem
+	for _, p := range problems {
+		if daysSinceRevisit(p) >= float64(maxRevisitDays) {
+			overdue = append(overdue, p)
+		} else {
+			rest = append(rest, p)
+		}
+	}
+
+	if len(overdue) == 0 {
+		return SelectProblemsSeeded(problems, n, seed)
+	}
+
+	// Most overdue first.
+	sort.Slice(overdue, func(i, j int) bool {
+		return daysSinceRevisit(overdue[i]) > daysSinceRevisit(overdue[j])
+	})
+
+	guaranteed := overdue
+	if len(guaranteed) > n {
+		// Anything bumped out of the guaranteed slots still gets a normal
+		// shot in the weighted draw rather than being dropped outright.
+		rest = append(rest, guaranteed[n:]...)
+		guaranteed = guaranteed[:n]
+	}
+
+	remaining := n - len(guaranteed)
+	if remaining <= 0 {
+		return guaranteed
+	}
+
+	drawn := SelectProblemsSeeded(rest, remaining, seed)
+	result := make([]Problem, 0, len(guaranteed)+len(drawn))
+	result = append(result, guaranteed...)
+	result = append(result, drawn...)
+	return result
 }
 
 // DaySeed returns a deterministic seed for the current calendar day.
