@@ -70,7 +70,7 @@ const Settings: React.FC = () => {
     const { data: settings, isLoading } = useQuery({
         queryKey: ['settings'],
         queryFn: async () => {
-            const res = await apiFetch('/api/settings', {}, getToken);
+            const res = await apiFetch('/settings', {}, getToken);
             if (!res.ok) {
                 // Return defaults if not found or error
                 return {
@@ -89,7 +89,7 @@ const Settings: React.FC = () => {
     // Mutations
     const updateSettingsMutation = useMutation({
         mutationFn: async (newSettings: UserSettings) => {
-            const res = await apiFetch('/api/settings', {
+            const res = await apiFetch('/settings', {
                 method: 'PUT',
                 body: JSON.stringify(newSettings)
             }, getToken);
