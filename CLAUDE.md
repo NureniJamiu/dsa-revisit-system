@@ -10,7 +10,7 @@ DSA Revisit System ("ReStack") — a spaced-repetition tracker for DSA practice 
 
 ### Local dev (Docker — preferred)
 ```bash
-docker compose up --build     # backend :8080, frontend :5174, postgres :5432
+docker compose up --build     # backend :8080, frontend :5173, postgres :5432
 docker compose down
 ```
 

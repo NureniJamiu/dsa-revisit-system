@@ -22,10 +22,10 @@
    - Build the backend and frontend images.
    - Start the PostgreSQL database and initialize it with the schema.
    - Start the backend server on port `8080`.
-   - Start the frontend development server on port `5174`.
+   - Start the frontend development server on port `5173`.
 
 3. **Access the Application**:
-   - Frontend: [http://localhost:5174](http://localhost:5174)
+   - Frontend: [http://localhost:5173](http://localhost:5173)
    - Backend API: [http://localhost:8080/api/health](http://localhost:8080/api/health)
    - Database: Accessible on port `5432`.
 
