@@ -159,7 +159,14 @@ export function useAddProblemMutation() {
                 method: 'POST',
                 body: JSON.stringify(data),
             }, getToken);
-            if (!res.ok) throw new Error('Failed to add problem');
+            if (!res.ok) {
+                // CreateProblem returns 409 with a human-readable `error` field
+                // when the link is already an active problem for this user (see
+                // findActiveProblemByLink in backend/handlers.go) -- surface that
+                // message directly instead of a generic "failed to add".
+                const body = await res.json().catch(() => null);
+                throw new Error(body?.error || `Failed to add problem (${res.status})`);
+            }
             return res.json();
         },
         onSuccess: () => {
@@ -167,7 +174,7 @@ export function useAddProblemMutation() {
             toast.success('Problem added successfully!');
         },
         onError: (error: Error) => {
-            toast.error(`Failed to add problem: ${error.message}`);
+            toast.error(error.message);
         }
     });
 }

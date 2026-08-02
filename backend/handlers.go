@@ -140,6 +140,39 @@ func validateProblemInput(title, link string) error {
 	return nil
 }
 
+// duplicateProblem is what CreateProblem responds with (409) when the user
+// already has an active problem for the same link -- gives the caller
+// enough to show "already added" instead of a raw error, and to link to the
+// existing entry instead of creating a second one.
+type duplicateProblem struct {
+	ID    uuid.UUID `json:"id"`
+	Title string    `json:"title"`
+	Link  string    `json:"link"`
+}
+
+// findActiveProblemByLink looks up an existing *active* problem for userID
+// with the same link, ignoring a trailing slash (the same problem page can
+// be scraped with or without one depending on the platform/canonical tag).
+// Retired problems are deliberately excluded: there's no "unarchive"
+// endpoint, so re-adding a link the user previously archived is the
+// supported way to bring it back, not a duplicate.
+func findActiveProblemByLink(userID uuid.UUID, link string) (*duplicateProblem, error) {
+	var dup duplicateProblem
+	err := db.QueryRow(
+		`SELECT id, title, link FROM problems
+		 WHERE user_id = $1 AND status = 'active' AND rtrim(link, '/') = rtrim($2, '/')
+		 LIMIT 1`,
+		userID, link,
+	).Scan(&dup.ID, &dup.Title, &dup.Link)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &dup, nil
+}
+
 // GetProblems returns list of problems for the authenticated user
 func GetProblems(w http.ResponseWriter, r *http.Request) {
 	userID := GetUserIDFromContext(r)
@@ -284,6 +317,17 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	// Default source
 	if p.Source == "" {
 		p.Source = "LeetCode"
+	}
+
+	if dup, err := findActiveProblemByLink(userID, p.Link); err != nil {
+		internalError(w, "CreateProblem duplicate check", err, "Failed to create problem")
+		return
+	} else if dup != nil {
+		respondJSON(w, http.StatusConflict, map[string]interface{}{
+			"error":    "You've already added this problem",
+			"existing": dup,
+		})
+		return
 	}
 
 	tx, err := db.Begin()
