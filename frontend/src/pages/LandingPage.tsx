@@ -576,50 +576,61 @@ export default function LandingPage() {
             {/* ═══ Chrome extension ═══ */}
             <section id="extension" className="py-24 px-6 border-t border-[var(--border-subtle)]">
                 <div className="max-w-6xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
-                        <div className="md:col-span-5">
-                            <p className="text-[12px] font-medium text-green-400 mb-3 flex items-center gap-2">
-                                <Puzzle className="w-3.5 h-3.5" strokeWidth={2} />
-                                Chrome extension
-                            </p>
-                            <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
-                                Add problems without leaving the tab.
-                            </h2>
-                            <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed mb-7">
-                                Open a problem on LeetCode, GeeksforGeeks, HackerRank, or NeetCode and click the ReStack icon.
-                                The side panel prefills the title, link, and difficulty straight off the page, so getting a problem
-                                into your rotation takes one click instead of a tab switch.
-                            </p>
+                    <div className="relative rounded-2xl border border-green-500/25 bg-[linear-gradient(180deg,rgba(34,197,94,0.09),rgba(34,197,94,0.015)_55%,transparent)] overflow-hidden px-6 py-14 md:px-12 md:py-16 shadow-[0_0_0_1px_rgba(34,197,94,0.04),0_30px_90px_-40px_rgba(34,197,94,0.35)]">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[380px] pointer-events-none bg-glow opacity-80" />
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[380px] pointer-events-none bg-dot-grid opacity-40" />
 
-                            <div className="flex items-center gap-3 mb-8">
-                                {extensionPlatforms.map((mark) => (
-                                    <div
-                                        key={mark.name}
-                                        className="platform-mark flex items-center justify-center w-8 h-8 rounded-md bg-[var(--bg-surface)] border border-[var(--border-subtle)]"
-                                        style={{ '--brand-hex': mark.hex } as React.CSSProperties}
-                                        title={mark.name}
-                                    >
-                                        <PlatformIcon mark={mark} className="w-4 h-4 text-[var(--text-tertiary)]" />
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <div
-                                    aria-disabled="true"
-                                    className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium rounded-md border border-[var(--border-default)] text-[var(--text-tertiary)] cursor-not-allowed select-none"
-                                >
-                                    <Chrome className="w-4 h-4" strokeWidth={1.75} />
-                                    Get it on Chrome Web Store
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center relative">
+                            <div className="md:col-span-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-1 rounded-full bg-green-500 text-black">
+                                        <Zap className="w-3 h-3" strokeWidth={2.5} />
+                                        NEW
+                                    </span>
+                                    <p className="text-[12px] font-medium text-green-400 flex items-center gap-1.5">
+                                        <Puzzle className="w-3.5 h-3.5" strokeWidth={2} />
+                                        Chrome extension
+                                    </p>
                                 </div>
-                                <span className="text-[11px] font-medium px-2 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                                    Coming soon
-                                </span>
-                            </div>
-                        </div>
+                                <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
+                                    Add problems without leaving the tab.
+                                </h2>
+                                <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed mb-7">
+                                    Open a problem on LeetCode, GeeksforGeeks, HackerRank, or NeetCode and click the ReStack icon.
+                                    The side panel prefills the title, link, and difficulty straight off the page, so getting a problem
+                                    into your rotation takes one click instead of a tab switch.
+                                </p>
 
-                        <div className="md:col-span-7">
-                            <ExtensionMockup />
+                                <div className="flex items-center gap-3 mb-8">
+                                    {extensionPlatforms.map((mark) => (
+                                        <div
+                                            key={mark.name}
+                                            className="platform-mark flex items-center justify-center w-8 h-8 rounded-md bg-[var(--bg-surface-raised)] border border-[var(--border-default)]"
+                                            style={{ '--brand-hex': mark.hex } as React.CSSProperties}
+                                            title={mark.name}
+                                        >
+                                            <PlatformIcon mark={mark} className="w-4 h-4 text-[var(--text-tertiary)]" />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div
+                                        aria-disabled="true"
+                                        className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-md border border-green-500/40 bg-green-500/10 text-green-300 cursor-not-allowed select-none"
+                                    >
+                                        <Chrome className="w-4 h-4" strokeWidth={1.75} />
+                                        Get it on Chrome Web Store
+                                    </div>
+                                    <span className="text-[11px] font-medium px-2 py-1 rounded-full bg-[var(--bg-surface-raised)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+                                        Coming soon
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-7">
+                                <ExtensionMockup />
+                            </div>
                         </div>
                     </div>
                 </div>
