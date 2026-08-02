@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ReStack</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <header>
+      <img src="../icons/logo.svg" width="20" height="20" alt="" />
+      <h1>ReStack</h1>
+    </header>
+
+    <main id="app">
+      <p id="loading-view" class="status">Loading…</p>
+
+      <section id="connect-view" hidden>
+        <p class="lede">Connect your ReStack account to add problems from here.</p>
+        <ol class="steps">
+          <li>Open Settings on the web app and generate an API token.</li>
+          <li>Copy it, then paste it below.</li>
+        </ol>
+
+        <button id="open-settings-btn" class="btn-secondary" type="button">
+          Open ReStack Settings
+        </button>
+
+        <label for="token-input">Token</label>
+        <input id="token-input" type="password" placeholder="restack_pat_…" autocomplete="off" />
+        <button id="connect-btn" class="btn-primary" type="button">Connect</button>
+        <p id="connect-error" class="banner banner-error" hidden></p>
+
+        <details class="advanced">
+          <summary>Advanced: API &amp; app URLs</summary>
+          <label for="api-base-input">API base URL</label>
+          <input id="api-base-input" type="text" />
+          <label for="frontend-url-input">App URL</label>
+          <input id="frontend-url-input" type="text" />
+          <button id="save-urls-btn" class="btn-secondary" type="button">Save URLs</button>
+        </details>
+      </section>
+
+      <section id="main-view" hidden>
+        <div class="detect-row">
+          <span id="detect-status" class="status"></span>
+          <button id="retry-detect-btn" class="icon-btn" type="button" title="Try detecting this page again" aria-label="Retry detection">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+        </div>
+        <p id="reload-hint" class="hint" hidden>
+          If retry doesn't fix it, reload this tab and reopen the panel — the extension may have loaded after the page did.
+        </p>
+
+        <div id="added-banner" class="banner banner-success" hidden>
+          <svg class="banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 17"></polyline>
+          </svg>
+          <div>
+            <p id="added-banner-title" class="banner-title">Added to ReStack</p>
+            <p id="added-banner-subtitle" class="banner-subtitle"></p>
+          </div>
+        </div>
+        <p id="submit-error" class="banner banner-error" hidden></p>
+
+        <form id="add-form">
+          <label for="title-input">Title</label>
+          <input id="title-input" type="text" required />
+
+          <label for="link-input">Link</label>
+          <input id="link-input" type="text" required />
+
+          <div class="row">
+            <div>
+              <label for="difficulty-select">Difficulty</label>
+              <select id="difficulty-select">
+                <option value="">—</option>
+                <option>Easy</option>
+                <option>Medium</option>
+                <option>Hard</option>
+                <option>Basic</option>
+                <option>School</option>
+              </select>
+            </div>
+            <div>
+              <label for="source-select">Source</label>
+              <select id="source-select">
+                <option>LeetCode</option>
+                <option>GeeksforGeeks</option>
+                <option>HackerRank</option>
+                <option>NeetCode</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="topics-input">Topics (comma-separated)</label>
+          <input id="topics-input" type="text" placeholder="arrays, two-pointers" />
+
+          <label for="notes-input">Notes</label>
+          <textarea id="notes-input" rows="3"></textarea>
+
+          <button id="submit-btn" class="btn-primary" type="submit">Add to ReStack</button>
+        </form>
+
+        <footer>
+          <button id="change-account-btn" class="link-btn" type="button">Change account</button>
+        </footer>
+      </section>
+    </main>
+
+    <!-- Connect-success overlay: mirrors the web app's ConfirmDialog look
+         (frontend/src/components/ConfirmDialog.tsx) -- circular icon badge,
+         centered card, backdrop. Shown briefly after a token validates,
+         before switching to the add-problem view. -->
+    <div id="connect-success-overlay" class="overlay" hidden>
+      <div class="overlay-card">
+        <div class="overlay-icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 17"></polyline>
+          </svg>
+        </div>
+        <h3>Connected to ReStack</h3>
+        <p>Looking for a problem on this page…</p>
+      </div>
+    </div>
+
+    <script src="sidepanel.js"></script>
+  </body>
+</html>

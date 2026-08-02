@@ -1,0 +1,5 @@
+node_modules/
+dist/
+sidepanel/sidepanel.js
+sidepanel/sidepanel.js.map
+*.zip

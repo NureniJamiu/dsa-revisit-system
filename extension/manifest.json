@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "name": "ReStack — DSA Revisit",
+  "version": "0.1.0",
+  "description": "Add the problem you're on to your ReStack spaced-repetition queue in one click.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Add to ReStack"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "permissions": ["storage", "activeTab", "tabs", "sidePanel", "webNavigation"],
+  "host_permissions": [
+    "https://leetcode.com/*",
+    "https://www.geeksforgeeks.org/*",
+    "https://practice.geeksforgeeks.org/*",
+    "https://www.hackerrank.com/*",
+    "https://neetcode.io/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["dist/content-leetcode.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.geeksforgeeks.org/problems/*",
+        "https://practice.geeksforgeeks.org/problems/*"
+      ],
+      "js": ["dist/content-gfg.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.hackerrank.com/challenges/*"],
+      "js": ["dist/content-hackerrank.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://neetcode.io/problems/*"],
+      "js": ["dist/content-neetcode.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,405 @@
+/* Pulled from frontend/src/index.css's ":root" block (dark, Linear-inspired
+   design system — the app's default theme) so the extension matches the web
+   app's look instead of inventing its own. Only the subset actually used
+   here is copied over. */
+:root {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --bg-app: #08090a;
+  --bg-surface: #0d0e11;
+  --bg-surface-raised: #131418;
+  --bg-surface-hover: #18191e;
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text-primary: #f3f4f6;
+  --text-secondary: #9198a1;
+  --text-tertiary: #62666d;
+
+  --accent: #22c55e;
+  --accent-hover: #2fdb6c;
+  --accent-muted: rgba(34, 197, 94, 0.12);
+  --accent-border: rgba(34, 197, 94, 0.3);
+
+  --status-hard-bg: rgba(239, 68, 68, 0.1);
+  --status-hard-text: #f87171;
+
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --btn-primary-bg: #f4f4f5;
+  --btn-primary-text: #18181b;
+  --btn-primary-hover-bg: #ffffff;
+}
+
+@font-face {
+  /* System font fallback is fine for a small extension UI -- avoids a
+     network fetch to Google Fonts from a chrome-extension:// page for a
+     typeface difference most people won't notice at this size. */
+  font-family: "Inter";
+  src: local("Inter");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Several elements below (.overlay, .banner) set `display` unconditionally
+ * so they can be flex containers. Without this rule, once one of them has
+ * been shown, JS setting `.hidden = true` again silently fails to hide it:
+ * the browser's default `[hidden] { display: none }` UA-stylesheet rule
+ * loses to any author rule that also sets `display`, regardless of the
+ * `hidden` attribute being present -- author styles always beat user-agent
+ * styles. This single !important override makes `hidden` authoritative
+ * everywhere in this file. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  width: 360px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+header h1 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+main {
+  padding: 16px;
+}
+
+.lede {
+  margin: 0 0 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.steps {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+label {
+  display: block;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 12px 0 5px;
+}
+
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+textarea {
+  resize: vertical;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.row > div {
+  flex: 1;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-primary {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--btn-primary-hover-bg);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 8px;
+  background: var(--bg-surface-raised);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-surface-hover);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-btn:hover {
+  color: var(--text-secondary);
+}
+
+.status {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.hint {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: -4px 0 12px;
+}
+
+.detect-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.icon-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-btn.spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Banners (success / error), styled after the web app's inline
+   confirmation boxes, e.g. the API-token reveal box in Settings.tsx ─── */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  animation: scaleIn 0.18s ease-out;
+  transition: opacity 0.4s ease;
+}
+
+.banner-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.banner-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.banner-subtitle {
+  margin: 2px 0 0;
+  opacity: 0.85;
+}
+
+.banner-success {
+  background: var(--accent-muted);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-hover);
+}
+
+.banner-error {
+  background: var(--status-hard-bg);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--status-hard-text);
+  font-weight: 500;
+}
+
+.banner.fade-out {
+  opacity: 0;
+}
+
+.advanced {
+  margin-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.advanced summary {
+  cursor: pointer;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.advanced summary:hover {
+  color: var(--text-secondary);
+}
+
+footer {
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* ─── Overlay / modal, mirrors ConfirmDialog.tsx ─── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--overlay);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.overlay-card {
+  width: 100%;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  padding: 28px 20px 22px;
+  text-align: center;
+  animation: scaleIn 0.2s ease-out;
+}
+
+.overlay-icon-badge {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 16px;
+  border-radius: 999px;
+  background: var(--accent-muted);
+  color: var(--accent-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay-icon-badge svg {
+  width: 22px;
+  height: 22px;
+}
+
+.overlay-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.overlay-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
