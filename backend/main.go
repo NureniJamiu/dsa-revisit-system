@@ -70,9 +70,11 @@ func main() {
 			w.Write([]byte("OK"))
 		})
 
-		// Protected: all other routes require Clerk authentication
+		// Protected: all other routes require authentication, either a Clerk
+		// session (web app) or a personal access token (Chrome extension and
+		// other non-browser clients -- see auth.go's AuthMiddleware, pat.go).
 		r.Group(func(r chi.Router) {
-			r.Use(ClerkAuthMiddleware)
+			r.Use(AuthMiddleware)
 
 			r.Get("/problems", GetProblems)
 			r.Get("/problems/today", GetTodaysFocus)
@@ -88,6 +90,12 @@ func main() {
 			// Settings
 			r.Get("/settings", GetSettings)
 			r.Put("/settings", UpdateSettings)
+			// Personal access tokens (issuing/listing/revoking requires being
+			// authenticated already -- in practice via Clerk, since the settings
+			// page is how a user gets here)
+			r.Post("/tokens", CreateToken)
+			r.Get("/tokens", ListTokens)
+			r.Delete("/tokens/{id}", RevokeToken)
 			// Testing / Debugging
 			r.Post("/test-email", TestEmail)
 			r.With(RequireAdminSecret).Post("/admin/run-cron", RunCronAllUsers)

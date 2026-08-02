@@ -100,6 +100,32 @@ func runMigrations() {
 	if err != nil {
 		log.Printf("Migration warning (problem_topics index): %v", err)
 	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS personal_access_tokens (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			token_hash TEXT NOT NULL UNIQUE,
+			label VARCHAR(255) NOT NULL DEFAULT 'Chrome extension',
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+			last_used_at TIMESTAMP WITH TIME ZONE,
+			revoked_at TIMESTAMP WITH TIME ZONE
+		)`)
+	if err != nil {
+		log.Printf("Migration warning (personal_access_tokens table): %v", err)
+	} else {
+		log.Println("Migration: personal_access_tokens table ensured")
+	}
+
+	_, err = db.Exec(`CREATE INDEX IF NOT EXISTS idx_pat_token_hash ON personal_access_tokens(token_hash)`)
+	if err != nil {
+		log.Printf("Migration warning (pat token_hash index): %v", err)
+	}
+
+	_, err = db.Exec(`CREATE INDEX IF NOT EXISTS idx_pat_user ON personal_access_tokens(user_id) WHERE revoked_at IS NULL`)
+	if err != nil {
+		log.Printf("Migration warning (pat user index): %v", err)
+	}
 }
 
 // FindOrCreateUserByClerkID looks up a user by their Clerk ID.

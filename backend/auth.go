@@ -136,6 +136,40 @@ func parseRSAPublicKey(nStr, eStr string) (*rsa.PublicKey, error) {
 
 // ---------- Middleware ----------
 
+// AuthMiddleware is the entry point for every protected route. It accepts
+// either a Clerk-issued JWT (the web app) or a personal access token (the
+// Chrome extension and other non-browser clients -- see pat.go). Both paths
+// resolve to the same internal userID in context, so every downstream
+// handler is unaffected by which credential type was used.
+//
+// Dispatch is a cheap prefix check: PATs are minted with a "restack_pat_"
+// prefix specifically so this doesn't need to touch the DB or attempt (and
+// fail) JWT parsing to tell the two apart.
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+			http.Error(w, `{"error":"missing or invalid Authorization header"}`, http.StatusUnauthorized)
+			return
+		}
+
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+
+		if looksLikePAT(tokenStr) {
+			userID, err := ResolvePAT(tokenStr)
+			if err != nil {
+				http.Error(w, `{"error":"invalid or revoked token"}`, http.StatusUnauthorized)
+				return
+			}
+			ctx := context.WithValue(r.Context(), userIDKey, userID)
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
+
+		ClerkAuthMiddleware(next).ServeHTTP(w, r)
+	})
+}
+
 // ClerkAuthMiddleware validates the Clerk JWT and injects the internal user ID into context.
 func ClerkAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -76,6 +76,31 @@ func (p *UserPreferences) Scan(value interface{}) error {
 	}
 }
 
+// PersonalAccessToken is the full DB row for a PAT, including the hash.
+// Never serialized to JSON directly -- API responses use PATSummary instead,
+// which omits TokenHash so a hash never leaves the server.
+type PersonalAccessToken struct {
+	ID         uuid.UUID `json:"id"`
+	UserID     uuid.UUID `json:"user_id"`
+	TokenHash  string    `json:"-"`
+	Label      string    `json:"label"`
+	CreatedAt  time.Time `json:"created_at"`
+	LastUsedAt NullTime  `json:"last_used_at"`
+	RevokedAt  NullTime  `json:"revoked_at"`
+}
+
+// PATSummary is what GET /api/tokens returns: everything about a token
+// except the hash. CreateToken additionally returns the plaintext token
+// itself (see CreateTokenResponse in handlers.go), but only once, at
+// creation time -- it is never stored or returned again after that.
+type PATSummary struct {
+	ID         uuid.UUID `json:"id"`
+	Label      string    `json:"label"`
+	CreatedAt  time.Time `json:"created_at"`
+	LastUsedAt NullTime  `json:"last_used_at"`
+	RevokedAt  NullTime  `json:"revoked_at"`
+}
+
 // RevisitEntry represents a single revisit record
 type RevisitEntry struct {
 	ID          uuid.UUID `json:"id"`

@@ -55,8 +55,25 @@ CREATE TABLE IF NOT EXISTS problem_topics (
     PRIMARY KEY (problem_id, topic)
 );
 
+-- Personal Access Tokens Table (non-Clerk auth for clients that aren't a
+-- browser tab, e.g. the Chrome extension -- see chrome-extension-pat-implementation-plan.md).
+-- token_hash is a SHA-256 hex digest; the plaintext token is only ever
+-- returned once, at creation time, and never stored. revoked_at is a soft
+-- delete so last_used_at history survives for the settings page.
+CREATE TABLE IF NOT EXISTS personal_access_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    label VARCHAR(255) NOT NULL DEFAULT 'Chrome extension',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP WITH TIME ZONE,
+    revoked_at TIMESTAMP WITH TIME ZONE
+);
+
 -- Index for scheduling queries
 CREATE INDEX IF NOT EXISTS idx_problems_user_scheduling ON problems(user_id, status, last_revisited_at);
 CREATE INDEX IF NOT EXISTS idx_revisit_history_problem ON revisit_history(problem_id, revisited_at DESC);
 CREATE INDEX IF NOT EXISTS idx_problem_topics_problem ON problem_topics(problem_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);
+CREATE INDEX IF NOT EXISTS idx_pat_token_hash ON personal_access_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_pat_user ON personal_access_tokens(user_id) WHERE revoked_at IS NULL;

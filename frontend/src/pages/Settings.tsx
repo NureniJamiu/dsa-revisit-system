@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CustomLoader from '../components/CustomLoader';
 import { toast } from 'react-toastify';
 import { useTheme } from '../providers/ThemeContext';
+import { useTokens, useCreateTokenMutation, useRevokeTokenMutation } from '../hooks/useTokens';
 
 export type UserSettings = {
     problems_per_day: number;
@@ -60,6 +61,127 @@ const Toggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked,
         />
     </button>
 );
+
+// API Tokens section: lets the user issue/revoke personal access tokens for
+// non-browser clients (currently: the Chrome extension) that can't hold a
+// Clerk session. See chrome-extension-pat-implementation-plan.md.
+const ApiTokensSection: React.FC = () => {
+    const { data: tokens, isLoading } = useTokens();
+    const createTokenMutation = useCreateTokenMutation();
+    const revokeTokenMutation = useRevokeTokenMutation();
+
+    const [label, setLabel] = useState('');
+    const [newToken, setNewToken] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    const activeTokens = (tokens || []).filter(t => !t.revoked_at);
+
+    const handleGenerate = () => {
+        createTokenMutation.mutate(label.trim(), {
+            onSuccess: (res) => {
+                setNewToken(res.token);
+                setLabel('');
+                setCopied(false);
+            },
+        });
+    };
+
+    const handleCopy = () => {
+        if (!newToken) return;
+        navigator.clipboard.writeText(newToken);
+        setCopied(true);
+    };
+
+    const formatDate = (value: string | null) => {
+        if (!value) return 'Never';
+        return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    return (
+        <div className="bg-[var(--bg-surface)] rounded-lg border border-[var(--border-subtle)] p-8 mt-6">
+            <div className="mb-5">
+                <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">API tokens</h3>
+                <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
+                    Personal access tokens let non-browser clients, like the Chrome extension, add and read your problems without a browser session.
+                </p>
+            </div>
+
+            {/* One-time plaintext token reveal */}
+            {newToken && (
+                <div className="mb-5 p-4 bg-green-500/10 border border-green-500/20 rounded-md">
+                    <p className="text-[12px] font-medium text-green-400 mb-2">
+                        Copy this token now — it won't be shown again.
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <code className="flex-1 text-[12px] text-[var(--text-primary)] bg-[var(--bg-surface-raised)] px-3 py-2 rounded border border-[var(--border-default)] overflow-x-auto whitespace-nowrap">
+                            {newToken}
+                        </code>
+                        <button
+                            onClick={handleCopy}
+                            className="flex-shrink-0 px-3 py-2 text-[12px] font-medium bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] rounded-md hover:bg-[var(--btn-primary-hover-bg)] transition-colors"
+                        >
+                            {copied ? 'Copied' : 'Copy'}
+                        </button>
+                    </div>
+                    <button
+                        onClick={() => setNewToken(null)}
+                        className="mt-3 text-[12px] font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                    >
+                        Done
+                    </button>
+                </div>
+            )}
+
+            {/* Existing tokens */}
+            {isLoading ? (
+                <p className="text-[13px] text-[var(--text-secondary)]">Loading tokens...</p>
+            ) : activeTokens.length === 0 ? (
+                <p className="text-[13px] text-[var(--text-tertiary)] mb-5">No active tokens yet.</p>
+            ) : (
+                <div className="space-y-2 mb-5">
+                    {activeTokens.map((token) => (
+                        <div
+                            key={token.id}
+                            className="flex items-center justify-between px-4 py-3 bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md"
+                        >
+                            <div>
+                                <p className="text-[13px] font-medium text-[var(--text-primary)]">{token.label}</p>
+                                <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
+                                    Created {formatDate(token.created_at)} · Last used {formatDate(token.last_used_at)}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => revokeTokenMutation.mutate(token.id)}
+                                disabled={revokeTokenMutation.isPending}
+                                className="text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+                            >
+                                Revoke
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Generate new token */}
+            <div className="flex items-center gap-2 border-t border-[var(--border-subtle)] pt-5">
+                <input
+                    type="text"
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    placeholder="Label (e.g. Chrome extension)"
+                    className="flex-1 px-3 py-2 bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md text-[13px] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all"
+                />
+                <button
+                    onClick={handleGenerate}
+                    disabled={createTokenMutation.isPending}
+                    className="flex-shrink-0 px-4 py-2 text-[13px] font-medium bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] rounded-md hover:bg-[var(--btn-primary-hover-bg)] transition-colors disabled:opacity-50"
+                >
+                    {createTokenMutation.isPending ? 'Generating...' : 'Generate token'}
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const Settings: React.FC = () => {
     const { getToken } = useAuth();
@@ -315,6 +437,8 @@ const Settings: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            <ApiTokensSection />
         </div>
     );
 };

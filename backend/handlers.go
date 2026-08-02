@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"sort"
@@ -992,4 +993,98 @@ func GetRevisitHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, history)
+}
+
+// ---------- Personal access tokens ----------
+// Handlers for issuing/listing/revoking PATs (see pat.go for the storage
+// layer). These sit behind the same AuthMiddleware group as everything
+// else, so managing tokens itself requires being authenticated -- in
+// practice that means a Clerk session, since the settings page is how a
+// user reaches these in the first place.
+
+// createTokenRequest is the request body for CreateToken. Label is
+// optional; the DB column default ("Chrome extension") applies if omitted.
+type createTokenRequest struct {
+	Label string `json:"label"`
+}
+
+// createTokenResponse is CreateToken's response. Token is the plaintext
+// value -- the only time it is ever sent to the client. Everything after
+// this response only ever sees the token via ListTokens, which omits it.
+type createTokenResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Token     string    `json:"token"`
+	Label     string    `json:"label"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// CreateToken issues a new personal access token for the authenticated user.
+func CreateToken(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserIDFromContext(r)
+
+	var req createTokenRequest
+	// An empty/missing body is fine (label just falls back to the default);
+	// only reject bodies that are present but malformed JSON.
+	if r.Body != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil && err != io.EOF {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+	}
+
+	label := strings.TrimSpace(req.Label)
+
+	plaintext, id, err := CreatePAT(userID, label)
+	if err != nil {
+		internalError(w, "CreateToken", err, "Failed to create token")
+		return
+	}
+
+	if label == "" {
+		label = "Chrome extension"
+	}
+
+	respondJSON(w, http.StatusCreated, createTokenResponse{
+		ID:        id,
+		Token:     plaintext,
+		Label:     label,
+		CreatedAt: time.Now(),
+	})
+}
+
+// ListTokens returns every token (including revoked ones, for history)
+// belonging to the authenticated user. Never includes token values.
+func ListTokens(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserIDFromContext(r)
+
+	tokens, err := ListPATs(userID)
+	if err != nil {
+		internalError(w, "ListTokens", err, "Failed to load tokens")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{"tokens": tokens})
+}
+
+// RevokeToken soft-deletes a token belonging to the authenticated user.
+func RevokeToken(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserIDFromContext(r)
+
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := RevokePAT(userID, id); err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Token not found", http.StatusNotFound)
+			return
+		}
+		internalError(w, "RevokeToken", err, "Failed to revoke token")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
