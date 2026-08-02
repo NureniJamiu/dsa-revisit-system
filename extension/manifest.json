@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ReStack — DSA Revisit",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Add the problem you're on to your ReStack spaced-repetition queue in one click.",
   "icons": {
     "16": "icons/icon16.png",
@@ -29,9 +29,10 @@
     "https://practice.geeksforgeeks.org/*",
     "https://www.hackerrank.com/*",
     "https://neetcode.io/*",
+    "https://dsa-revisit-api-f0dfb5a01997.herokuapp.com/*",
+    "https://re-stack.vercel.app/*",
     "http://localhost/*",
-    "http://127.0.0.1/*",
-    "https://*/*"
+    "http://127.0.0.1/*"
   ],
   "content_scripts": [
     {

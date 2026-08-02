@@ -13,10 +13,16 @@ export interface RestackConfig {
   frontendUrl: string;
 }
 
+// Defaults point at the real, deployed ReStack -- this is what a Chrome Web
+// Store install needs to work out of the box, since a public install has no
+// local dev server to fall back to. Anyone running their own fork/instance
+// can still repoint both via the "Advanced" section in the connect screen;
+// see manifest.json's host_permissions for the fixed set of origins that
+// works with (localhost is included there for that case).
 const DEFAULTS: RestackConfig = {
   token: null,
-  apiBase: "http://localhost:8080/api",
-  frontendUrl: "http://localhost:5173",
+  apiBase: "https://dsa-revisit-api-f0dfb5a01997.herokuapp.com/api",
+  frontendUrl: "https://re-stack.vercel.app",
 };
 
 const STORAGE_KEY = "restackConfig";
