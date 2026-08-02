@@ -17,6 +17,13 @@ func StartCron() {
 	}()
 }
 
+// isWeekend reports whether the given time falls on a Saturday or Sunday,
+// evaluated in the server's local time (matches how the daily ticker runs).
+func isWeekend(t time.Time) bool {
+	day := t.Weekday()
+	return day == time.Saturday || day == time.Sunday
+}
+
 // timeToSend reports whether now is at or after the user's preferred send
 // time ("HH:MM", 24h — matches the format stored by the frontend's Settings
 // page, not the "HH:MM AM/PM" display format used in the UI). An empty
@@ -79,6 +86,12 @@ func RunDailyJob(force bool) {
 				log.Printf("[Cron] Skipping user %s: Too early for preferred time %s", u.Email, u.Preferences.EmailTime)
 				continue
 			}
+		}
+
+		// 2.5. Skip weekends if the user opted out (unless forced)
+		if !force && u.Preferences.SkipWeekends && isWeekend(now) {
+			log.Printf("[Cron] Skipping user %s: weekend send disabled", u.Email)
+			continue
 		}
 
 		log.Printf("[Cron] Processing user %s...", u.Email)
