@@ -15,12 +15,14 @@ import {
     Zap,
     Plus,
     Archive as ArchiveIcon,
+    Chrome,
+    Puzzle,
 } from 'lucide-react';
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import Logo from '../components/Logo';
 import PlatformIcon from '../components/PlatformIcon';
 import ThemeToggle from '../components/ThemeToggle';
-import { platformMarks } from '../data/platformMarks';
+import { platformMarks, type PlatformMark } from '../data/platformMarks';
 import dashboardPreview from '../assets/dashboard-preview-cropped.png';
 
 /* ─── Shared styles ─── */
@@ -93,6 +95,13 @@ const features = [
         span: 'md:col-span-4',
         visual: 'stack',
     },
+];
+
+const extensionPlatforms: PlatformMark[] = [
+    platformMarks.find((m) => m.name === 'LeetCode')!,
+    { name: 'GeeksforGeeks' },
+    platformMarks.find((m) => m.name === 'HackerRank')!,
+    platformMarks.find((m) => m.name === 'NeetCode')!,
 ];
 
 const stats = [
@@ -264,6 +273,57 @@ function ShowcaseMockup({ index }: { index: number }) {
     );
 }
 
+/* ─── Extension mockup: browser chrome + side panel ─── */
+function ExtensionMockup() {
+    return (
+        <div className="w-full bg-[var(--bg-surface-raised)] rounded-xl border border-[var(--border-default)] overflow-hidden shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)]">
+            <div className="h-10 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center px-4 gap-3">
+                <div className="flex gap-1.5 flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
+                </div>
+                <div className="flex-1 h-6 bg-[var(--bg-app)] border border-[var(--border-subtle)] rounded-md px-3 flex items-center max-w-md">
+                    <span className="text-[10px] font-mono-tabular text-[var(--text-tertiary)] truncate">leetcode.com/problems/two-sum</span>
+                </div>
+            </div>
+            <div className="flex">
+                <div className="flex-1 p-6 space-y-3 hidden sm:block">
+                    <div className="h-3 w-2/3 rounded bg-[var(--bg-elevated)]" />
+                    <div className="h-2 w-full rounded bg-[var(--bg-elevated)] opacity-70" />
+                    <div className="h-2 w-5/6 rounded bg-[var(--bg-elevated)] opacity-70" />
+                    <div className="h-2 w-4/6 rounded bg-[var(--bg-elevated)] opacity-70" />
+                    <div className="mt-6 h-24 rounded-lg bg-[var(--bg-elevated)] opacity-40" />
+                </div>
+                <div className="w-full sm:w-[240px] flex-shrink-0 border-l border-[var(--border-subtle)] bg-[var(--bg-app)] p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="w-5 h-5 rounded bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                            <Puzzle className="w-3 h-3 text-green-400" strokeWidth={1.75} />
+                        </div>
+                        <span className="text-[11px] font-semibold text-[var(--text-primary)]">ReStack</span>
+                        <span className="ml-auto flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                            <span className="text-[9px] text-[var(--text-tertiary)]">Detected</span>
+                        </span>
+                    </div>
+                    <p className="text-[9px] font-medium text-[var(--text-tertiary)] mb-1.5">Title</p>
+                    <div className="h-7 rounded-md bg-[var(--bg-surface-raised)] border border-[var(--border-default)] px-2.5 flex items-center mb-3">
+                        <span className="text-[10px] text-[var(--text-primary)] truncate">Two Sum</span>
+                    </div>
+                    <div className="flex gap-1.5 mb-4">
+                        <span className="h-6 px-2.5 rounded-full bg-[var(--bg-surface-raised)] border border-[var(--border-default)] flex items-center text-[9px] font-medium text-[var(--text-secondary)]">Easy</span>
+                        <span className="h-6 px-2.5 rounded-full bg-[var(--bg-surface-raised)] border border-[var(--border-default)] flex items-center text-[9px] font-medium text-[var(--text-secondary)]">LeetCode</span>
+                    </div>
+                    <div className={`w-full py-2 rounded-md text-[11px] font-medium flex items-center justify-center gap-1.5 ${btnPrimary}`}>
+                        <Plus className="w-3 h-3" />
+                        Add to ReStack
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /* ─── FAQ Accordion Item ─── */
 function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>; q: string; a: string }) {
     const [open, setOpen] = useState(false);
@@ -316,6 +376,7 @@ export default function LandingPage() {
                         <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-[var(--text-secondary)]">
                             <a href="#features" className="hover:text-[var(--text-primary)] transition-colors">Features</a>
                             <a href="#how-it-works" className="hover:text-[var(--text-primary)] transition-colors">How it works</a>
+                            <a href="#extension" className="hover:text-[var(--text-primary)] transition-colors">Extension</a>
                             <a href="#faq" className="hover:text-[var(--text-primary)] transition-colors">FAQ</a>
                         </div>
                     </div>
@@ -368,6 +429,13 @@ export default function LandingPage() {
                                 className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
                             >
                                 How it works
+                            </a>
+                            <a
+                                href="#extension"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
+                            >
+                                Extension
                             </a>
                             <a
                                 href="#faq"
@@ -500,6 +568,58 @@ export default function LandingPage() {
                                     <ShowcaseMockup index={activeTab} />
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══ Chrome extension ═══ */}
+            <section id="extension" className="py-24 px-6 border-t border-[var(--border-subtle)]">
+                <div className="max-w-6xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
+                        <div className="md:col-span-5">
+                            <p className="text-[12px] font-medium text-green-400 mb-3 flex items-center gap-2">
+                                <Puzzle className="w-3.5 h-3.5" strokeWidth={2} />
+                                Chrome extension
+                            </p>
+                            <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
+                                Add problems without leaving the tab.
+                            </h2>
+                            <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed mb-7">
+                                Open a problem on LeetCode, GeeksforGeeks, HackerRank, or NeetCode and click the ReStack icon.
+                                The side panel prefills the title, link, and difficulty straight off the page, so getting a problem
+                                into your rotation takes one click instead of a tab switch.
+                            </p>
+
+                            <div className="flex items-center gap-3 mb-8">
+                                {extensionPlatforms.map((mark) => (
+                                    <div
+                                        key={mark.name}
+                                        className="platform-mark flex items-center justify-center w-8 h-8 rounded-md bg-[var(--bg-surface)] border border-[var(--border-subtle)]"
+                                        style={{ '--brand-hex': mark.hex } as React.CSSProperties}
+                                        title={mark.name}
+                                    >
+                                        <PlatformIcon mark={mark} className="w-4 h-4 text-[var(--text-tertiary)]" />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <div
+                                    aria-disabled="true"
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium rounded-md border border-[var(--border-default)] text-[var(--text-tertiary)] cursor-not-allowed select-none"
+                                >
+                                    <Chrome className="w-4 h-4" strokeWidth={1.75} />
+                                    Get it on Chrome Web Store
+                                </div>
+                                <span className="text-[11px] font-medium px-2 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                                    Coming soon
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-7">
+                            <ExtensionMockup />
                         </div>
                     </div>
                 </div>
@@ -643,6 +763,7 @@ export default function LandingPage() {
                             <ul className="space-y-2.5">
                                 <li><a href="#features" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</a></li>
                                 <li><a href="#how-it-works" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it works</a></li>
+                                <li><a href="#extension" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Extension</a></li>
                                 <li><a href="#faq" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">FAQ</a></li>
                             </ul>
                         </div>
