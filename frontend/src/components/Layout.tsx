@@ -26,9 +26,9 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
     };
 
     return (
-        <div className="min-h-screen flex overflow-x-hidden bg-[var(--bg-app)]">
+        <div className="h-screen flex overflow-x-hidden bg-[var(--bg-app)]">
             {/* Sidebar */}
-            <aside className="w-60 border-r border-[var(--nav-border)] hidden md:flex md:flex-col bg-[var(--nav-bg)]">
+            <aside className="w-60 h-screen shrink-0 border-r border-[var(--nav-border)] hidden md:flex md:flex-col bg-[var(--nav-bg)]">
                 {/* Logo */}
                 <div className="h-14 flex items-center px-4 border-b border-[var(--nav-border)]">
                     <Logo textSize="text-[15px]" iconSize="w-6 h-6" className="text-white" showText={true} variant="light" />
@@ -89,7 +89,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onProblemAdded }) => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 min-w-0">
+            <main className="flex-1 min-w-0 h-screen overflow-y-auto">
                 <header className="h-14 border-b border-[var(--nav-border)] md:hidden px-4 flex items-center justify-between bg-[var(--nav-bg)]">
                     <Logo textSize="text-[15px]" iconSize="w-6 h-6" className="text-white" showText={true} variant="light" />
                     <div className="flex items-center gap-1">
