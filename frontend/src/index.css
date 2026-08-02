@@ -1,5 +1,11 @@
-@import "tailwindcss";
+/* The Google Fonts import must come before @import "tailwindcss" below --
+   Tailwind v4's import expands into its full generated stylesheet in place,
+   so if this font @import came after it, PostCSS/Vite would see it as no
+   longer preceding "all other statements" (a hard CSS requirement for
+   @import) and throw "@import must precede all other statements" in the
+   dev server log. Order here matters; don't swap them back. */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
 
 /* ─── Design System (Linear-inspired) ─── */
 :root {
