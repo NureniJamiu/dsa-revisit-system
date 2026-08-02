@@ -6,6 +6,8 @@ import CustomLoader from '../components/CustomLoader';
 import { toast } from 'react-toastify';
 import { useTheme } from '../providers/ThemeContext';
 import { useTokens, useCreateTokenMutation, useRevokeTokenMutation } from '../hooks/useTokens';
+import type { PATSummary } from '../hooks/useTokens';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export type UserSettings = {
     problems_per_day: number;
@@ -73,6 +75,7 @@ const ApiTokensSection: React.FC = () => {
     const [label, setLabel] = useState('');
     const [newToken, setNewToken] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [tokenToRevoke, setTokenToRevoke] = useState<PATSummary | null>(null);
 
     const activeTokens = (tokens || []).filter(t => !t.revoked_at);
 
@@ -90,6 +93,13 @@ const ApiTokensSection: React.FC = () => {
         if (!newToken) return;
         navigator.clipboard.writeText(newToken);
         setCopied(true);
+    };
+
+    const handleRevoke = () => {
+        if (!tokenToRevoke) return;
+        revokeTokenMutation.mutate(tokenToRevoke.id, {
+            onSuccess: () => setTokenToRevoke(null),
+        });
     };
 
     const formatDate = (value: string | null) => {
@@ -151,9 +161,8 @@ const ApiTokensSection: React.FC = () => {
                                 </p>
                             </div>
                             <button
-                                onClick={() => revokeTokenMutation.mutate(token.id)}
-                                disabled={revokeTokenMutation.isPending}
-                                className="text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+                                onClick={() => setTokenToRevoke(token)}
+                                className="text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors"
                             >
                                 Revoke
                             </button>
@@ -179,6 +188,18 @@ const ApiTokensSection: React.FC = () => {
                     {createTokenMutation.isPending ? 'Generating...' : 'Generate token'}
                 </button>
             </div>
+
+            <ConfirmDialog
+                isOpen={!!tokenToRevoke}
+                onClose={() => setTokenToRevoke(null)}
+                onConfirm={handleRevoke}
+                title="Revoke this token?"
+                description={tokenToRevoke ? `Any client using "${tokenToRevoke.label}" will immediately lose access to your account. This can't be undone.` : undefined}
+                confirmLabel={revokeTokenMutation.isPending ? 'Revoking...' : 'Revoke token'}
+                cancelLabel="Cancel"
+                variant="danger"
+                loading={revokeTokenMutation.isPending}
+            />
         </div>
     );
 };
