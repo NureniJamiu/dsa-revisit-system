@@ -43,7 +43,7 @@ No internal packages/layers; everything lives in `package main`:
 - `handlers.go` — all HTTP handlers (problems CRUD, revisit history, today's focus, settings, admin/test endpoints).
 - `scheduler.go` — the weighted-selection algorithm (`CalculateWeight`, `SelectProblemsSeeded`) that decides which problems to surface.
 - `cron.go` — `StartCron()` ticks every minute and calls `RunDailyJob()`, which checks each user's `email_time` preference and `last_email_sent_at` guard before sending.
-- `email.go` — `SendEmail()`: sends via SMTP if `SMTP_HOST` is set, otherwise logs the email to stdout ("simulation mode"). This is the default in local dev.
+- `email.go` — `SendEmail()`: sends via the Resend API if `RESEND_API_KEY` is set (requires `EMAIL_FROM` on a Resend-verified domain), otherwise logs the email to stdout ("simulation mode"). This is the default in local dev.
 - `models.go` — all structs, including `NullTime` (custom JSON marshaling for nullable timestamps) and `UserPreferences` (JSONB column via `Value`/`Scan`).
 
 Every protected route resolves the caller from context with `userID := GetUserIDFromContext(r)` and every query/mutation filters or checks `WHERE user_id = $N` — there is no separate authorization layer, so new handlers must do this scoping manually.
