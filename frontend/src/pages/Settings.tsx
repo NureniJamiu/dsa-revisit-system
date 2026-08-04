@@ -40,7 +40,8 @@ const EMAIL_TIME_OPTIONS = [
 // Some users may have a legacy "HH:MM AM/PM" value saved from before this form
 // sent the correct 24h format (see EMAIL_TIME_OPTIONS comment above). Normalize
 // on load so the select has a valid match instead of silently showing nothing.
-function normalizeEmailTime(value: string): string {
+function normalizeEmailTime(value: string | null | undefined): string {
+    if (!value) return '09:00';
     const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
     if (!match) return value;
     let hour = parseInt(match[1], 10);
@@ -229,7 +230,8 @@ const Settings: React.FC = () => {
                 throw new Error('Failed to load settings from server');
             }
             return (await res.json()) as UserSettings;
-        }
+        },
+        retry: 1,
     });
 
     // Mutations
