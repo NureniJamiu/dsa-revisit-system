@@ -75,13 +75,28 @@ func TestUserPreferences_ValueAndScan(t *testing.T) {
 		t.Fatalf("Value() error: %v", err)
 	}
 
-	t.Run("scans from []byte (typical pgx/lib/pq driver value)", func(t *testing.T) {
-		b, ok := v.([]byte)
+	// Value() must return string so that pgx binds it as a text parameter,
+	// which Postgres can cast to JSONB. Returning []byte causes pgx to bind
+	// it as bytea, which Postgres rejects with a type-mismatch error.
+	t.Run("Value() returns string for pgx JSONB compatibility", func(t *testing.T) {
+		s, ok := v.(string)
 		if !ok {
-			t.Fatalf("expected []byte from Value(), got %T", v)
+			t.Fatalf("expected string from Value(), got %T", v)
+		}
+		if s == "" {
+			t.Fatal("Value() returned an empty string")
+		}
+	})
+
+	// Postgres sends JSONB columns back to the driver as []byte; Scan must
+	// still accept that on the read path.
+	t.Run("scans from []byte (postgres read path)", func(t *testing.T) {
+		s, ok := v.(string)
+		if !ok {
+			t.Fatalf("Value() did not return string, got %T", v)
 		}
 		var scanned UserPreferences
-		if err := scanned.Scan(b); err != nil {
+		if err := scanned.Scan([]byte(s)); err != nil {
 			t.Fatalf("Scan() error: %v", err)
 		}
 		if scanned != original {
@@ -90,9 +105,12 @@ func TestUserPreferences_ValueAndScan(t *testing.T) {
 	})
 
 	t.Run("scans from string", func(t *testing.T) {
-		b, _ := v.([]byte)
+		s, ok := v.(string)
+		if !ok {
+			t.Fatalf("Value() did not return string, got %T", v)
+		}
 		var scanned UserPreferences
-		if err := scanned.Scan(string(b)); err != nil {
+		if err := scanned.Scan(s); err != nil {
 			t.Fatalf("Scan() error: %v", err)
 		}
 		if scanned != original {

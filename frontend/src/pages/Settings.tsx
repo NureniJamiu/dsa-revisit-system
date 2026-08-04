@@ -210,20 +210,23 @@ const Settings: React.FC = () => {
     const { theme, toggleTheme } = useTheme();
 
     // Queries
-    const { data: settings, isLoading } = useQuery({
+    const { data: settings, isLoading, isError, refetch } = useQuery({
         queryKey: ['settings'],
         queryFn: async () => {
             const res = await apiFetch('/settings', {}, getToken);
             if (!res.ok) {
-                // Return defaults if not found or error
-                return {
-                    problems_per_day: 3,
-                    min_revisit_days: 2,
-                    max_revisit_days: 10,
-                    skip_weekends: true,
-                    email_time: '09:00',
-                    ai_encouragement: false
-                } as UserSettings;
+                if (res.status === 404) {
+                    // Default settings if user preferences not found yet
+                    return {
+                        problems_per_day: 3,
+                        min_revisit_days: 2,
+                        max_revisit_days: 10,
+                        skip_weekends: true,
+                        email_time: '09:00',
+                        ai_encouragement: false
+                    } as UserSettings;
+                }
+                throw new Error('Failed to load settings from server');
             }
             return (await res.json()) as UserSettings;
         }
@@ -236,7 +239,10 @@ const Settings: React.FC = () => {
                 method: 'PUT',
                 body: JSON.stringify(newSettings)
             }, getToken);
-            if (!res.ok) throw new Error('Failed to update settings');
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(text || 'Failed to update settings');
+            }
             return res.json();
         },
         onSuccess: () => {
@@ -295,6 +301,20 @@ const Settings: React.FC = () => {
         return (
             <div className="max-w-2xl mx-auto flex flex-col items-center justify-center py-32">
                 <CustomLoader text="Loading your preferences..." />
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="max-w-2xl mx-auto flex flex-col items-center justify-center py-32 text-center">
+                <p className="text-red-400 font-medium text-[14px] mb-4">Unable to load your settings at this time.</p>
+                <button
+                    onClick={() => refetch()}
+                    className="px-4 py-2 text-[13px] font-medium bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                >
+                    Try again
+                </button>
             </div>
         );
     }

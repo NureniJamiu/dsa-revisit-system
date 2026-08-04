@@ -52,3 +52,41 @@ func TestInternalError_DoesNotLeakUnderlyingError(t *testing.T) {
 		t.Errorf("expected generic message in response, got: %s", body)
 	}
 }
+
+func TestValidateUserPreferences(t *testing.T) {
+	valid := UserPreferences{
+		ProblemsPerDay:  3,
+		MinRevisitDays:  2,
+		MaxRevisitDays:  10,
+		EmailTime:       "09:00",
+		SkipWeekends:    true,
+		AIEncouragement: false,
+	}
+
+	if err := validateUserPreferences(valid); err != nil {
+		t.Errorf("expected valid preferences to pass, got: %v", err)
+	}
+
+	cases := []struct {
+		name   string
+		modify func(p *UserPreferences)
+	}{
+		{"problems_per_day zero", func(p *UserPreferences) { p.ProblemsPerDay = 0 }},
+		{"problems_per_day too high", func(p *UserPreferences) { p.ProblemsPerDay = 100 }},
+		{"min_revisit_days zero", func(p *UserPreferences) { p.MinRevisitDays = 0 }},
+		{"max_revisit_days equal to min", func(p *UserPreferences) { p.MaxRevisitDays = p.MinRevisitDays }},
+		{"max_revisit_days less than min", func(p *UserPreferences) { p.MaxRevisitDays = 1 }},
+		{"invalid email_time format", func(p *UserPreferences) { p.EmailTime = "9:00 AM" }},
+		{"garbage email_time", func(p *UserPreferences) { p.EmailTime = "not-a-time" }},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			p := valid
+			c.modify(&p)
+			if err := validateUserPreferences(p); err == nil {
+				t.Error("expected validation error, got nil")
+			}
+		})
+	}
+}

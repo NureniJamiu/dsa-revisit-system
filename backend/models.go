@@ -56,9 +56,16 @@ type UserPreferences struct {
 	AIEncouragement bool   `json:"ai_encouragement"`
 }
 
-// Value implements driver.Valuer for JSONB
+// Value implements driver.Valuer for JSONB.
+// Must return a string (not []byte) so pgx sends it as a text value that
+// Postgres can cast to JSONB. Returning raw []byte causes pgx to bind it
+// as a bytea literal, which Postgres rejects with a type-mismatch error.
 func (p UserPreferences) Value() (interface{}, error) {
-	return json.Marshal(p)
+	b, err := json.Marshal(p)
+	if err != nil {
+		return nil, err
+	}
+	return string(b), nil
 }
 
 // Scan implements sql.Scanner for JSONB

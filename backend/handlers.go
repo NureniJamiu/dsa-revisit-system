@@ -806,6 +806,22 @@ func GetSettings(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, prefs)
 }
 
+func validateUserPreferences(p UserPreferences) error {
+	if p.ProblemsPerDay < 1 || p.ProblemsPerDay > 50 {
+		return errors.New("problems_per_day must be between 1 and 50")
+	}
+	if p.MinRevisitDays < 1 {
+		return errors.New("min_revisit_days must be at least 1")
+	}
+	if p.MaxRevisitDays <= p.MinRevisitDays {
+		return errors.New("max_revisit_days must be greater than min_revisit_days")
+	}
+	if _, err := time.Parse("15:04", p.EmailTime); err != nil {
+		return errors.New("email_time must be in 24h HH:MM format")
+	}
+	return nil
+}
+
 // UpdateSettings replaces the authenticated user's preferences
 func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	userID := GetUserIDFromContext(r)
@@ -813,6 +829,11 @@ func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	var prefs UserPreferences
 	if err := json.NewDecoder(r.Body).Decode(&prefs); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := validateUserPreferences(prefs); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
