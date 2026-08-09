@@ -6,10 +6,10 @@ const InstallHint: React.FC = () => {
 
     useEffect(() => {
         // 1. Check if it's iOS
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
 
         // 2. Check if it's Safari (standard browser, not in standalone mode)
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in window.navigator && Boolean((window.navigator as unknown as { standalone?: boolean }).standalone));
 
         // 3. Check if user already dismissed it in this session
         const isDismissed = sessionStorage.getItem('ios-install-hint-dismissed');

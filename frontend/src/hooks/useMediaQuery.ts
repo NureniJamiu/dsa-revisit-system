@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore, useCallback } from 'react';
 
 /**
  * Custom hook to detect if a media query matches.
@@ -6,18 +6,18 @@ import { useState, useEffect } from 'react';
  * @returns boolean indicating if the query matches
  */
 export function useMediaQuery(query: string): boolean {
-    const [matches, setMatches] = useState(false);
+    const subscribe = useCallback(
+        (callback: () => void) => {
+            const media = window.matchMedia(query);
+            media.addEventListener('change', callback);
+            return () => media.removeEventListener('change', callback);
+        },
+        [query]
+    );
 
-    useEffect(() => {
-        const media = window.matchMedia(query);
-        if (media.matches !== matches) {
-            setMatches(media.matches);
-        }
+    const getSnapshot = () => window.matchMedia(query).matches;
+    const getServerSnapshot = () => false;
 
-        const listener = () => setMatches(media.matches);
-        media.addEventListener('change', listener);
-        return () => media.removeEventListener('change', listener);
-    }, [matches, query]);
-
-    return matches;
+    return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
+
