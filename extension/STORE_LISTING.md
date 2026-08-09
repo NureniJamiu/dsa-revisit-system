@@ -1,6 +1,11 @@
-# Chrome Web Store listing copy
+# Microsoft Edge Add-ons & Chrome Web Store listing copy
 
-Reference text for the Developer Dashboard's listing and privacy fields. Copy-paste as needed — trim to fit whatever character limits the current dashboard UI shows you (limits have changed across CWS dashboard versions).
+Reference text for the Developer Dashboard's listing (Microsoft Partner Center / Chrome Web Store) and privacy fields. Copy-paste as needed — trim to fit whatever character limits the current dashboard UI shows you.
+
+## Extension Name
+```
+Restack
+```
 
 ## Short description (≤ 132 characters)
 
