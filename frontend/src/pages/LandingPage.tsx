@@ -19,6 +19,7 @@ import {
     Puzzle,
 } from 'lucide-react';
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
+import { toast } from 'react-toastify';
 import Logo from '../components/Logo';
 import PlatformIcon from '../components/PlatformIcon';
 import ThemeToggle from '../components/ThemeToggle';
@@ -354,6 +355,17 @@ export default function LandingPage() {
     const [activeTab, setActiveTab] = useState(0);
     const spotlight = useSpotlight();
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('from') === 'email' || params.get('auth_warning') === '1' || params.get('redirect') === 'dashboard') {
+            toast.warn('Please log in first to view your dashboard.', {
+                toastId: 'email-auth-warning',
+            });
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }, []);
 
     useEffect(() => {
         intervalRef.current = setInterval(() => {

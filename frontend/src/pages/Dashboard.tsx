@@ -40,6 +40,14 @@ const Dashboard: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 6;
 
+    React.useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('from')) {
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }, []);
+
     const handleRevisit = async () => {
         try {
             if (!revisitProblemId) return;
