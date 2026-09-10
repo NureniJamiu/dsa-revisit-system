@@ -17,6 +17,7 @@ import {
     Archive as ArchiveIcon,
     Chrome,
     Puzzle,
+    Sparkles,
 } from 'lucide-react';
 import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import { toast } from 'react-toastify';
@@ -24,6 +25,7 @@ import Logo from '../components/Logo';
 import PlatformIcon from '../components/PlatformIcon';
 import ThemeToggle from '../components/ThemeToggle';
 import { platformMarks, type PlatformMark } from '../data/platformMarks';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 import dashboardPreview from '../assets/dashboard-preview-cropped.png';
 
 /* ─── Shared styles ─── */
@@ -31,6 +33,16 @@ const btnPrimary =
     'bg-[linear-gradient(to_bottom,var(--btn-cta-from),var(--btn-cta-to))] text-[var(--btn-cta-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,0,0,0.35)] hover:brightness-105 transition-all';
 const btnGhost =
     'text-[var(--text-primary)] border border-[var(--border-default)] hover:bg-[var(--bg-surface-hover)] hover:border-[var(--border-strong)] transition-colors';
+
+/* Small brand eyebrow used above every section heading */
+function Eyebrow({ children }: { children: React.ReactNode }) {
+    return (
+        <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-green-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_10px_2px_rgba(34,197,94,0.6)]" />
+            {children}
+        </span>
+    );
+}
 
 function useSpotlight() {
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -277,8 +289,8 @@ function ShowcaseMockup({ index }: { index: number }) {
 /* ─── Extension mockup: browser chrome + side panel ─── */
 function ExtensionMockup() {
     return (
-        <div className="w-full bg-[var(--bg-surface-raised)] rounded-xl border border-[var(--border-default)] overflow-hidden shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)]">
-            <div className="h-10 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center px-4 gap-3">
+        <div className="w-full glass rounded-xl overflow-hidden">
+            <div className="h-10 bg-[var(--bg-surface)]/60 border-b border-[var(--glass-border)] flex items-center px-4 gap-3">
                 <div className="flex gap-1.5 flex-shrink-0">
                     <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
@@ -296,7 +308,7 @@ function ExtensionMockup() {
                     <div className="h-2 w-4/6 rounded bg-[var(--bg-elevated)] opacity-70" />
                     <div className="mt-6 h-24 rounded-lg bg-[var(--bg-elevated)] opacity-40" />
                 </div>
-                <div className="w-full sm:w-[240px] flex-shrink-0 border-l border-[var(--border-subtle)] bg-[var(--bg-app)] p-4">
+                <div className="w-full sm:w-[240px] flex-shrink-0 border-l border-[var(--glass-border)] bg-[var(--bg-app)]/40 p-4">
                     <div className="flex items-center gap-2 mb-4">
                         <div className="w-5 h-5 rounded bg-green-500/10 flex items-center justify-center flex-shrink-0">
                             <Puzzle className="w-3 h-3 text-green-400" strokeWidth={1.75} />
@@ -329,21 +341,25 @@ function ExtensionMockup() {
 function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>; q: string; a: string }) {
     const [open, setOpen] = useState(false);
     return (
-        <div className="border-b border-[var(--border-subtle)] last:border-0">
+        <div className="border-b border-[var(--glass-border)] last:border-0">
             <button
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-center gap-4 px-6 py-5 text-left group"
             >
-                <Icon className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0" />
-                <span className="flex-1 text-[14px] font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)] transition-colors">
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border transition-colors ${open ? 'bg-green-500/10 border-green-500/30' : 'bg-[var(--bg-surface-raised)] border-[var(--border-subtle)]'}`}>
+                    <Icon className={`w-4 h-4 transition-colors ${open ? 'text-green-400' : 'text-[var(--text-tertiary)]'}`} />
+                </span>
+                <span className="flex-1 text-[14px] font-medium text-[var(--text-primary)] group-hover:text-green-300 transition-colors">
                     {q}
                 </span>
                 <ChevronRight
-                    className={`w-4 h-4 flex-shrink-0 text-[var(--text-tertiary)] transition-transform duration-300 ${open ? 'rotate-90' : ''}`}
+                    className={`w-4 h-4 flex-shrink-0 text-[var(--text-tertiary)] transition-transform duration-300 ${open ? 'rotate-90 text-green-400' : ''}`}
                 />
             </button>
-            <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-48 pb-5' : 'max-h-0'}`}>
-                <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed px-6 pl-14">{a}</p>
+            <div className={`grid transition-all duration-300 ${open ? 'grid-rows-[1fr] pb-5' : 'grid-rows-[0fr]'}`}>
+                <div className="overflow-hidden">
+                    <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed px-6 pl-[4.5rem]">{a}</p>
+                </div>
             </div>
         </div>
     );
@@ -353,8 +369,10 @@ function FaqItem({ icon: Icon, q, a }: { icon: React.FC<{ className?: string }>;
 export default function LandingPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
+    const [scrolled, setScrolled] = useState(false);
     const spotlight = useSpotlight();
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const revealRef = useScrollReveal<HTMLDivElement>();
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -376,134 +394,145 @@ export default function LandingPage() {
         };
     }, [activeTab]);
 
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 24);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     return (
-        <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-primary)]">
+        <div ref={revealRef} className="grain relative min-h-screen mesh-bg text-[var(--text-primary)] font-[var(--font-sans)] overflow-x-hidden">
 
-            {/* ═══ Navbar ═══ */}
-            <nav className="sticky top-0 z-50 bg-[var(--bg-app)]/80 backdrop-blur-md border-b border-[var(--border-subtle)]">
-                <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-                    <div className="flex items-center gap-4 md:gap-10">
-                        <Logo textSize="text-[15px]" iconSize="w-6 h-6" variant="light" />
+            {/* ═══ Fluid Island Navbar ═══ */}
+            <div className="fixed top-3 sm:top-5 inset-x-0 z-50 px-4 flex justify-center">
+                <nav
+                    className={`w-full max-w-5xl rounded-2xl transition-all duration-300 ${scrolled
+                        ? 'glass hairline'
+                        : 'bg-transparent border border-transparent'
+                        }`}
+                >
+                    <div className="px-4 sm:px-5 h-14 flex items-center justify-between">
+                        <div className="flex items-center gap-4 md:gap-9">
+                            <Logo textSize="text-[15px]" iconSize="w-6 h-6" variant="light" />
 
-                        <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-[var(--text-secondary)]">
-                            <a href="#features" className="hover:text-[var(--text-primary)] transition-colors">Features</a>
-                            <a href="#how-it-works" className="hover:text-[var(--text-primary)] transition-colors">How it works</a>
-                            <a href="#extension" className="hover:text-[var(--text-primary)] transition-colors">Extension</a>
-                            <a href="#faq" className="hover:text-[var(--text-primary)] transition-colors">FAQ</a>
+                            <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-[var(--text-secondary)]">
+                                <a href="#how-it-works" className="hover:text-[var(--text-primary)] transition-colors">How it works</a>
+                                <a href="#extension" className="hover:text-[var(--text-primary)] transition-colors">Extension</a>
+                                <a href="#features" className="hover:text-[var(--text-primary)] transition-colors">Features</a>
+                                <a href="#faq" className="hover:text-[var(--text-primary)] transition-colors">FAQ</a>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Desktop Auth */}
-                    <div className="hidden md:flex items-center gap-1">
-                        <ThemeToggle className="p-2 mr-1" iconSize={16} />
-                        <SignInButton mode="modal">
-                            <button className="text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-3 py-1.5">
-                                Sign in
-                            </button>
-                        </SignInButton>
-                        <SignUpButton mode="modal">
-                            <button className={`text-[13px] font-medium px-3.5 py-1.5 rounded-md ml-2 ${btnPrimary}`}>
-                                Get started
-                            </button>
-                        </SignUpButton>
-                    </div>
-
-                    {/* Mobile Toggle */}
-                    <div className="md:hidden flex items-center gap-1">
-                        <ThemeToggle className="p-2" iconSize={16} />
-                        <button
-                            className="p-2 text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-md transition-colors"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            aria-label="Toggle Menu"
-                        >
-                            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Overlay */}
-                <div className={`
-                    absolute top-full left-0 w-full bg-[var(--bg-app)] border-b border-[var(--border-subtle)] overflow-hidden transition-all duration-300 md:hidden
-                    ${isMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}
-                `}>
-                    <div className="p-6 space-y-6">
-                        <div className="flex flex-col gap-4">
-                            <a
-                                href="#features"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
-                            >
-                                Features
-                            </a>
-                            <a
-                                href="#how-it-works"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
-                            >
-                                How it works
-                            </a>
-                            <a
-                                href="#extension"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
-                            >
-                                Extension
-                            </a>
-                            <a
-                                href="#faq"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-[15px] font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)] transition-colors"
-                            >
-                                FAQ
-                            </a>
-                        </div>
-                        <div className="pt-6 border-t border-[var(--border-subtle)] flex flex-col gap-3">
+                        {/* Desktop Auth */}
+                        <div className="hidden md:flex items-center gap-1">
+                            <ThemeToggle className="p-2 mr-1" iconSize={16} />
                             <SignInButton mode="modal">
-                                <button className={`w-full py-3 font-medium text-[13px] rounded-md ${btnGhost}`}>
+                                <button className="text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-3 py-1.5">
                                     Sign in
                                 </button>
                             </SignInButton>
                             <SignUpButton mode="modal">
-                                <button className={`w-full py-3 font-medium text-[13px] rounded-md ${btnPrimary}`}>
+                                <button className={`text-[13px] font-medium px-3.5 py-1.5 rounded-lg ml-2 ${btnPrimary}`}>
                                     Get started
                                 </button>
                             </SignUpButton>
                         </div>
+
+                        {/* Mobile Toggle */}
+                        <div className="md:hidden flex items-center gap-1">
+                            <ThemeToggle className="p-2" iconSize={16} />
+                            <button
+                                className="p-2 text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-md transition-colors"
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                aria-label="Toggle Menu"
+                            >
+                                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </nav>
+
+                    {/* Mobile Overlay */}
+                    <div className={`
+                        overflow-hidden transition-all duration-300 md:hidden
+                        ${isMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}
+                    `}>
+                        <div className="p-6 pt-2 space-y-6">
+                            <div className="flex flex-col gap-4">
+                                {[
+                                    ['#how-it-works', 'How it works'],
+                                    ['#extension', 'Extension'],
+                                    ['#features', 'Features'],
+                                    ['#faq', 'FAQ'],
+                                ].map(([href, label]) => (
+                                    <a
+                                        key={href}
+                                        href={href}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="text-[15px] font-medium text-[var(--text-primary)] transition-colors"
+                                    >
+                                        {label}
+                                    </a>
+                                ))}
+                            </div>
+                            <div className="pt-6 border-t border-[var(--glass-border)] flex flex-col gap-3">
+                                <SignInButton mode="modal">
+                                    <button className={`w-full py-3 font-medium text-[13px] rounded-lg ${btnGhost}`}>
+                                        Sign in
+                                    </button>
+                                </SignInButton>
+                                <SignUpButton mode="modal">
+                                    <button className={`w-full py-3 font-medium text-[13px] rounded-lg ${btnPrimary}`}>
+                                        Get started
+                                    </button>
+                                </SignUpButton>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
 
             {/* ═══ Hero Section ═══ */}
-            <section className="relative pt-20 pb-24 px-6 overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] pointer-events-none bg-glow" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] pointer-events-none bg-dot-grid" />
+            <section className="relative pt-36 md:pt-44 pb-24 px-6 overflow-hidden">
+                <div className="aurora-blob w-[520px] h-[520px] bg-green-500/25 -top-40 left-1/2 -translate-x-1/2" />
+                <div className="aurora-blob w-[360px] h-[360px] bg-emerald-400/20 top-10 -right-20" style={{ animationDelay: '4s' }} />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[560px] pointer-events-none bg-dot-grid" />
 
                 <div className="max-w-5xl mx-auto flex flex-col items-center relative">
-                    <div className="text-center max-w-2xl mb-14">
-                        <h1 className="text-4xl md:text-6xl font-semibold text-[var(--text-primary)] leading-[1.05] tracking-tight mb-6 animate-slideUp text-balance">
-                            Stop forgetting the<br />problems you've solved.
+                    <div className="text-center max-w-3xl mb-14">
+                        <div className="reveal inline-flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full glass hairline text-[12px] font-medium text-[var(--text-secondary)]">
+                            <Sparkles className="w-3.5 h-3.5 text-green-400" strokeWidth={2} />
+                            Spaced repetition, built for DSA
+                        </div>
+
+                        <h1 className="reveal font-display text-5xl md:text-7xl font-semibold text-[var(--text-primary)] leading-[0.98] tracking-tight mb-6 text-balance" style={{ '--reveal-delay': '80ms' } as React.CSSProperties}>
+                            Stop forgetting the<br />
+                            problems you've <span className="text-gradient">solved.</span>
                         </h1>
 
-                        <p className="text-lg text-[var(--text-secondary)] mb-9 animate-slideUp delay-100 max-w-xl mx-auto leading-relaxed">
+                        <p className="reveal text-lg text-[var(--text-secondary)] mb-9 max-w-xl mx-auto leading-relaxed" style={{ '--reveal-delay': '180ms' } as React.CSSProperties}>
                             ReStack resurfaces what you've practiced right before you'd forget it, delivered
                             daily to your dashboard and inbox.
                         </p>
 
-                        <div className="flex items-center justify-center animate-slideUp delay-200">
+                        <div className="reveal flex flex-col sm:flex-row items-center justify-center gap-3" style={{ '--reveal-delay': '280ms' } as React.CSSProperties}>
                             <SignUpButton mode="modal">
-                                <button className={`w-full sm:w-auto px-5 py-2.5 text-[13px] font-medium rounded-md flex items-center justify-center gap-2 ${btnPrimary}`}>
+                                <button className={`w-full sm:w-auto px-5 py-3 text-[13px] font-semibold rounded-lg flex items-center justify-center gap-2 ${btnPrimary}`}>
                                     Get started for free
                                     <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                             </SignUpButton>
+                            <a href="#how-it-works" className={`w-full sm:w-auto px-5 py-3 text-[13px] font-semibold rounded-lg flex items-center justify-center gap-2 ${btnGhost}`}>
+                                See how it works
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                {/* ═══ App Screenshot — wider than every other section on the page, but not full-bleed ═══ */}
-                <div className="w-full max-w-7xl mx-auto relative animate-slideUp delay-300">
-                    <div className="bg-[var(--bg-surface-raised)] rounded-xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)] border border-[var(--border-default)] overflow-hidden">
-                        <div className="h-10 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center px-5 justify-between">
+                {/* ═══ App Screenshot — glass frame floating over the mesh ═══ */}
+                <div className="reveal w-full max-w-7xl mx-auto relative" style={{ '--reveal-delay': '360ms' } as React.CSSProperties}>
+                    <div className="glass hairline rounded-2xl overflow-hidden">
+                        <div className="h-10 bg-[var(--bg-surface)]/50 border-b border-[var(--glass-border)] flex items-center px-5 justify-between">
                             <div className="flex gap-1.5">
                                 <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
                                 <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
@@ -524,12 +553,12 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Tabbed Feature Showcase ═══ */}
-            <section id="how-it-works" className="py-24 px-6 border-t border-[var(--border-subtle)]">
+            <section id="how-it-works" className="relative py-24 px-6 border-t border-[var(--glass-border)]">
                 <div className="max-w-6xl mx-auto">
-                    <div className="max-w-xl mb-16">
-                        <p className="text-[12px] font-medium text-green-400 mb-3">How it works</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
-                            Purpose-built for one loop: practice, track, revisit.
+                    <div className="reveal max-w-xl mb-16">
+                        <Eyebrow>How it works</Eyebrow>
+                        <h2 className="font-display text-3xl md:text-4xl font-semibold text-[var(--text-primary)] tracking-tight mt-4 mb-3 leading-tight">
+                            One loop: practice, track, revisit.
                         </h2>
                         <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed">
                             No planning, no spreadsheets, just a rotation that keeps itself fresh.
@@ -538,29 +567,29 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
                         {/* Tab list */}
-                        <div className="md:col-span-5 space-y-1">
+                        <div className="reveal md:col-span-5 space-y-2">
                             {showcaseTabs.map((tab, i) => (
                                 <button
                                     key={tab.label}
                                     onClick={() => setActiveTab(i)}
-                                    className={`w-full text-left p-4 rounded-lg border transition-colors relative overflow-hidden ${activeTab === i
-                                        ? 'bg-[var(--bg-surface-raised)] border-[var(--border-default)]'
+                                    className={`w-full text-left p-4 rounded-xl border transition-all relative overflow-hidden ${activeTab === i
+                                        ? 'glass hairline'
                                         : 'bg-transparent border-transparent hover:bg-[var(--bg-surface)]'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3 mb-1.5">
-                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${activeTab === i ? 'bg-green-500/10' : 'bg-[var(--bg-surface-raised)]'}`}>
-                                            <tab.icon className={`w-3.5 h-3.5 ${activeTab === i ? 'text-green-400' : 'text-[var(--text-secondary)]'}`} strokeWidth={1.75} />
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${activeTab === i ? 'bg-green-500/15 text-green-400' : 'bg-[var(--bg-surface-raised)] text-[var(--text-secondary)]'}`}>
+                                            <tab.icon className="w-4 h-4" strokeWidth={1.75} />
                                         </div>
                                         <span className={`text-[14px] font-semibold ${activeTab === i ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                                             {tab.label}
                                         </span>
                                     </div>
                                     {activeTab === i && (
-                                        <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed pl-10 pr-2">{tab.desc}</p>
+                                        <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed pl-11 pr-2">{tab.desc}</p>
                                     )}
                                     {activeTab === i && (
-                                        <div className="mt-3 ml-10 h-[2px] bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                                        <div className="mt-3 ml-11 h-[2px] bg-[var(--bg-elevated)] rounded-full overflow-hidden">
                                             <div key={activeTab} className="h-full bg-green-500 animate-fillBar" />
                                         </div>
                                     )}
@@ -569,14 +598,14 @@ export default function LandingPage() {
                         </div>
 
                         {/* Mockup panel */}
-                        <div className="md:col-span-7">
-                            <div className="bg-[var(--bg-surface-raised)] rounded-xl border border-[var(--border-default)] overflow-hidden shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)]">
-                                <div className="h-10 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center px-5 gap-1.5">
+                        <div className="reveal md:col-span-7" style={{ '--reveal-delay': '120ms' } as React.CSSProperties}>
+                            <div className="glass hairline rounded-2xl overflow-hidden">
+                                <div className="h-10 bg-[var(--bg-surface)]/50 border-b border-[var(--glass-border)] flex items-center px-5 gap-1.5">
                                     <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
                                     <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
                                     <div className="w-2.5 h-2.5 rounded-full bg-[var(--bg-elevated)]" />
                                 </div>
-                                <div className="bg-[var(--bg-app)] p-8 md:p-10 min-h-[280px] flex items-center justify-center">
+                                <div className="p-8 md:p-10 min-h-[280px] flex items-center justify-center">
                                     <ShowcaseMockup index={activeTab} />
                                 </div>
                             </div>
@@ -586,11 +615,10 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Chrome extension ═══ */}
-            <section id="extension" className="py-24 px-6 border-t border-[var(--border-subtle)]">
+            <section id="extension" className="py-24 px-6 border-t border-[var(--glass-border)]">
                 <div className="max-w-6xl mx-auto">
-                    <div className="relative rounded-2xl border border-green-500/25 bg-[linear-gradient(180deg,rgba(34,197,94,0.09),rgba(34,197,94,0.015)_55%,transparent)] overflow-hidden px-6 py-14 md:px-12 md:py-16 shadow-[0_0_0_1px_rgba(34,197,94,0.04),0_30px_90px_-40px_rgba(34,197,94,0.35)]">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[380px] pointer-events-none bg-glow opacity-80" />
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[380px] pointer-events-none bg-dot-grid opacity-40" />
+                    <div className="reveal relative rounded-3xl glass hairline overflow-hidden px-6 py-14 md:px-12 md:py-16">
+                        <div className="aurora-blob w-[420px] h-[420px] bg-green-500/20 -top-32 left-10" />
 
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center relative">
                             <div className="md:col-span-5">
@@ -604,7 +632,7 @@ export default function LandingPage() {
                                         Chrome extension
                                     </p>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
+                                <h2 className="font-display text-3xl md:text-4xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
                                     Add problems without leaving the tab.
                                 </h2>
                                 <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed mb-7">
@@ -617,7 +645,7 @@ export default function LandingPage() {
                                     {extensionPlatforms.map((mark) => (
                                         <div
                                             key={mark.name}
-                                            className="platform-mark flex items-center justify-center w-8 h-8 rounded-md bg-[var(--bg-surface-raised)] border border-[var(--border-default)]"
+                                            className="platform-mark flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--bg-surface-raised)] border border-[var(--border-default)]"
                                             style={{ '--brand-hex': mark.hex } as React.CSSProperties}
                                             title={mark.name}
                                         >
@@ -629,7 +657,7 @@ export default function LandingPage() {
                                 <div className="flex flex-wrap items-center gap-3">
                                     <div
                                         aria-disabled="true"
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-md border border-green-500/40 bg-green-500/10 text-green-300 cursor-not-allowed select-none"
+                                        className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-lg border border-green-500/40 bg-green-500/10 text-green-300 cursor-not-allowed select-none"
                                     >
                                         <Chrome className="w-4 h-4" strokeWidth={1.75} />
                                         Get it on Chrome Web Store
@@ -649,18 +677,22 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Under the hood: real algorithm, not vibes ═══ */}
-            <section className="py-20 px-6 border-t border-[var(--border-subtle)] relative overflow-hidden">
+            <section className="py-20 px-6 border-t border-[var(--glass-border)] relative overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[300px] pointer-events-none bg-dot-grid opacity-60" />
                 <div className="max-w-6xl mx-auto relative">
-                    <div className="max-w-xl mb-10">
-                        <p className="text-[12px] font-medium text-green-400 mb-3">Under the hood</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight leading-tight">
+                    <div className="reveal max-w-xl mb-10">
+                        <Eyebrow>Under the hood</Eyebrow>
+                        <h2 className="font-display text-3xl md:text-4xl font-semibold text-[var(--text-primary)] tracking-tight leading-tight mt-4">
                             Real math, not vibes.
                         </h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] divide-x divide-y md:divide-y-0 divide-[var(--border-subtle)]">
-                        {stats.map((s) => (
-                            <div key={s.label} className="p-6">
+                    <div className="reveal grid grid-cols-2 md:grid-cols-4 rounded-2xl glass hairline divide-x divide-y md:divide-y-0 divide-[var(--glass-border)] overflow-hidden">
+                        {stats.map((s, i) => (
+                            <div
+                                key={s.label}
+                                className="p-6 reveal"
+                                style={{ '--reveal-delay': `${i * 80}ms` } as React.CSSProperties}
+                            >
                                 <p className="text-[11px] font-medium text-[var(--text-secondary)] mb-2">{s.label}</p>
                                 <p className="text-2xl font-mono-tabular font-semibold text-[var(--text-primary)] mb-1.5">{s.value}</p>
                                 <p className="text-[12px] text-[var(--text-tertiary)] leading-relaxed">{s.hint}</p>
@@ -670,12 +702,12 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ═══ Features Grid ═══ */}
-            <section id="features" className="py-24 px-6 border-t border-[var(--border-subtle)]">
+            {/* ═══ Features Bento Grid ═══ */}
+            <section id="features" className="py-24 px-6 border-t border-[var(--glass-border)]">
                 <div className="max-w-6xl mx-auto">
-                    <div className="max-w-xl mb-14">
-                        <p className="text-[12px] font-medium text-green-400 mb-3">Features</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] tracking-tight mb-3 leading-tight">
+                    <div className="reveal max-w-xl mb-14">
+                        <Eyebrow>Features</Eyebrow>
+                        <h2 className="font-display text-3xl md:text-4xl font-semibold text-[var(--text-primary)] tracking-tight mt-4 mb-3 leading-tight">
                             Everything you need to stay sharp.
                         </h2>
                         <p className="text-[15px] text-[var(--text-secondary)] leading-relaxed">
@@ -683,17 +715,18 @@ export default function LandingPage() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                        {features.map((f) => (
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        {features.map((f, i) => (
                             <div
                                 key={f.title}
                                 onMouseMove={spotlight}
-                                className={`${f.span} spotlight-card bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-6 hover:border-[var(--border-strong)] transition-colors`}
+                                className={`${f.span} reveal spotlight-card glass hairline rounded-2xl p-6 hover:-translate-y-1 transition-transform duration-300`}
+                                style={{ '--reveal-delay': `${(i % 3) * 90}ms` } as React.CSSProperties}
                             >
-                                <div className="w-8 h-8 rounded-md bg-green-500/10 flex items-center justify-center">
-                                    <f.icon className="w-3.5 h-3.5 text-green-400" strokeWidth={1.75} />
+                                <div className="w-9 h-9 rounded-lg bg-green-500/12 flex items-center justify-center">
+                                    <f.icon className="w-4 h-4 text-green-400" strokeWidth={1.75} />
                                 </div>
-                                <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mt-5 mb-1.5">{f.title}</h3>
+                                <h3 className="text-[15px] font-semibold text-[var(--text-primary)] mt-5 mb-1.5">{f.title}</h3>
                                 <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed">{f.desc}</p>
                                 <FeatureVisual type={f.visual} />
                             </div>
@@ -702,43 +735,45 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ═══ Platform strip ═══ */}
-            <section className="py-16 px-6 border-t border-[var(--border-subtle)]">
+            {/* ═══ Platform marquee ═══ */}
+            <section className="py-16 px-6 border-t border-[var(--glass-border)] overflow-hidden">
                 <p className="text-center text-[12px] font-medium text-[var(--text-tertiary)] mb-9">Works with problems from any platform</p>
-                <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
-                    {platformMarks.map((mark) => (
-                        <div
-                            key={mark.name}
-                            className="platform-mark group flex items-center gap-2.5"
-                            style={{ '--brand-hex': mark.hex } as React.CSSProperties}
-                        >
-                            <PlatformIcon mark={mark} className="w-5 h-5 text-[var(--text-tertiary)] transition-colors duration-200" />
-                            <span className="text-[14px] font-medium text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors duration-200">
-                                {mark.name}
-                            </span>
-                        </div>
-                    ))}
+                <div className="marquee-mask max-w-6xl mx-auto overflow-hidden">
+                    <div className="flex w-max animate-marquee gap-x-14">
+                        {[...platformMarks, ...platformMarks].map((mark, idx) => (
+                            <div
+                                key={`${mark.name}-${idx}`}
+                                className="platform-mark group flex items-center gap-2.5 flex-shrink-0"
+                                style={{ '--brand-hex': mark.hex } as React.CSSProperties}
+                            >
+                                <PlatformIcon mark={mark} className="w-5 h-5 text-[var(--text-tertiary)] transition-colors duration-200" />
+                                <span className="text-[14px] font-medium text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors duration-200 whitespace-nowrap">
+                                    {mark.name}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
             {/* ═══ FAQ Section ═══ */}
-            <section id="faq" className="py-24 px-6 border-t border-[var(--border-subtle)]">
+            <section id="faq" className="py-24 px-6 border-t border-[var(--glass-border)]">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex flex-col md:flex-row items-start gap-12">
-                        <div className="w-full md:w-1/3">
-                            <p className="text-[12px] font-medium text-green-400 mb-3">Support</p>
-                            <h2 className="text-2xl font-semibold text-[var(--text-primary)] tracking-tight mb-3">FAQ</h2>
+                        <div className="reveal w-full md:w-1/3">
+                            <Eyebrow>Support</Eyebrow>
+                            <h2 className="font-display text-3xl font-semibold text-[var(--text-primary)] tracking-tight mt-4 mb-3">FAQ</h2>
                             <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed">
                                 Quick answers to common questions about the system.
                             </p>
                             <div className="mt-7">
-                                <a href="mailto:support@restack.engineering" className="text-[13px] font-medium text-[var(--text-primary)] hover:text-green-400 transition-colors">
+                                <a href="mailto:support@restack.engineering" className="text-[13px] font-medium text-green-400 hover:text-green-300 transition-colors">
                                     Ask a question →
                                 </a>
                             </div>
                         </div>
 
-                        <div className="w-full md:w-2/3 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+                        <div className="reveal w-full md:w-2/3 glass hairline rounded-2xl overflow-hidden" style={{ '--reveal-delay': '120ms' } as React.CSSProperties}>
                             {faqs.map((faq, i) => (
                                 <FaqItem key={i} icon={faq.icon} q={faq.q} a={faq.a} />
                             ))}
@@ -748,13 +783,13 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Call to Action ═══ */}
-            <section className="relative py-24 px-6 border-t border-[var(--border-subtle)] overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] pointer-events-none bg-glow" />
+            <section className="relative py-28 px-6 border-t border-[var(--glass-border)] overflow-hidden">
+                <div className="aurora-blob w-[560px] h-[420px] bg-green-500/25 -top-20 left-1/2 -translate-x-1/2" />
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] pointer-events-none bg-dot-grid" />
-                <div className="relative max-w-6xl mx-auto text-center">
-                    <h2 className="text-3xl md:text-5xl font-semibold text-[var(--text-primary)] leading-[1.05] tracking-tight mb-6 text-balance">
+                <div className="reveal relative max-w-3xl mx-auto text-center">
+                    <h2 className="font-display text-4xl md:text-6xl font-semibold text-[var(--text-primary)] leading-[1.0] tracking-tight mb-6 text-balance">
                         Ready to build your<br />
-                        <span className="text-green-400">mastery ritual?</span>
+                        <span className="text-gradient">mastery ritual?</span>
                     </h2>
 
                     <p className="text-lg text-[var(--text-secondary)] mb-9 max-w-lg mx-auto leading-relaxed">
@@ -762,7 +797,7 @@ export default function LandingPage() {
                     </p>
 
                     <SignUpButton mode="modal">
-                        <button className={`px-6 py-3 text-[13px] font-medium rounded-md inline-flex items-center justify-center gap-2 ${btnPrimary}`}>
+                        <button className={`px-6 py-3.5 text-[13px] font-semibold rounded-lg inline-flex items-center justify-center gap-2 ${btnPrimary}`}>
                             Get started for free
                             <ArrowRight className="w-3.5 h-3.5" />
                         </button>
@@ -771,7 +806,7 @@ export default function LandingPage() {
             </section>
 
             {/* ═══ Footer ═══ */}
-            <footer className="border-t border-[var(--border-subtle)] pt-16 pb-10 px-6">
+            <footer className="relative border-t border-[var(--glass-border)] pt-16 pb-10 px-6">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
                         <div className="col-span-1 md:col-span-1">
@@ -782,7 +817,7 @@ export default function LandingPage() {
                         </div>
 
                         <div>
-                            <h4 className="text-[12px] font-medium text-[var(--text-primary)] mb-4">Product</h4>
+                            <h4 className="text-[12px] font-semibold text-[var(--text-primary)] mb-4">Product</h4>
                             <ul className="space-y-2.5">
                                 <li><a href="#features" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</a></li>
                                 <li><a href="#how-it-works" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">How it works</a></li>
@@ -792,7 +827,7 @@ export default function LandingPage() {
                         </div>
 
                         <div>
-                            <h4 className="text-[12px] font-medium text-[var(--text-primary)] mb-4">Social</h4>
+                            <h4 className="text-[12px] font-semibold text-[var(--text-primary)] mb-4">Social</h4>
                             <ul className="space-y-2.5">
                                 <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Twitter (X)</a></li>
                                 <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">LinkedIn</a></li>
@@ -801,7 +836,7 @@ export default function LandingPage() {
                         </div>
 
                         <div>
-                            <h4 className="text-[12px] font-medium text-[var(--text-primary)] mb-4">Platform</h4>
+                            <h4 className="text-[12px] font-semibold text-[var(--text-primary)] mb-4">Platform</h4>
                             <ul className="space-y-2.5">
                                 <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Status</a></li>
                                 <li><a href="#" className="text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Terms</a></li>
@@ -810,7 +845,7 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-[var(--border-subtle)]">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-[var(--glass-border)]">
                         <p className="text-[12px] text-[var(--text-tertiary)]">
                             © {new Date().getFullYear()} ReStack. All rights reserved.
                         </p>
