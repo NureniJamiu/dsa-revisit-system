@@ -42,8 +42,14 @@ type User struct {
 	Email       string          `json:"email"`
 	Name        string          `json:"name"`
 	Preferences UserPreferences `json:"preferences"`
-	CreatedAt   time.Time       `json:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at"`
+	// Timezone is an IANA timezone name (e.g. "America/New_York"), stored as a
+	// dedicated users column rather than inside Preferences so the dispatcher
+	// can read it without decoding JSONB. Empty/invalid falls back to UTC when
+	// computing next_send_at (see schedule.go).
+	Timezone   string    `json:"timezone"`
+	NextSendAt NullTime  `json:"next_send_at"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 // UserPreferences stores user settings

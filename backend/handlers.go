@@ -663,6 +663,43 @@ func GetAllWeights(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, results)
 }
 
+// revisitedTodaySet returns which of the given problems have a revisit_history
+// entry dated today (server-local date, matching the app's existing
+// CURRENT_DATE semantics). Used for the display-only "revisited_today" flag on
+// Today's Focus, since the scored candidate pool uses start-of-day state and
+// intentionally ignores today's revisits. Returns an empty set on error or
+// empty input -- the flag is cosmetic, not worth failing the request over.
+func revisitedTodaySet(userID uuid.UUID, problems []Problem, now time.Time) map[uuid.UUID]bool {
+	result := make(map[uuid.UUID]bool)
+	if len(problems) == 0 {
+		return result
+	}
+	ids := make([]string, len(problems))
+	for i, p := range problems {
+		ids[i] = p.ID.String()
+	}
+	rows, err := db.Query(`
+		SELECT DISTINCT problem_id
+		FROM revisit_history
+		WHERE problem_id::text = ANY($1)
+		  AND revisited_at::date = $2::date`,
+		ids, now.Format("2006-01-02"),
+	)
+	if err != nil {
+		log.Printf("[API] revisitedTodaySet query: %v", err)
+		return result
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			continue
+		}
+		result[id] = true
+	}
+	return result
+}
+
 // GetTodaysFocus returns today's recommended problems using weighted selection.
 // The selection is deterministic per day — refreshing the page shows the same problems.
 // Uses DaySeed() so tomorrow picks different ones.
@@ -681,64 +718,33 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 1. Fetch all active problems for this user that were added BEFORE today.
-	// We also fetch their state at the start of the day (ignoring today's revisits)
-	// so the selection is deterministic for the entire day.
-	rows, err := db.Query(`
-		SELECT p.id, p.user_id, p.title, p.link, p.date_added, p.status, 
-		       COALESCE(p.topic, ''), COALESCE(p.difficulty, ''), COALESCE(p.source, 'LeetCode'), COALESCE(p.notes, ''),
-		       COUNT(CASE WHEN rh.revisited_at::date < CURRENT_DATE THEN 1 END) as prev_times_revisited,
-		       MAX(CASE WHEN rh.revisited_at::date < CURRENT_DATE THEN rh.revisited_at END) as prev_last_revisited_at,
-		       COUNT(CASE WHEN rh.revisited_at::date = CURRENT_DATE THEN 1 END) as today_revisit_count
-		FROM problems p
-		LEFT JOIN revisit_history rh ON p.id = rh.problem_id
-		WHERE p.user_id = $1 AND p.status = 'active' AND p.date_added::date < CURRENT_DATE
-		GROUP BY p.id
-		ORDER BY p.date_added ASC`, userID)
+	now := time.Now()
+
+	// 1. Load the SQL-scored candidate pool (a handful of rows: eligible +
+	// overdue, start-of-day state), instead of pulling every active problem
+	// into memory. Shares the exact scoring path with the email scheduler, so
+	// Today's Focus and the daily email agree on what surfaces.
+	cands, err := loadCandidates(userID, now, user.Preferences)
 	if err != nil {
-		internalError(w, "GetTodaysFocus query", err, "Failed to load today's focus")
+		internalError(w, "GetTodaysFocus candidates", err, "Failed to load today's focus")
 		return
 	}
-	defer rows.Close()
 
-	var allProblems []Problem
-	revisitedTodayMap := make(map[uuid.UUID]bool)
+	eligible := candidateProblems(cands)
+	attachTopics(eligible) // only the handful
 
-	for rows.Next() {
-		var p Problem
-		var todayCount int
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded, &p.Status,
-			&p.Topic, &p.Difficulty, &p.Source, &p.Notes,
-			&p.TimesRevisited, &p.LastRevisitedAt, &todayCount); err != nil {
-			log.Printf("[API] Error scanning problem in GetTodaysFocus: %v", err)
-			continue
-		}
-		allProblems = append(allProblems, p)
-		if todayCount > 0 {
-			revisitedTodayMap[p.ID] = true
-		}
-	}
-
-	attachTopics(allProblems)
-
-	// 2. Filter for eligibility based on PREVIOUS state (start of day)
-	var eligible []Problem
-	for _, p := range allProblems {
-		daysSinceLast := 9999.0
-		if p.LastRevisitedAt.Valid {
-			daysSinceLast = time.Since(p.LastRevisitedAt.Time).Hours() / 24
-		}
-		if daysSinceLast >= float64(user.Preferences.MinRevisitDays) {
-			eligible = append(eligible, p)
-		}
-	}
-
-	// 3. Select today's focus using day-deterministic seed
+	// 2. Select today's focus using day-deterministic seed (same as before).
 	focusCount := user.Preferences.ProblemsPerDay
 	if len(eligible) < focusCount {
 		focusCount = len(eligible)
 	}
 	selected := SelectProblemsWithOverdue(eligible, focusCount, DaySeed(), user.Preferences.MaxRevisitDays)
+
+	// 3. Determine which of the SELECTED problems were revisited today, for the
+	// display-only "revisited_today" flag. loadCandidates deliberately uses
+	// start-of-day state (so the daily roll is stable), so we look up today's
+	// revisits separately for just the selected handful.
+	revisitedTodayMap := revisitedTodaySet(userID, selected, now)
 
 	// 4. Return the selected problems with their actual "revisited today" status
 	type TodaysFocusItem struct {
@@ -791,19 +797,32 @@ func GetTodaysFocus(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, response)
 }
 
-// GetSettings fetches the authenticated user's preferences
+// settingsPayload is the wire shape for GET/PUT /api/settings. It embeds the
+// preferences JSONB fields inline (unchanged from before, so the existing
+// frontend contract for those keeps working) and adds the top-level
+// `timezone` column alongside them, since timezone lives on the users row
+// rather than inside preferences. Embedding UserPreferences means its JSON
+// tags (problems_per_day, etc.) stay flat at the top level.
+type settingsPayload struct {
+	UserPreferences
+	Timezone string `json:"timezone"`
+}
+
+// GetSettings fetches the authenticated user's preferences + timezone.
 func GetSettings(w http.ResponseWriter, r *http.Request) {
 	userID := GetUserIDFromContext(r)
 
-	var prefs UserPreferences
-	err := db.QueryRow(`SELECT preferences FROM users WHERE id = $1`, userID).Scan(&prefs)
+	var out settingsPayload
+	err := db.QueryRow(
+		`SELECT preferences, COALESCE(timezone, 'UTC') FROM users WHERE id = $1`, userID,
+	).Scan(&out.UserPreferences, &out.Timezone)
 	if err != nil {
 		log.Printf("[API] Error fetching settings for user %s: %v", userID, err)
 		http.Error(w, "Failed to load settings", http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, http.StatusOK, prefs)
+	respondJSON(w, http.StatusOK, out)
 }
 
 func validateUserPreferences(p UserPreferences) error {
@@ -822,29 +841,74 @@ func validateUserPreferences(p UserPreferences) error {
 	return nil
 }
 
-// UpdateSettings replaces the authenticated user's preferences
+// validateTimezone accepts a value settable as users.timezone. Empty is
+// allowed and normalized to "UTC" by the caller. A non-empty value must be a
+// loadable IANA name (time.LoadLocation) so we never persist a timezone the
+// scheduler can't resolve.
+func validateTimezone(tz string) error {
+	if tz == "" {
+		return nil
+	}
+	if _, err := time.LoadLocation(tz); err != nil {
+		return errors.New("timezone must be a valid IANA name (e.g. America/New_York)")
+	}
+	return nil
+}
+
+// UpdateSettings replaces the authenticated user's preferences and timezone.
+// Because email_time, skip_weekends, and timezone all feed next_send_at, this
+// recomputes next_send_at immediately so a settings change takes effect on the
+// next dispatch instead of waiting a full cycle at the stale time. Both the
+// preferences/timezone write and the next_send_at recompute happen in one
+// transaction so a user can never end up with new preferences but a schedule
+// derived from the old ones.
 func UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	userID := GetUserIDFromContext(r)
 
-	var prefs UserPreferences
-	if err := json.NewDecoder(r.Body).Decode(&prefs); err != nil {
+	var in settingsPayload
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := validateUserPreferences(prefs); err != nil {
+	if err := validateUserPreferences(in.UserPreferences); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if err := validateTimezone(in.Timezone); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if in.Timezone == "" {
+		in.Timezone = "UTC"
+	}
 
-	_, err := db.Exec(`UPDATE users SET preferences = $1, updated_at = NOW() WHERE id = $2`, prefs, userID)
+	// Recompute the next send instant from the incoming settings so the change
+	// is honored right away.
+	next := computeNextSendAt(time.Now(), in.Timezone, in.UserPreferences.EmailTime, in.UserPreferences.SkipWeekends)
+
+	tx, err := db.Begin()
 	if err != nil {
+		internalError(w, "UpdateSettings begin tx", err, "Failed to update settings")
+		return
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(
+		`UPDATE users SET preferences = $1, timezone = $2, next_send_at = $3, updated_at = NOW() WHERE id = $4`,
+		in.UserPreferences, in.Timezone, next, userID,
+	); err != nil {
 		log.Printf("[API] Error updating settings for user %s: %v", userID, err)
 		http.Error(w, "Failed to update settings", http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, http.StatusOK, prefs)
+	if err := tx.Commit(); err != nil {
+		internalError(w, "UpdateSettings commit", err, "Failed to update settings")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, in)
 }
 
 // TestEmail triggers the full email pipeline on-demand for the authenticated user.
@@ -922,8 +986,24 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 3. Select problems using weighted random, guaranteeing overdue ones a slot
-	toSend := SelectProblemsWithOverdue(eligible, u.Preferences.ProblemsPerDay, time.Now().UnixNano(), u.Preferences.MaxRevisitDays)
+	// 3. Select problems via the SAME scoring path production uses
+	// (loadCandidates + DaySeed), so this diagnostic's "selected" set matches
+	// what the daily email and Today's Focus would actually send, rather than a
+	// separate ad-hoc draw. The all_problems report above still shows every
+	// problem's weight for debugging; only the selection is unified here.
+	cands, candErr := loadCandidates(u.ID, time.Now(), u.Preferences)
+	if candErr != nil {
+		log.Printf("[API] TestEmail loadCandidates: %v", candErr)
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to score problems"})
+		return
+	}
+	candPool := candidateProblems(cands)
+	attachTopics(candPool)
+	focusCount := u.Preferences.ProblemsPerDay
+	if len(candPool) < focusCount {
+		focusCount = len(candPool)
+	}
+	toSend := SelectProblemsWithOverdue(candPool, focusCount, DaySeed(), u.Preferences.MaxRevisitDays)
 
 	// Mark selected in the details list
 	selectedSet := make(map[string]bool)
@@ -981,16 +1061,17 @@ func TestEmail(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, response)
 }
 
-// RunCronAllUsers manually triggers the daily cron job for ALL users.
-// This skips the EmailTime check logic? No, current RunDailyJob has EmailTime check inside.
-// To make it truly manual trigger, we should probably have a way to force it.
-// For now, it just calls RunDailyJob() and returns a summary.
+// RunCronAllUsers manually triggers the send pipeline for ALL users (force),
+// enqueuing everyone for today and draining the queue synchronously. Returns a
+// summary with the number of jobs processed. This is the admin "run it now for
+// everyone" hook; the normal path is the background dispatcher + worker pool.
 func RunCronAllUsers(w http.ResponseWriter, r *http.Request) {
-	log.Println("[Admin] Manually triggering daily job for all users...")
-	RunDailyJob(true)
-	respondJSON(w, http.StatusOK, map[string]string{
-		"status":  "ok",
-		"message": "Daily job triggered. Check server logs for detailed progress.",
+	log.Println("[Admin] Manually triggering daily job for all users (force)...")
+	processed := RunDailyJob(true)
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"status":    "ok",
+		"processed": processed,
+		"message":   "Daily job triggered and drained. Check server logs for detailed progress.",
 	})
 }
 

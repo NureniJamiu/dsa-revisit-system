@@ -17,6 +17,12 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255),
     preferences JSONB DEFAULT '{"problems_per_day": 3, "min_revisit_days": 2, "max_revisit_days": 10, "email_time": "05:00", "skip_weekends": false, "ai_encouragement": true}',
     last_email_sent_at TIMESTAMP WITH TIME ZONE,
+    -- Per-user IANA timezone; next_send_at is computed in this zone from
+    -- preferences.email_time (+ skip_weekends). See backend/schedule.go.
+    timezone VARCHAR(64) NOT NULL DEFAULT 'UTC',
+    -- Next UTC instant this user is due for their daily email. The dispatcher
+    -- range-scans WHERE next_send_at <= now() instead of scanning all users.
+    next_send_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -70,8 +76,28 @@ CREATE TABLE IF NOT EXISTS personal_access_tokens (
     revoked_at TIMESTAMP WITH TIME ZONE
 );
 
+-- Send Jobs Queue Table
+-- Postgres-backed work queue; workers claim rows via FOR UPDATE SKIP LOCKED.
+-- UNIQUE (user_id, run_date) makes enqueue idempotent (one send per user/day).
+CREATE TABLE IF NOT EXISTS send_jobs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    run_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending', -- pending, processing, done, failed
+    attempts INT NOT NULL DEFAULT 0,
+    last_error TEXT,
+    locked_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, run_date)
+);
+
 -- Index for scheduling queries
 CREATE INDEX IF NOT EXISTS idx_problems_user_scheduling ON problems(user_id, status, last_revisited_at);
+-- Dispatcher due-user lookup: partial index so only scheduled users are indexed
+CREATE INDEX IF NOT EXISTS idx_users_next_send_at ON users(next_send_at) WHERE next_send_at IS NOT NULL;
+-- Worker claim scan: index only claimable jobs so done rows don't slow it down
+CREATE INDEX IF NOT EXISTS idx_send_jobs_claimable ON send_jobs(created_at) WHERE status IN ('pending', 'failed');
 CREATE INDEX IF NOT EXISTS idx_revisit_history_problem ON revisit_history(problem_id, revisited_at DESC);
 CREATE INDEX IF NOT EXISTS idx_problem_topics_problem ON problem_topics(problem_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);
