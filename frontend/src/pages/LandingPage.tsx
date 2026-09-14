@@ -162,18 +162,30 @@ function FeatureVisual({ type }: { type: string }) {
     if (type === 'weights') {
         const bars = [92, 74, 58, 41, 27, 18];
         return (
-            <div className="flex items-end gap-1.5 h-12 mt-5">
+            <div className="relative flex items-end gap-1.5 h-14 mt-5 rounded-lg bg-[var(--bg-app)]/40 p-2 ring-1 ring-inset ring-[var(--glass-border)]">
+                {/* baseline */}
+                <div className="absolute inset-x-2 bottom-2 h-px bg-[var(--glass-border)]" />
                 {bars.map((h, i) => (
-                    <div key={i} className="flex-1 rounded-sm bg-green-500" style={{ height: `${h}%`, opacity: 1 - i * 0.13 }} />
+                    <div
+                        key={i}
+                        className="flex-1 rounded-[3px] bg-gradient-to-t from-green-600 to-green-400 shadow-[0_0_12px_-2px_rgba(34,197,94,0.6),inset_0_1px_0_rgba(255,255,255,0.25)]"
+                        style={{ height: `${h}%`, opacity: 1 - i * 0.12 }}
+                    />
                 ))}
             </div>
         );
     }
     if (type === 'inbox') {
         return (
-            <div className="mt-5 space-y-1.5">
+            <div className="mt-5 rounded-lg bg-[var(--bg-app)]/40 p-3 ring-1 ring-inset ring-[var(--glass-border)] space-y-2">
                 {[100, 85, 60].map((w, i) => (
-                    <div key={i} className={`h-2 rounded-full bg-[var(--bg-elevated)] ${i === 0 ? 'border border-green-500/30' : ''}`} style={{ width: `${w}%` }} />
+                    <div key={i} className="flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${i === 0 ? 'bg-green-400 shadow-[0_0_8px_1px_rgba(34,197,94,0.7)]' : 'bg-[var(--bg-elevated)]'}`} />
+                        <div
+                            className={`h-2 rounded-full ${i === 0 ? 'bg-gradient-to-r from-green-500/60 to-green-500/10 border border-green-500/30' : 'bg-[var(--bg-elevated)]'}`}
+                            style={{ width: `${w}%` }}
+                        />
+                    </div>
                 ))}
             </div>
         );
@@ -181,19 +193,34 @@ function FeatureVisual({ type }: { type: string }) {
     if (type === 'chips') {
         return (
             <div className="flex flex-wrap gap-1.5 mt-5">
-                {['LeetCode', 'Codeforces', 'NeetCode', '+3'].map((c) => (
-                    <span key={c} className="px-2 py-0.5 rounded-full bg-[var(--bg-surface-hover)] border border-[var(--border-default)] text-[10px] font-medium text-[var(--text-secondary)]">{c}</span>
+                {['LeetCode', 'Codeforces', 'NeetCode', '+3'].map((c, i) => (
+                    <span
+                        key={c}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${i === 3
+                            ? 'bg-green-500/10 border border-green-500/30 text-green-300'
+                            : 'bg-[var(--bg-surface-hover)] border border-[var(--border-default)] text-[var(--text-secondary)]'
+                            }`}
+                    >
+                        {c}
+                    </span>
                 ))}
             </div>
         );
     }
     if (type === 'timeline') {
         return (
-            <div className="flex items-center gap-0 mt-5">
+            <div className="relative flex items-center gap-0 mt-6">
                 {[0, 1, 2, 3].map((i) => (
                     <div key={i} className="flex items-center flex-1 last:flex-none">
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${i === 3 ? 'bg-green-500' : 'bg-[var(--bg-elevated)]'}`} />
-                        {i < 3 && <div className="h-px flex-1 bg-[var(--bg-elevated)]" />}
+                        <span
+                            className={`relative w-2.5 h-2.5 rounded-full flex-shrink-0 ${i === 3
+                                ? 'bg-green-400 shadow-[0_0_10px_2px_rgba(34,197,94,0.7)]'
+                                : 'bg-[var(--bg-elevated)] ring-1 ring-[var(--glass-border)]'
+                                }`}
+                        />
+                        {i < 3 && (
+                            <div className={`h-px flex-1 ${i === 2 ? 'bg-gradient-to-r from-[var(--bg-elevated)] to-green-500/50' : 'bg-[var(--bg-elevated)]'}`} />
+                        )}
                     </div>
                 ))}
             </div>
@@ -201,12 +228,12 @@ function FeatureVisual({ type }: { type: string }) {
     }
     if (type === 'stack') {
         return (
-            <div className="relative h-12 mt-5 ml-1">
+            <div className="relative h-14 mt-5 ml-1">
                 {[0, 1, 2].map((i) => (
                     <div
                         key={i}
-                        className="absolute inset-x-0 h-7 rounded-md bg-[var(--bg-surface-hover)] border border-[var(--border-default)]"
-                        style={{ top: `${i * 8}px`, left: `${i * 6}px`, right: `${-i * 6}px`, opacity: 1 - i * 0.28 }}
+                        className="absolute inset-x-0 h-7 rounded-lg bg-gradient-to-b from-[var(--bg-surface-hover)] to-[var(--bg-surface)] border border-[var(--border-default)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_20px_-12px_rgba(0,0,0,0.6)]"
+                        style={{ top: `${i * 9}px`, left: `${i * 7}px`, right: `${-i * 7}px`, opacity: 1 - i * 0.26 }}
                     />
                 ))}
             </div>
@@ -220,24 +247,28 @@ function ShowcaseMockup({ index }: { index: number }) {
     if (index === 0) {
         return (
             <div className="w-full max-w-sm space-y-3">
-                <div className="bg-[var(--bg-surface-raised)] p-4 rounded-lg border border-[var(--border-default)]">
-                    <p className="text-[10px] font-medium text-[var(--text-secondary)] mb-2">Paste URL</p>
-                    <div className="flex gap-2">
-                        <div className="h-9 flex-1 bg-[var(--bg-surface-raised)] rounded-md border border-[var(--border-default)] px-3 flex items-center">
-                            <span className="text-[11px] font-mono-tabular text-[var(--text-tertiary)] truncate">leetcode.com/problems/lru-cache</span>
-                        </div>
-                        <div className="w-9 h-9 bg-[var(--btn-primary-bg)] rounded-md flex items-center justify-center flex-shrink-0">
-                            <Plus className="w-4 h-4 text-[var(--btn-primary-text)]" />
+                {/* Double-bezel: outer tray + inner core */}
+                <div className="rounded-2xl bg-[var(--bg-app)]/50 ring-1 ring-inset ring-[var(--glass-border)] p-1.5">
+                    <div className="bg-[var(--bg-surface-raised)] p-4 rounded-[calc(1rem-0.375rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                        <p className="text-[10px] font-medium text-[var(--text-secondary)] mb-2">Paste URL</p>
+                        <div className="flex gap-2">
+                            <div className="h-10 flex-1 bg-[var(--bg-app)] rounded-lg border border-[var(--border-default)] px-3 flex items-center shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 mr-2 shadow-[0_0_8px_1px_rgba(34,197,94,0.7)] flex-shrink-0" />
+                                <span className="text-[11px] font-mono-tabular text-[var(--text-secondary)] truncate">leetcode.com/problems/lru-cache</span>
+                            </div>
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${btnPrimary}`}>
+                                <Plus className="w-4 h-4" strokeWidth={2} />
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <div className="h-7 px-3 bg-[var(--bg-surface-raised)] rounded-full border border-[var(--border-default)] flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <div className="h-7 px-3 bg-[var(--bg-surface-raised)] rounded-full border border-[var(--border-default)] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400 shadow-[0_0_8px_1px_rgba(248,113,113,0.6)]" />
                         <span className="text-[10px] font-medium text-[var(--text-secondary)]">Hard</span>
                     </div>
-                    <div className="h-7 px-3 bg-green-500/10 rounded-full border border-green-500/20 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    <div className="h-7 px-3 bg-green-500/10 rounded-full border border-green-500/25 flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                        <CheckCircle2 className="w-3 h-3 text-green-400" strokeWidth={2} />
                         <span className="text-[10px] font-medium text-green-400">Indexed</span>
                     </div>
                 </div>
@@ -246,37 +277,55 @@ function ShowcaseMockup({ index }: { index: number }) {
     }
     if (index === 1) {
         return (
-            <div className="w-full max-w-[220px] bg-[var(--bg-surface-raised)] rounded-xl shadow-xl overflow-hidden border border-[var(--border-default)]">
-                <div className="bg-green-600 p-3 text-center">
-                    <span className="text-[11px] font-semibold text-white">Today's daily recall</span>
-                </div>
-                <div className="p-4 space-y-2">
-                    {['1. LRU Cache', '2. Merge K Lists', '3. 3Sum'].map((t, i) => (
-                        <div key={t} className={`p-2.5 bg-[var(--bg-surface-raised)] rounded-md border border-[var(--border-subtle)] flex items-center justify-between ${i > 0 ? 'opacity-50' : ''}`}>
-                            <span className="text-[11px] font-medium text-[var(--text-primary)]">{t}</span>
-                            <ChevronRight className="w-3 h-3 text-[var(--text-tertiary)]" />
+            <div className="w-full max-w-[230px] rounded-2xl bg-[var(--bg-app)]/50 ring-1 ring-inset ring-[var(--glass-border)] p-1.5">
+                <div className="rounded-[calc(1rem-0.375rem)] overflow-hidden shadow-[0_20px_50px_-24px_rgba(0,0,0,0.7)]">
+                    <div className="relative bg-gradient-to-br from-green-500 to-emerald-600 px-3 py-3 text-center overflow-hidden">
+                        <div className="absolute -top-4 -right-2 w-16 h-16 rounded-full bg-white/20 blur-xl" />
+                        <div className="relative flex items-center justify-center gap-1.5">
+                            <Mail className="w-3.5 h-3.5 text-white" strokeWidth={1.75} />
+                            <span className="text-[11px] font-semibold text-white">Today's daily recall</span>
                         </div>
-                    ))}
+                    </div>
+                    <div className="bg-[var(--bg-surface-raised)] p-3 space-y-2">
+                        {['1. LRU Cache', '2. Merge K Lists', '3. 3Sum'].map((t, i) => (
+                            <div
+                                key={t}
+                                className={`p-2.5 rounded-lg border flex items-center justify-between shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${i === 0
+                                    ? 'bg-green-500/10 border-green-500/25'
+                                    : 'bg-[var(--bg-app)]/60 border-[var(--border-subtle)] opacity-60'
+                                    }`}
+                            >
+                                <span className="text-[11px] font-medium text-[var(--text-primary)]">{t}</span>
+                                <ChevronRight className="w-3 h-3 text-[var(--text-tertiary)]" strokeWidth={1.75} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
     }
     return (
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm rounded-2xl bg-[var(--bg-app)]/50 ring-1 ring-inset ring-[var(--glass-border)] p-5">
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <p className="text-[10px] font-medium text-[var(--text-secondary)] mb-1">Global retention</p>
-                    <p className="text-3xl font-mono-tabular font-semibold text-[var(--text-primary)]">84%</p>
+                    <p className="text-4xl font-mono-tabular font-semibold text-gradient leading-none">84%</p>
                 </div>
-                <div className="w-14 h-14 rounded-full border-[3px] border-[var(--border-default)] border-t-green-500 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-green-400" />
+                <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 rounded-full conic-ring opacity-70" />
+                    <div className="absolute inset-[3px] rounded-full bg-[var(--bg-surface-raised)] flex items-center justify-center">
+                        <Zap className="w-5 h-5 text-green-400" strokeWidth={1.75} />
+                    </div>
                 </div>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-3">
                 {[100, 75, 40].map((w, i) => (
                     <div key={i} className="flex items-center gap-3">
-                        <div className="h-1.5 flex-1 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
-                            <div className="h-full bg-green-500 rounded-full" style={{ width: `${w}%` }} />
+                        <div className="h-2 flex-1 bg-[var(--bg-app)] rounded-full overflow-hidden ring-1 ring-inset ring-[var(--glass-border)]">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-green-600 to-green-400 shadow-[0_0_10px_-1px_rgba(34,197,94,0.6)]"
+                                style={{ width: `${w}%` }}
+                            />
                         </div>
                         <span className="text-[10px] font-mono-tabular text-[var(--text-tertiary)] w-8">{w}%</span>
                     </div>
