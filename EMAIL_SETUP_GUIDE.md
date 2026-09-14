@@ -20,6 +20,8 @@ This document walks through every configuration step needed to get the DSA Revis
 
 ## 1. How It Works — The Pipeline
 
+> **Outdated — scheduling has been redesigned.** The every-minute cron ticker described below has been replaced by a due-time-indexed **dispatcher + Postgres worker queue** with per-user timezones and SQL-based candidate scoring. `skip_weekends` and `max_revisit_days` are now enforced, and delivery is via the Resend HTTP API rather than SMTP. See **`DEPLOYMENT.md` §2b (Scheduler)** for the current architecture and operational commands (`WORKER_POOL_SIZE`, `-job backfill-schedule`). The stage descriptions here are kept for historical context on the weighting/eligibility logic, which still applies.
+
 The email notification system has 4 stages:
 
 ```

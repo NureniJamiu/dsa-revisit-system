@@ -77,6 +77,67 @@ func runMigrations() {
 		log.Println("Migration: last_email_sent_at column ensured")
 	}
 
+	// Per-user IANA timezone (e.g. "America/New_York"). Defaults to UTC so
+	// existing rows keep working; the dispatcher computes next_send_at in this
+	// zone. Kept as a dedicated column (not inside preferences JSONB) so it can
+	// be read cheaply by the dispatcher without decoding JSON.
+	_, err = db.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone VARCHAR(64) NOT NULL DEFAULT 'UTC'`)
+	if err != nil {
+		log.Printf("Migration warning (timezone column): %v", err)
+	} else {
+		log.Println("Migration: timezone column ensured")
+	}
+
+	// next_send_at is the next UTC instant a user is due for their daily email,
+	// computed from timezone + preferences.email_time (+ skip_weekends). The
+	// dispatcher range-scans WHERE next_send_at <= now() instead of scanning the
+	// whole users table every minute. NULL means "not yet scheduled" (e.g. a
+	// brand-new user before backfill) and is excluded from the partial index.
+	_, err = db.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS next_send_at TIMESTAMP WITH TIME ZONE`)
+	if err != nil {
+		log.Printf("Migration warning (next_send_at column): %v", err)
+	} else {
+		log.Println("Migration: next_send_at column ensured")
+	}
+
+	_, err = db.Exec(`CREATE INDEX IF NOT EXISTS idx_users_next_send_at ON users(next_send_at) WHERE next_send_at IS NOT NULL`)
+	if err != nil {
+		log.Printf("Migration warning (next_send_at index): %v", err)
+	}
+
+	// send_jobs is the Postgres-backed work queue that lets multiple workers
+	// process due users in parallel (claimed via FOR UPDATE SKIP LOCKED). The
+	// UNIQUE (user_id, run_date) constraint makes enqueue idempotent: a user
+	// can be queued at most once per calendar day, so a dispatcher that runs
+	// several times within the same due window (or overlapping dispatchers)
+	// can't double-send. run_date is the user's local send date.
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS send_jobs (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			run_date DATE NOT NULL,
+			status VARCHAR(20) NOT NULL DEFAULT 'pending', -- pending, processing, done, failed
+			attempts INT NOT NULL DEFAULT 0,
+			last_error TEXT,
+			locked_at TIMESTAMP WITH TIME ZONE,
+			created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE (user_id, run_date)
+		)`)
+	if err != nil {
+		log.Printf("Migration warning (send_jobs table): %v", err)
+	} else {
+		log.Println("Migration: send_jobs table ensured")
+	}
+
+	// Partial index over claimable jobs: the worker claim query filters on
+	// status IN ('pending','failed') ordered by created_at, so indexing only
+	// those rows keeps the claim scan tiny even as done rows accumulate.
+	_, err = db.Exec(`CREATE INDEX IF NOT EXISTS idx_send_jobs_claimable ON send_jobs(created_at) WHERE status IN ('pending', 'failed')`)
+	if err != nil {
+		log.Printf("Migration warning (send_jobs claimable index): %v", err)
+	}
+
 	_, err = db.Exec(`ALTER TABLE problems ADD COLUMN IF NOT EXISTS notes TEXT`)
 	if err != nil {
 		log.Printf("Migration warning (notes column): %v", err)

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -28,18 +29,31 @@ func main() {
 
 	// If job flag is set, run the job and exit
 	if *jobFlag != "" {
-		if *jobFlag == "daily" {
+		switch *jobFlag {
+		case "daily":
 			log.Printf("[Main] Running scheduled job: daily (force=%v)", *forceFlag)
-			RunDailyJob(*forceFlag)
-			log.Println("[Main] Job completed. Exiting.")
+			processed := RunDailyJob(*forceFlag)
+			log.Printf("[Main] Job completed (%d processed). Exiting.", processed)
 			os.Exit(0)
-		} else {
+		case "backfill-schedule":
+			log.Println("[Main] Running one-time job: backfill-schedule")
+			n, err := BackfillSchedule(time.Now())
+			if err != nil {
+				log.Fatalf("[Main] backfill-schedule failed: %v", err)
+			}
+			log.Printf("[Main] backfill-schedule set next_send_at for %d user(s). Exiting.", n)
+			os.Exit(0)
+		default:
 			log.Fatalf("[Main] Unknown job: %s", *jobFlag)
 		}
 	}
 
-	// Start Cron Job (Background ticker)
-	StartCron()
+	// Start the scheduling pipeline: a dispatcher that cheaply enqueues only
+	// due users (index range-scan on next_send_at, not a full-table scan) and
+	// a pool of workers that drain the send_jobs queue in parallel. Replaces
+	// the old every-minute full-table-scan ticker.
+	StartDispatcher()
+	StartWorkers(workerPoolSize())
 
 	// Initialize Router
 	r := chi.NewRouter()

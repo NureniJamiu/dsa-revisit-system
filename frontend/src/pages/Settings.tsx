@@ -16,6 +16,55 @@ export type UserSettings = {
     skip_weekends: boolean;
     email_time: string; // 24h "HH:MM", matches backend cron parsing
     ai_encouragement: boolean;
+    timezone: string; // IANA name (e.g. "America/New_York"); top-level users column, drives next_send_at
+}
+
+// A curated set of common IANA timezones for the picker. This is intentionally
+// not the full ~400-entry tz database — the user's own detected zone is always
+// prepended (see buildTimezoneOptions) so anyone outside this list still gets a
+// correct default, and these cover the large majority of users. The backend
+// validates any value against time.LoadLocation, so an off-list value sent by
+// other means is still checked server-side.
+const COMMON_TIMEZONES = [
+    'UTC',
+    'America/Los_Angeles',
+    'America/Denver',
+    'America/Chicago',
+    'America/New_York',
+    'America/Sao_Paulo',
+    'Europe/London',
+    'Europe/Paris',
+    'Europe/Berlin',
+    'Europe/Moscow',
+    'Africa/Lagos',
+    'Africa/Johannesburg',
+    'Asia/Dubai',
+    'Asia/Kolkata',
+    'Asia/Singapore',
+    'Asia/Shanghai',
+    'Asia/Tokyo',
+    'Australia/Sydney',
+    'Pacific/Auckland',
+];
+
+// detectBrowserTimezone returns the browser's IANA zone, or "UTC" if it can't
+// be resolved. Used as the default for users who haven't picked one yet.
+function detectBrowserTimezone(): string {
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    } catch {
+        return 'UTC';
+    }
+}
+
+// buildTimezoneOptions returns the option list with the currently-selected zone
+// guaranteed present (prepended if it's not already in COMMON_TIMEZONES), so
+// the <select> never shows a blank because the saved value is off-list.
+function buildTimezoneOptions(selected: string): string[] {
+    if (selected && !COMMON_TIMEZONES.includes(selected)) {
+        return [selected, ...COMMON_TIMEZONES];
+    }
+    return COMMON_TIMEZONES;
 }
 
 // Display list for the reminder-time select: 24h "value" is what gets sent to
@@ -224,7 +273,8 @@ const Settings: React.FC = () => {
                         max_revisit_days: 10,
                         skip_weekends: true,
                         email_time: '09:00',
-                        ai_encouragement: false
+                        ai_encouragement: false,
+                        timezone: detectBrowserTimezone()
                     } as UserSettings;
                 }
                 throw new Error('Failed to load settings from server');
@@ -262,6 +312,7 @@ const Settings: React.FC = () => {
     const [skipWeekends, setSkipWeekends] = useState(true);
     const [emailTime, setEmailTime] = useState('09:00');
     const [aiEncouragement, setAiEncouragement] = useState(false);
+    const [timezone, setTimezone] = useState(detectBrowserTimezone());
 
     // Sync state with loaded data
     React.useEffect(() => {
@@ -272,6 +323,9 @@ const Settings: React.FC = () => {
             setSkipWeekends(settings.skip_weekends);
             setEmailTime(normalizeEmailTime(settings.email_time));
             setAiEncouragement(settings.ai_encouragement);
+            // Fall back to the browser's zone if the server has none saved yet
+            // (existing users default to UTC server-side until they pick one).
+            setTimezone(settings.timezone || detectBrowserTimezone());
         }
     }, [settings]);
 
@@ -286,7 +340,8 @@ const Settings: React.FC = () => {
             max_revisit_days: maxRevisitDays,
             skip_weekends: skipWeekends,
             email_time: emailTime,
-            ai_encouragement: aiEncouragement
+            ai_encouragement: aiEncouragement,
+            timezone: timezone
         });
     };
 
@@ -297,6 +352,7 @@ const Settings: React.FC = () => {
         setSkipWeekends(true);
         setEmailTime('09:00');
         setAiEncouragement(false);
+        setTimezone(detectBrowserTimezone());
     };
 
     if (isLoading) {
@@ -431,6 +487,28 @@ const Settings: React.FC = () => {
                         >
                             {EMAIL_TIME_OPTIONS.map(({ value, label }) => (
                                 <option key={value} value={value} className="bg-[var(--bg-surface-raised)]">{label}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-secondary)]">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Timezone */}
+                <div className="border-t border-[var(--border-subtle)] pt-8">
+                    <div className="mb-5">
+                        <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Timezone</h3>
+                        <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Your reminder time is interpreted in this timezone. Set it to where you are so reminders arrive at the right local time.</p>
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={timezone}
+                            onChange={(e) => setTimezone(e.target.value)}
+                            className="w-full px-4 py-3 bg-[var(--bg-surface-raised)] border border-[var(--border-default)] rounded-md text-[14px] font-medium text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all appearance-none"
+                        >
+                            {buildTimezoneOptions(timezone).map((tz) => (
+                                <option key={tz} value={tz} className="bg-[var(--bg-surface-raised)]">{tz.replace(/_/g, ' ')}</option>
                             ))}
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-secondary)]">

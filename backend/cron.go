@@ -3,22 +3,14 @@ package main
 import (
 	"log"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-// StartCron starts the daily job
-func StartCron() {
-	ticker := time.NewTicker(time.Minute * 1) // Check every minute for MVP/Testing
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			RunDailyJob(false)
-		}
-	}()
-}
-
-// isWeekend reports whether the given time falls on a Saturday or Sunday,
-// evaluated in the server's local time (matches how the daily ticker runs).
+// isWeekend reports whether the given time falls on a Saturday or Sunday.
+// Retained as a small shared helper; weekend handling in the live path now
+// lives in computeNextSendAt (which rolls a weekend send to Monday in the
+// user's own timezone).
 func isWeekend(t time.Time) bool {
 	day := t.Weekday()
 	return day == time.Saturday || day == time.Sunday
@@ -28,6 +20,10 @@ func isWeekend(t time.Time) bool {
 // time ("HH:MM", 24h — matches the format stored by the frontend's Settings
 // page, not the "HH:MM AM/PM" display format used in the UI). An empty
 // emailTime is treated as "always ready".
+//
+// The live scheduling path no longer calls this (it uses next_send_at +
+// computeNextSendAt), but it's kept and still tested (cron_test.go) as the
+// canonical "HH:MM" comparison helper.
 func timeToSend(now time.Time, emailTime string) (bool, error) {
 	preferredTime, err := time.Parse("15:04", emailTime)
 	if err != nil {
@@ -44,111 +40,93 @@ func timeToSend(now time.Time, emailTime string) (bool, error) {
 	return true, nil
 }
 
-// RunDailyJob is the main logic for the cron.
-// If force is true, it skips the check for last_email_sent_at.
-func RunDailyJob(force bool) {
-	log.Printf("[Cron] Starting daily job check (force=%v)...", force)
-
-	// 1. Fetch all users
-	rows, err := db.Query("SELECT id, email, preferences, last_email_sent_at FROM users")
-	if err != nil {
-		log.Printf("[Cron] Error fetching users: %v", err)
-		return
-	}
-	defer rows.Close()
-
+// RunDailyJob is the manual/CLI trigger for the send pipeline, now implemented
+// on top of the dispatcher + worker queue instead of a full-table scan.
+//
+//   - force=false: enqueue exactly the users who are currently due
+//     (next_send_at <= now), identical to one dispatcher pass, then drain the
+//     queue synchronously and return.
+//   - force=true: enqueue EVERY user for today regardless of next_send_at /
+//     last_email_sent_at (the "run it now for everyone" admin/Heroku-Scheduler
+//     semantics the old force flag had), then drain.
+//
+// It drains synchronously (claim + process until empty) so the CLI/admin caller
+// sees the work finish before returning, matching the old behavior where the
+// job ran to completion in-process. Returns the number of jobs processed.
+func RunDailyJob(force bool) int {
+	log.Printf("[Cron] Starting daily job (force=%v)...", force)
 	now := time.Now()
-	today := now.Format("2006-01-02")
 
+	var enqueued int
+	if force {
+		enqueued = enqueueAllUsers(now)
+	} else {
+		enqueued = dispatchDueUsers(now)
+	}
+	log.Printf("[Cron] Enqueued %d job(s); draining...", enqueued)
+
+	processed := drainQueue()
+	log.Printf("[Cron] Daily job complete: processed %d job(s)", processed)
+	return processed
+}
+
+// enqueueAllUsers force-enqueues every user for their local "today", ignoring
+// next_send_at and last_email_sent_at. Used by the force path so an operator
+// can push a send to the whole base on demand. Idempotent per user/day via the
+// send_jobs UNIQUE constraint, so running it twice in a day is safe.
+func enqueueAllUsers(now time.Time) int {
+	rows, err := db.Query(`SELECT id, timezone FROM users`)
+	if err != nil {
+		log.Printf("[Cron] enqueueAllUsers query: %v", err)
+		return 0
+	}
+	type u struct {
+		id uuid.UUID
+		tz string
+	}
+	var users []u
 	for rows.Next() {
-		var u User
-		var lastSent NullTime
-		if err := rows.Scan(&u.ID, &u.Email, &u.Preferences, &lastSent); err != nil {
-			log.Printf("[Cron] Error scanning user: %v", err)
+		var x u
+		if err := rows.Scan(&x.id, &x.tz); err != nil {
+			log.Printf("[Cron] enqueueAllUsers scan: %v", err)
 			continue
 		}
+		users = append(users, x)
+	}
+	rows.Close()
 
-		// 1.5. Skip if already sent today (unless forced)
-		if !force && lastSent.Valid && lastSent.Time.Format("2006-01-02") == today {
-			log.Printf("[Cron] Skipping user %s: Already sent today", u.Email)
-			continue
-		}
-
-		// 2. Check if it's time to send (e.g. "05:00")
-		// If force is true, we bypass this check (useful for Heroku Scheduler / manual trigger)
-		if !force && u.Preferences.EmailTime != "" {
-			ready, err := timeToSend(now, u.Preferences.EmailTime)
-			if err != nil {
-				log.Printf("[Cron] Invalid EmailTime for user %s: %s", u.Email, u.Preferences.EmailTime)
-				continue
-			}
-			if !ready {
-				log.Printf("[Cron] Skipping user %s: Too early for preferred time %s", u.Email, u.Preferences.EmailTime)
-				continue
-			}
-		}
-
-		// 2.5. Skip weekends if the user opted out (unless forced)
-		if !force && u.Preferences.SkipWeekends && isWeekend(now) {
-			log.Printf("[Cron] Skipping user %s: weekend send disabled", u.Email)
-			continue
-		}
-
-		log.Printf("[Cron] Processing user %s...", u.Email)
-
-		// 3. Fetch eligible problems
-		probRows, err := db.Query(`
-			SELECT id, user_id, title, link, date_added, last_revisited_at, times_revisited, status 
-			FROM problems 
-			WHERE user_id = $1 AND status = 'active'
-			ORDER BY date_added ASC`, u.ID)
+	enqueued := 0
+	for _, x := range users {
+		runDate := now.In(loadLocation(x.tz))
+		inserted, err := enqueueSendJob(x.id, runDate)
 		if err != nil {
-			log.Printf("[Cron] Error fetching problems for user %s: %v", u.ID, err)
+			log.Printf("[Cron] enqueueAllUsers enqueue %s: %v", x.id, err)
 			continue
 		}
-
-		var eligibleProblems []Problem
-		for probRows.Next() {
-			var p Problem
-			probRows.Scan(&p.ID, &p.UserID, &p.Title, &p.Link, &p.DateAdded, &p.LastRevisitedAt, &p.TimesRevisited, &p.Status)
-
-			daysSinceLast := 9999.0
-			if p.LastRevisitedAt.Valid {
-				daysSinceLast = time.Since(p.LastRevisitedAt.Time).Hours() / 24
-			}
-
-			if daysSinceLast >= float64(u.Preferences.MinRevisitDays) {
-				eligibleProblems = append(eligibleProblems, p)
-			}
+		if inserted {
+			enqueued++
 		}
-		probRows.Close()
+	}
+	return enqueued
+}
 
-		if len(eligibleProblems) == 0 {
-			log.Printf("[Cron] No eligible problems for user %s", u.Email)
-			continue
+// drainQueue claims and processes jobs until the queue has no more claimable
+// work, then returns the count processed. Used by the synchronous CLI/admin
+// trigger; the long-running server uses the StartWorkers pool instead.
+func drainQueue() int {
+	processed := 0
+	for {
+		jobs, err := claimJobs(workerClaimBatch)
+		if err != nil {
+			log.Printf("[Cron] drainQueue claim: %v", err)
+			return processed
 		}
-
-		// Attach topics so the topic-balancing discount in the weighted draw
-		// below has real data to work with instead of zero values.
-		attachTopics(eligibleProblems)
-
-		// 4. Select problems (deterministic per day), guaranteeing overdue ones a slot
-		toSend := SelectProblemsWithOverdue(eligibleProblems, u.Preferences.ProblemsPerDay, DaySeed(), u.Preferences.MaxRevisitDays)
-
-		// 5. Send Email
-		if len(toSend) > 0 {
-			err := SendEmail(u.Email, toSend)
-			if err != nil {
-				log.Printf("[Cron] Error sending email to %s: %v", u.Email, err)
-				continue
-			}
-
-			// 6. Mark as sent in DB
-			_, err = db.Exec("UPDATE users SET last_email_sent_at = NOW() WHERE id = $1", u.ID)
-			if err != nil {
-				log.Printf("[Cron] Error updating last_email_sent_at for user %s: %v", u.Email, err)
-			}
-			log.Printf("[Cron] Successfully sent daily email to %s with %d problems", u.Email, len(toSend))
+		if len(jobs) == 0 {
+			return processed
+		}
+		for _, job := range jobs {
+			processJob(job)
+			processed++
 		}
 	}
 }
